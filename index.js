@@ -1677,7 +1677,8 @@ a{color:inherit}
 .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-c);height:100vh;height:100dvh;
   background:var(--sidebar);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);
   border-right:.5px solid var(--separator);display:flex;flex-direction:column;z-index:1000;overflow:hidden;
-  transition:width .3s cubic-bezier(.25,.8,.25,1);padding:calc(.6rem + var(--safe-t)) 0 .6rem}
+  transition:width .3s cubic-bezier(.25,.8,.25,1);padding:calc(.6rem + var(--safe-t)) 0 .6rem;
+  will-change:width}
 .sidebar:hover{width:var(--sidebar-e)}
 .sidebar-brand{padding:.5rem .9rem;font-size:1.4rem;color:var(--text);display:flex;align-items:center;gap:.6rem;
   border-bottom:.5px solid var(--separator);margin-bottom:.6rem;white-space:nowrap;overflow:hidden}
@@ -1704,14 +1705,16 @@ a{color:inherit}
 .power-item.c-primary{color:var(--muted)}.power-item.c-danger{color:var(--muted)}
 .sidebar:hover .power-item span{opacity:1}
 .main{margin-left:var(--sidebar-c);flex:1;padding:calc(1.5rem + var(--safe-t)) 2rem 2rem;min-height:100vh;min-height:100dvh;
-  max-width:calc(100% - var(--sidebar-c));transition:margin-left .3s cubic-bezier(.25,.8,.25,1)}
+  max-width:calc(100% - var(--sidebar-c));transition:margin-left .3s cubic-bezier(.25,.8,.25,1);
+  will-change:margin-left}
 .sidebar:hover~.main{margin-left:var(--sidebar-e);max-width:calc(100% - var(--sidebar-e))}
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;padding-bottom:.75rem;
   border-bottom:.5px solid var(--separator)}
 .page-header h1{font-size:1.75rem;font-weight:700;letter-spacing:-.02em;color:var(--text);margin:0}
 .hb-card{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;height:100%;
-  display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px rgba(0,0,0,.35)}
+  display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px rgba(0,0,0,.35);
+  contain:layout style}
 .hb-card-header{padding:.85rem 1.25rem;border-bottom:.5px solid var(--separator);display:flex;justify-content:space-between;align-items:center}
 .hb-card-title{font-weight:600;font-size:.98rem;margin:0;color:var(--text);letter-spacing:-.01em}
 .hb-card-body{padding:1.1rem 1.25rem;flex:1;overflow:auto;-webkit-overflow-scrolling:touch}
@@ -1719,7 +1722,7 @@ a{color:inherit}
 .hb-card.collapsed .hb-card-header{cursor:pointer}
 .hb-card.collapsed .hb-card-header:hover{background:rgba(255,255,255,.03)}
 .hb-card.collapsed .save-btn-h{display:none}
-.tiles-container{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem}
+.tiles-container{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem;contain:layout style}
 .tiles-container .tile{flex:0 0 calc(25% - .5625rem);min-width:0}
 .tile{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border:.5px solid var(--border);border-radius:var(--radius-md);padding:1rem .6rem;text-align:center;
@@ -1854,7 +1857,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .mt-2{margin-top:.5rem}
 .w-100{width:100%}
 .mobile-only{display:none}
-.chart-section{margin-top:1rem}
+.chart-section{margin-top:1rem;content-visibility:auto;contain-intrinsic-size:0 350px}
 .chart-section+.hb-card{margin-top:1rem}
 .chart-current{display:flex;flex-wrap:wrap;gap:.4rem .8rem;padding:.35rem .75rem .1rem;font-size:.75rem;color:#98989f}
 .chart-current .cc-item{display:flex;align-items:center;gap:.3rem}
@@ -2179,9 +2182,11 @@ const groups=[
 ['reg247 solarExport',dg.solarExport],['reg248 useTimer',dg.useTimer]
 ]}
 ];
+const dgHash=JSON.stringify(dg);
+if(dgEl._lastHash!==dgHash){dgEl._lastHash=dgHash;
 dgEl.innerHTML=groups.map(g=>'<div style="grid-column:1/-1;font-weight:600;margin-top:.35rem;color:var(--accent)">'+g.title+'</div>'+
 g.items.map(([k,v])=>'<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:var(--muted)">'+k+':</span> <b>'+(v==null?'—':v)+'</b></div>').join('')).join('');
-}
+}}
 }catch(e){console.error('loadStatus',e);}
 }
 async function loadLogs(){
@@ -2190,8 +2195,8 @@ const d=await apiGet('/api/logs');
 const c=document.getElementById('log-container');
 if(d.success&&d.logs){
 const lines=d.logs.split('\\n').slice(-50);
-c.innerHTML=lines.map(l=>'<div class="log-line">'+escHtml(l)+'</div>').join('');
-c.scrollTop=c.scrollHeight;
+const html=lines.map(l=>'<div class="log-line">'+escHtml(l)+'</div>').join('');
+if(c._lastHtml!==html){c._lastHtml=html;c.innerHTML=html;c.scrollTop=c.scrollHeight;}
 }else c.innerHTML='<div class="log-line">No logs available</div>';
 }catch(e){document.getElementById('log-container').innerHTML='<div class="log-line">Error loading logs</div>';}
 }
