@@ -12,8 +12,9 @@ import http from 'node:http';
 import https from 'node:https';
 import os from 'node:os';
 import { exec, execFile } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const AUTH_FILE = path.join(DATA_DIR, 'auth.json');
