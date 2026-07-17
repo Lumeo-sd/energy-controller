@@ -99,7 +99,7 @@ class SolarmanV5 {
     this.serial = serial;
     this.port = options.port || 8899;
     this.mbSlaveId = options.mbSlaveId || 1;
-    this.socketTimeout = (options.socketTimeout || 60) * 1000;
+    this.socketTimeout = (options.socketTimeout || 8) * 1000;
     this.autoReconnect = options.autoReconnect ?? false;
     this.socket = null;
     this.connected = false;
@@ -412,6 +412,8 @@ function tuyaRequest(method, urlPath, body, token, cfg) {
 // INVERTER DATA
 // ============================================================
 let inverter = null;
+let _pollingInverter = false;
+let _inverterConsecutiveFails = 0;
 let inverterData = {
   gridPower: false,
   gridRaw: 0,
@@ -454,10 +456,12 @@ async function connectToInverter() {
 }
 
 async function pollInverter() {
+  if (_pollingInverter) return;
+  _pollingInverter = true;
   try {
     if (!inverter || !inverter.connected) {
       const connected = await connectToInverter();
-      if (!connected) return;
+      if (!connected) { _inverterConsecutiveFails++; return; }
     }
 
     const d1 = await inverter.readHoldingRegisters(0x0030, 65);
@@ -567,11 +571,15 @@ async function pollInverter() {
     dk.totalGridImport = Math.round(u32(r(0x004E), r(0x0050)) * 0.1 * 10) / 10;
 
     inverterData.debug = dk;
+    _inverterConsecutiveFails = 0;
 
     log.info('grid=' + inverterData.gridPower + ' soc=' + inverterData.batterySOC +
       '% pv=' + inverterData.pvPower + 'W load=' + inverterData.loadPower + 'W bat=' + inverterData.batteryPower + 'W');
   } catch (err) {
+    _inverterConsecutiveFails++;
     log.error('Inverter poll failed: ' + err.message);
+  } finally {
+    _pollingInverter = false;
   }
 }
 
@@ -955,6 +963,7 @@ async function saveScenes() {
 
 async function checkScenes() {
   if (_checkingScenes) return;
+  if (!tuyaDevices.length) return;
   _checkingScenes = true;
   try {
     const now = Date.now();
@@ -2590,8 +2599,17 @@ async function main() {
   const connected = await connectToInverter();
   if (connected) {
     pollInverter();
-    setInterval(pollInverter, 10000);
-    setInterval(saveHistoryPoint, 15000);
+    setInterval(() => {
+      if (_inverterConsecutiveFails >= 5) {
+        // After 5 consecutive failures, reconnect and wait longer
+        if (_pollingInverter) return;
+        log.info('Inverter: too many failures, reconnecting...');
+        connectToInverter().then(() => pollInverter());
+      } else {
+        pollInverter();
+      }
+    }, 10000);
+    setInterval(saveHistoryPoint, 60000);
   }
 
   // Initialize Tuya
