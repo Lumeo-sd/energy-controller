@@ -1740,7 +1740,11 @@ a{color:inherit}
 .tile-edit-panel{display:none;padding:.5rem .75rem;background:rgba(255,255,255,.03);border-radius:var(--radius-sm);margin-bottom:.75rem}
 .tile-edit-panel.open{display:block}
 .tile-edit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.4rem}
-.tile-edit-item{display:flex;align-items:center;gap:.4rem;padding:.4rem .6rem;border-radius:var(--radius-sm);background:rgba(255,255,255,.04);border:.5px solid var(--border);cursor:pointer;font-size:.75rem;color:var(--text);transition:background .15s}
+.tile-edit-item{display:flex;align-items:center;gap:.4rem;padding:.4rem .6rem;border-radius:var(--radius-sm);background:rgba(255,255,255,.04);border:.5px solid var(--border);cursor:pointer;font-size:.75rem;color:var(--text);transition:background .15s;user-select:none}
+.tile-edit-item input[type="checkbox"]{margin:0}
+.tile-edit-arrows{display:flex;flex-direction:column;margin-left:auto;gap:0}
+.tile-edit-arrows button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.6rem;padding:0 .15rem;line-height:1;transition:color .15s}
+.tile-edit-arrows button:hover{color:var(--primary)}
 .tile-edit-item:active{background:rgba(255,255,255,.08)}
 .tile-edit-item input{accent-color:var(--primary)}
 .tile-edit-item.hidden-tile{opacity:.4}
@@ -2553,9 +2557,12 @@ const TILE_LABELS={};
 document.querySelectorAll('.tile[id]').forEach(t=>{const l=t.querySelector('.label');if(l)TILE_LABELS[t.id]=l.textContent;});
 function loadTilePrefs(){try{return JSON.parse(localStorage.getItem('tileVis')||'null')||{}}catch{return{}}}
 function saveTilePrefs(p){localStorage.setItem('tileVis',JSON.stringify(p));}
+function loadTileOrder(){try{const o=JSON.parse(localStorage.getItem('tileOrder')||'null');if(Array.isArray(o)){const ids=ALL_TILES.filter(id=>o.includes(id));ALL_TILES.forEach(id=>{if(!ids.includes(id))ids.push(id);});return ids;}}catch{}return[...ALL_TILES];}
+function saveTileOrder(o){localStorage.setItem('tileOrder',JSON.stringify(o));}
 function applyTileVisibility(){const p=loadTilePrefs();ALL_TILES.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=p[id]===false?'none':'';});}
-function toggleTileEditor(){document.getElementById('tileEditPanel').classList.toggle('open');}
-function buildTileEditor(){const p=loadTilePrefs();const g=document.getElementById('tileEditGrid');g.innerHTML='';ALL_TILES.forEach(id=>{const lbl=TILE_LABELS[id]||id;const vis=p[id]!==false;const d=document.createElement('label');d.className='tile-edit-item'+(vis?'':' hidden-tile');d.innerHTML='<input type="checkbox" '+(vis?'checked':'')+' data-tile="'+id+'">'+lbl;d.querySelector('input').addEventListener('change',function(){const pp=loadTilePrefs();pp[this.dataset.tile]=this.checked;saveTilePrefs(pp);d.classList.toggle('hidden-tile',!this.checked);applyTileVisibility();});g.appendChild(d);});}
+function applyTileOrder(){const order=loadTileOrder();const c=document.getElementById('tilesContainer');order.forEach(id=>{const el=document.getElementById(id);if(el)c.appendChild(el);});}
+function moveTile(id,dir){const order=loadTileOrder();const idx=order.indexOf(id);if(idx<0)return;const ni=idx+dir;if(ni<0||ni>=order.length)return;[order[idx],order[ni]]=[order[ni],order[idx]];saveTileOrder(order);applyTileOrder();}
+function buildTileEditor(){const p=loadTilePrefs();const order=loadTileOrder();const g=document.getElementById('tileEditGrid');g.innerHTML='';order.forEach(id=>{const lbl=TILE_LABELS[id]||id;const vis=p[id]!==false;const d=document.createElement('label');d.className='tile-edit-item'+(vis?'':' hidden-tile');d.dataset.tile=id;d.innerHTML='<input type="checkbox" '+(vis?'checked':'')+' data-tile="'+id+'">'+lbl+'<div class="tile-edit-arrows"><button type="button" title="Move up" onclick="event.preventDefault();moveTile(\''+id+'\',-1);buildTileEditor()">▲</button><button type="button" title="Move down" onclick="event.preventDefault();moveTile(\''+id+'\',1);buildTileEditor()">▼</button></div>';d.querySelector('input').addEventListener('change',function(){const pp=loadTilePrefs();pp[this.dataset.tile]=this.checked;saveTilePrefs(pp);d.classList.toggle('hidden-tile',!this.checked);applyTileVisibility();});g.appendChild(d);});}
 // Pull-to-refresh
 let _pullStart=0,_pulling=false;
 const _pullEl=document.getElementById('pull-indicator');
@@ -2569,7 +2576,7 @@ async function applyUpdate(){const btn=document.getElementById('btn-apply-update
 loadAppVersion();
 
 loadStatus();loadTuyaDevices();loadScenes();loadLogs();loadHistory('day');loadSocketHistory('day');loadOtherHistory('day');
-buildTileEditor();applyTileVisibility();
+applyTileOrder();buildTileEditor();applyTileVisibility();
 setInterval(loadStatus,10000);
 setInterval(loadLogs,30000);
 setInterval(()=>loadHistory(),60000);
