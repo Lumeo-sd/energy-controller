@@ -1,0 +1,17 @@
+[Unit]
+Description=Energy Controller
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hb-service
+ExecStart=/opt/node22/bin/node /opt/energy-controller/index.js
+ExecStartPre=/bin/sleep 10
+Restart=always
+RestartSec=5
+WorkingDirectory=/opt/energy-controller
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

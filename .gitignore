@@ -1,0 +1,17 @@
+# Data directory — credentials, history, runtime data
+data/
+
+# Screenshots
+*.png
+*.jpg
+
+# KDE desktop metadata
+.directory
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+*~
