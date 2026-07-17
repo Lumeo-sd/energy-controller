@@ -1052,6 +1052,7 @@ function sendJson(res, status, data) {
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'Content-Length': Buffer.byteLength(str),
+    'Cache-Control': 'no-store',
   });
   res.end(str);
 }
@@ -1412,7 +1413,7 @@ route('GET', '/api/app-version', async (req, res) => {
       }));
       isGitRepo = true;
     } catch {}
-    sendJson(res, 200, { success: true, version, gitHash, gitBranch, gitRemote, isGitRepo });
+    sendJson(res, 200, { success: true, version, gitHash, gitBranch, gitRemote, isGit: isGitRepo });
   } catch (err) {
     sendJson(res, 500, { success: false, message: err.message });
   }
