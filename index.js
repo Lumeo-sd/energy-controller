@@ -1375,6 +1375,7 @@ route('GET', '/api/plugin-config', async (req, res) => {
     const safe = JSON.parse(JSON.stringify(cfg));
     if (safe.tuya && safe.tuya.password) safe.tuya.password = '••••••••';
     if (safe.tuya && safe.tuya.accessKey) safe.tuya.accessKey = '••••••••';
+    if (safe.notifications && safe.notifications.telegramToken) safe.notifications.telegramToken = '••••••••';
     sendJson(res, 200, { success: true, config: safe });
   } catch (err) {
     sendJson(res, 500, { success: false, message: err.message });
@@ -1400,6 +1401,7 @@ route('POST', '/api/plugin-config', async (req, res) => {
     if (newCfg.notifications) {
       merged.notifications = merged.notifications || {};
       for (const k of ['ntfyTopic', 'telegramToken', 'telegramChatId']) {
+        if (newCfg.notifications[k] === '••••••••' || newCfg.notifications[k] === '') continue;
         if (newCfg.notifications[k] !== undefined) merged.notifications[k] = newCfg.notifications[k];
       }
       if (newCfg.notifications.lowSocAlert !== undefined) merged.notifications.lowSocAlert = parseInt(newCfg.notifications.lowSocAlert) || 20;
@@ -3228,6 +3230,8 @@ main().catch(err => {
 const shutdown = async (signal) => {
   log.info(signal + ' received, shutting down...');
   server.close();
+  lastRrdFlush = 0;
+  try { await rrdFlush(); } catch (err) { log.error('Flush on shutdown: ' + err.message); }
   if (inverter) try { await inverter.disconnect(); } catch {}
   process.exit(0);
 };
