@@ -892,7 +892,7 @@ function verifyPassword(password, salt, hash) {
 async function ensureAuth() {
   try {
     if (!fs.existsSync(AUTH_FILE)) {
-      const password = crypto.randomBytes(6).toString('base64url');
+      const password = crypto.randomBytes(9).toString('base64url');
       const { salt, hash } = hashPassword(password);
       await fs.promises.writeFile(AUTH_FILE, JSON.stringify({ username: 'admin', salt, hash, mustChangePassword: true }, null, 2), { mode: 0o600 });
       log.info('Auth file created');
@@ -1715,7 +1715,7 @@ if(!np||np.length<6){err.textContent='Minimum 6 characters';return;}
 if(np!==cp){err.textContent='Passwords do not match';return;}
 btn.disabled=true;btn.textContent='Saving...';
 try{
-const r=await fetch('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currentPassword:window._tmpPass,newPassword:np})});
+const r=await fetch('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':window._csrfToken},body:JSON.stringify({currentPassword:window._tmpPass,newPassword:np})});
 const d=await r.json();
 if(d.success){document.getElementById('changeOverlay').classList.remove('show');window.location.href='/';}
 else{err.textContent=d.message||'Error';btn.disabled=false;btn.textContent='Set Password';}
@@ -1734,7 +1734,7 @@ password:document.getElementById('password').value
 })});
 const d=await r.json();
 if(d.success){
-if(d.mustChangePassword){window._tmpPass=document.getElementById('password').value;btn.disabled=false;btn.textContent='Sign In';document.getElementById('changeOverlay').classList.add('show');}
+if(d.mustChangePassword){window._tmpPass=document.getElementById('password').value;window._csrfToken=d.csrfToken;btn.disabled=false;btn.textContent='Sign In';document.getElementById('changeOverlay').classList.add('show');}
 else{window.location.href='/';}
 }
 else{err.textContent=d.message||'Login error';btn.disabled=false;btn.textContent='Sign In';}
@@ -2844,7 +2844,7 @@ async function main() {
   setInterval(() => {
     const now = Date.now();
     for (const token of Object.keys(sessions)) {
-      if (sessions[token] < now) delete sessions[token];
+      if (sessions[token].exp < now) delete sessions[token];
     }
   }, 60 * 60 * 1000);
 
