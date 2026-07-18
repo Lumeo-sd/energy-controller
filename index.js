@@ -1400,7 +1400,7 @@ route('GET', '/api/system-info', (req, res) => {
 route('GET', '/api/app-version', async (req, res) => {
   try {
     const pkg = JSON.parse(await fs.promises.readFile(path.join(__dirname, 'package.json'), 'utf8'));
-    const version = pkg.version || '1.0.0';
+    let version = pkg.version || '1.0.0';
     let gitHash = '', gitBranch = '', gitRemote = '', isGitRepo = false;
     try {
       gitHash = (await new Promise((resolve, reject) => {
@@ -1412,6 +1412,19 @@ route('GET', '/api/app-version', async (req, res) => {
       gitRemote = (await new Promise((resolve, reject) => {
         exec('git remote get-url origin', { cwd: __dirname }, (err, stdout) => err ? reject(err) : resolve(stdout.trim()));
       }));
+      try {
+        const desc = await new Promise((resolve, reject) => {
+          exec('git describe --tags', { cwd: __dirname }, (err, stdout) => err ? reject(err) : resolve(stdout.trim()));
+        });
+        version = desc;
+      } catch {
+        try {
+          const cnt = await new Promise((resolve, reject) => {
+            exec('git rev-list --count HEAD', { cwd: __dirname }, (err, stdout) => err ? reject(err) : resolve(stdout.trim()));
+          });
+          version = 'r' + cnt;
+        } catch {}
+      }
       isGitRepo = true;
     } catch {}
     sendJson(res, 200, { success: true, version, gitHash, gitBranch, gitRemote, isGit: isGitRepo });
@@ -1652,8 +1665,7 @@ function getWebUI() {
   --success:#30d158;
   --danger:#ff453a;
   --blue:#0a84ff;
-  --sidebar-c:64px;
-  --sidebar-e:230px;
+  --sidebar-e:250px;
   --radius-lg:20px;
   --radius-md:14px;
   --radius-sm:10px;
@@ -1676,40 +1688,41 @@ body{
   overflow-x:hidden;
 }
 a{color:inherit}
-.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-c);height:100vh;height:100dvh;
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-e);height:100vh;height:100dvh;
   background:var(--sidebar);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);
   border-right:.5px solid var(--separator);display:flex;flex-direction:column;z-index:1000;overflow:hidden;
-  transition:width .3s cubic-bezier(.25,.8,.25,1);padding:calc(.6rem + var(--safe-t)) 0 .6rem;
-  will-change:width}
-.sidebar:hover{width:var(--sidebar-e)}
+  padding:calc(.6rem + var(--safe-t)) 0 .6rem;
+  transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.sidebar.open{transform:translateX(0)}
 .sidebar-brand{padding:.5rem .9rem;font-size:1.4rem;color:var(--text);display:flex;align-items:center;gap:.6rem;
-  border-bottom:.5px solid var(--separator);margin-bottom:.6rem;white-space:nowrap;overflow:hidden}
+  border-bottom:.5px solid var(--separator);margin-bottom:.6rem;white-space:nowrap;overflow:hidden;position:relative}
 .sidebar-brand i{color:var(--primary);font-size:1.4rem;flex-shrink:0}
-.sidebar-brand .brand-main,.sidebar-brand .brand-version{opacity:0;transition:opacity .2s}
-.sidebar:hover .sidebar-brand .brand-main,.sidebar:hover .sidebar-brand .brand-version{opacity:1}
 .sidebar-brand .brand-version{font-size:.68rem;color:var(--muted);margin-left:auto}
 .sidebar-menu{flex:1;list-style:none;padding:0 .4rem;margin:0;overflow:hidden}
 .menu-item{padding:.65rem .7rem;margin:.15rem 0;display:flex;align-items:center;gap:.75rem;color:var(--muted);
-  cursor:pointer;transition:background .15s,color .15s;font-size:.92rem;white-space:nowrap;border-radius:var(--radius-sm)}
+  cursor:pointer;font-size:.92rem;white-space:nowrap;border-radius:var(--radius-sm);transition:background .15s,color .15s}
 .menu-item:hover{color:var(--text);background:rgba(255,255,255,.06)}
 .menu-item.active{color:var(--text);background:rgba(191,90,242,.16)}
 .menu-item.active i{color:var(--primary)}
 .menu-item i{font-size:1.25rem;width:1.6rem;text-align:center;flex-shrink:0;color:var(--muted)}
-.menu-item span:not(.badge-hb){opacity:0;transition:opacity .2s}
-.sidebar:hover .menu-item span:not(.badge-hb){opacity:1}
-.menu-item .badge-hb{margin-left:auto;opacity:0;transition:opacity .2s}
-.sidebar:hover .menu-item .badge-hb{opacity:1}
-.sidebar-footer{padding:.4rem .6rem;border-top:.5px solid var(--separator);display:flex;flex-direction:column;gap:.1rem}
-.power-item{display:flex;align-items:center;gap:.5rem;padding:.3rem .4rem;border-radius:6px;color:var(--muted);cursor:pointer;font-size:.75rem;white-space:nowrap;transition:background .15s,color .15s}
+.menu-item .badge-hb{margin-left:auto}
+.sidebar-footer{padding:.3rem .4rem;border-top:.5px solid var(--separator);display:flex;justify-content:space-around;align-items:center}
+.power-item{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
 .power-item:hover{color:var(--text);background:rgba(255,255,255,.08)}
-.power-item i{width:1.1rem;text-align:center;font-size:.85rem;flex-shrink:0}
-.power-item span{opacity:0;transition:opacity .2s;font-size:.72rem}
+.power-item i{font-size:.9rem}
 .power-item.c-primary{color:var(--muted)}.power-item.c-danger{color:var(--muted)}
-.sidebar:hover .power-item span{opacity:1}
-.main{margin-left:var(--sidebar-c);flex:1;padding:calc(1.5rem + var(--safe-t)) 2rem 2rem;min-height:100vh;min-height:100dvh;
-  max-width:calc(100% - var(--sidebar-c));transition:margin-left .3s cubic-bezier(.25,.8,.25,1);
-  will-change:margin-left}
-.sidebar:hover~.main{margin-left:var(--sidebar-e);max-width:calc(100% - var(--sidebar-e))}
+.main{margin-left:0;flex:1;padding:calc(1.5rem + var(--safe-t)) 2rem 2rem;min-height:100vh;min-height:100dvh;
+  max-width:100%;transition:margin-left .25s cubic-bezier(.4,0,.2,1)}
+.sidebar.open~.main{margin-left:var(--sidebar-e);max-width:calc(100% - var(--sidebar-e))}
+
+.sidebar-toggle{position:fixed;top:.75rem;left:0;z-index:1001;width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:0 8px 8px 0;background:var(--sidebar);
+  border:.5px solid var(--separator);border-left:none;
+  color:var(--muted);cursor:pointer;transition:left .25s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 1px 6px rgba(0,0,0,.4);font-size:.8rem}
+.sidebar-toggle:hover{color:var(--text);background:var(--card)}
+.sidebar.open~.sidebar-toggle{left:var(--sidebar-e)}
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;padding-bottom:.75rem;
   border-bottom:.5px solid var(--separator)}
 .page-header h1{font-size:1.75rem;font-weight:700;letter-spacing:-.02em;color:var(--text);margin:0}
@@ -1882,13 +1895,12 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 @media(max-width:768px){
   .mobile-only{display:block}
   body{display:block;overflow-x:hidden}
-  .sidebar{top:auto;bottom:0;left:0;width:100%;height:auto;
+  .sidebar,.sidebar.open{top:auto;bottom:0;left:0;width:100%;height:auto;overflow:visible;transform:none;
     padding:.35rem 0 calc(.35rem + var(--safe-b));
     flex-direction:row;align-items:stretch;justify-content:space-around;
     border-right:none;border-top:.5px solid var(--separator);
     background:rgba(20,20,22,.82);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px)}
-  .sidebar:hover{width:100%}
-  .sidebar-brand,.sidebar-footer{display:none}
+  .sidebar-brand,.sidebar-footer,.sidebar-toggle{display:none}
   .sidebar-menu{display:flex;flex-direction:row;justify-content:space-around;align-items:stretch;flex:1;padding:0;overflow:visible}
   .menu-item{flex-direction:column;justify-content:center;align-items:center;gap:.15rem;padding:.3rem .4rem;
     margin:0;border-radius:var(--radius-sm);flex:1;min-width:0;background:none!important}
@@ -1897,7 +1909,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   .menu-item span:not(.badge-hb){opacity:1;font-size:.66rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .menu-item .badge-hb{opacity:1;position:absolute;margin-left:0;transform:translate(10px,-14px);padding:.05rem .4rem;font-size:.55rem}
   .menu-item{position:relative}
-  .main,.sidebar:hover~.main{margin-left:0;max-width:100%;padding:calc(1rem + var(--safe-t)) 1rem calc(var(--tabbar-h) + var(--safe-b) + 1.5rem)}
+  .main,.sidebar.open~.main{margin-left:0;max-width:100%;padding:calc(1rem + var(--safe-t)) 1rem calc(var(--tabbar-h) + var(--safe-b) + 1.5rem)}
   .page-header{position:sticky;top:calc(-1rem - var(--safe-t));margin:calc(-1rem - var(--safe-t)) -1rem 1rem;
     padding:calc(.85rem + var(--safe-t)) 1rem .85rem;z-index:50;
     background:rgba(0,0,0,.65);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
@@ -1935,13 +1947,8 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   .device-toggle-btn{padding:.4rem .5rem;font-size:.7rem}
 }
 @media (hover:none) and (pointer:coarse) and (min-width:769px){
-  .sidebar{width:210px;padding-top:calc(.5rem + var(--safe-t));padding-left:var(--safe-l)}
-  .sidebar:hover{width:210px}
-  .sidebar-brand .brand-main,.sidebar-brand .brand-version{opacity:1}
-  .menu-item span:not(.badge-hb){opacity:1}
-  .menu-item .badge-hb{opacity:1}
-  .power-item span{opacity:1}
-  .main,.sidebar:hover~.main{margin-left:210px;max-width:calc(100% - 210px);padding:calc(1.25rem + var(--safe-t)) 1.5rem 1.5rem}
+  .sidebar.open{width:210px;padding-top:calc(.5rem + var(--safe-t));padding-left:var(--safe-l)}
+  .main,.sidebar.open~.main{margin-left:210px;max-width:calc(100% - 210px);padding:calc(1.25rem + var(--safe-t)) 1.5rem 1.5rem}
   .device-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
   .rule-row .rule-field{min-width:160px}
 }
@@ -1951,8 +1958,8 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </style>
 </head>
 <body>
-<aside class="sidebar">
-<div class="sidebar-brand"><i class="bi bi-lightning-charge-fill"></i><span class="brand-main">Energy</span><span class="brand-version">v1.0</span></div>
+<aside class="sidebar open">
+<div class="sidebar-brand"><i class="bi bi-lightning-charge-fill"></i><span class="brand-main">Energy</span><span class="brand-version" id="sidebar-version"></span></div>
 <ul class="sidebar-menu">
 <li class="menu-item active" data-tab="status"><i class="bi bi-speedometer2"></i><span>Status</span></li>
 <li class="menu-item" data-tab="devices"><i class="bi bi-cpu"></i><span>Devices</span><span class="badge-hb purple" id="sidebar-device-count">0</span></li>
@@ -1960,11 +1967,12 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <li class="menu-item" data-tab="settings"><i class="bi bi-gear"></i><span>Settings</span></li>
 </ul>
 <div class="sidebar-footer">
-<div class="power-item" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i><span>Restart UI</span></div>
-<div class="power-item c-primary" onclick="restartApp()"><i class="bi bi-arrow-repeat"></i><span>Restart App</span></div>
-<div class="power-item c-danger" onclick="logout()"><i class="bi bi-box-arrow-right"></i><span>Log Out</span></div>
+<div class="power-item" onclick="location.reload()" title="Restart UI"><i class="bi bi-arrow-clockwise"></i></div>
+<div class="power-item c-primary" onclick="restartApp()" title="Restart App"><i class="bi bi-arrow-repeat"></i></div>
+<div class="power-item c-danger" onclick="logout()" title="Log Out"><i class="bi bi-box-arrow-right"></i></div>
 </div>
 </aside>
+<button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar"><i class="bi bi-chevron-left"></i></button>
 <main class="main">
 <div class="tab-pane active" id="tab-status">
 <div id="pull-indicator"><i class="bi bi-arrow-down"></i></div>
@@ -2022,22 +2030,22 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 <div class="tab-pane" id="tab-settings">
 <div class="page-header"><h1>Settings</h1></div>
-<div class="hb-card">
-<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-pencil-square" style="margin-right:.5rem"></i>Status Tiles</div></div>
+<div class="hb-card collapsed">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-pencil-square" style="margin-right:.5rem"></i>Status Tiles</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveTilePrefs(loadTilePrefs());saveTileOrder(loadTileOrder());buildTileEditor();"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
 <div class="tile-edit-grid" id="tileEditGrid"></div>
 </div>
 </div>
-<div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Inverter</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Inverter</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Inverter IP</label><input type="text" id="cfg-inverter-ip" class="form-hb" placeholder="192.168.0.116" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Serial Number</label><input type="text" id="cfg-inverter-serial" class="form-hb" placeholder="2317564280" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Modbus Port</label><input type="number" id="cfg-inverter-port" class="form-hb" value="8899" /></div>
 </div>
 </div>
-<div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cloud" style="margin-right:.5rem"></i>Tuya Cloud</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cloud" style="margin-right:.5rem"></i>Tuya Cloud</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Access ID</label><input type="text" id="cfg-tuya-accessId" class="form-hb" placeholder="Enter Tuya Access ID" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Access Key</label><input type="password" id="cfg-tuya-accessKey" class="form-hb" placeholder="Enter Tuya Access Key" /></div>
@@ -2047,22 +2055,22 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">App Schema</label><select id="cfg-tuya-appSchema" class="form-hb"><option value="tuyaSmart">Tuya Smart</option><option value="smartlife">Smart Life</option></select></div>
 </div>
 </div>
-<div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-globe" style="margin-right:.5rem"></i>Web UI</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-globe" style="margin-right:.5rem"></i>Web UI</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Web Port</label><input type="number" id="cfg-webPort" class="form-hb" value="8583" /></div>
 </div>
 </div>
-<div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-shield-lock" style="margin-right:.5rem"></i>Security</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="changePassword()"><i class="bi bi-key"></i> Update</button></div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-shield-lock" style="margin-right:.5rem"></i>Security</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();changePassword()"><i class="bi bi-key"></i> Update</button></span></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Current password</label><input type="password" id="cp-current" class="form-hb" autocomplete="current-password" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">New password (min. 6 characters)</label><input type="password" id="cp-new" class="form-hb" autocomplete="new-password" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Confirm new password</label><input type="password" id="cp-confirm" class="form-hb" autocomplete="new-password" /></div>
 </div>
 </div>
-<div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div><div style="display:flex;gap:.5rem"><button class="btn-hb btn-hb-outline btn-hb-sm" id="btn-check-update" onclick="checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check for Updates</button><button class="btn-hb btn-hb-outline btn-hb-sm" id="btn-apply-update" onclick="applyUpdate()" style="display:none"><i class="bi bi-download"></i> Update & Restart</button></div></div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div><div style="display:flex;gap:.5rem"><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" id="btn-check-update" onclick="event.stopPropagation();checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check for Updates</button><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" id="btn-apply-update" onclick="event.stopPropagation();applyUpdate()" style="display:none"><i class="bi bi-download"></i> Update & Restart</button></div></div>
 <div class="hb-card-body">
 <div id="update-info" style="font-size:.85rem;color:var(--text-secondary);margin-bottom:.75rem">Loading...</div>
 <div id="update-status" style="margin-top:.75rem;font-size:.8rem;display:none"></div>
@@ -2112,6 +2120,7 @@ async function loadStatus(){
 try{
 const d=await apiGet('/api/status');
 updateTiles(d,d.debug||{});
+const dg=d.debug||{};
 const dgEl=document.getElementById('debug-grid');
 if(dgEl){
 const groups=[
@@ -2346,6 +2355,8 @@ loadScenes();
 function escHtml(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 async function logout(){try{await apiPost('/api/logout',{});}catch(e){}window.location.href='/login';}
 async function restartApp(){try{await apiPost('/api/restart',{});setTimeout(()=>{window.location.reload();},5000);}catch(e){showToast('Error',e.message);}}
+function toggleSidebar(){if(window.innerWidth<=768)return;const s=document.querySelector('.sidebar');const isOpen=s.classList.contains('open');s.classList.toggle('open');localStorage.setItem('sidebarOpen',isOpen?'0':'1');const btn=document.querySelector('.sidebar-toggle i');if(btn)btn.className=isOpen?'bi bi-chevron-right':'bi bi-chevron-left';}
+
 
 // ============================================================
 // HISTORY CHART
@@ -2614,13 +2625,14 @@ const _pullIcon=_pullEl?_pullEl.querySelector('i'):null;
 const mainEl=document.querySelector('.main');
 if(mainEl){mainEl.addEventListener('touchstart',function(e){if(mainEl.scrollTop<=0){_pullStart=e.touches[0].clientY;_pulling=true;}},{passive:true});mainEl.addEventListener('touchmove',function(e){if(!_pulling)return;const dy=e.touches[0].clientY-_pullStart;if(dy>0&&mainEl.scrollTop<=0){const pct=Math.min(dy/100,1);_pullEl.classList.add('show');_pullIcon.style.transform='rotate('+pct*180+'deg)';if(pct>=1){_pullEl.classList.add('pulling');}}},{passive:true});mainEl.addEventListener('touchend',function(){if(!_pulling)return;_pulling=false;if(_pullEl.classList.contains('pulling')){_pullEl.classList.remove('pulling');_pullEl.classList.add('refreshing');_pullIcon.className='bi bi-arrow-clockwise';loadStatus();loadLogs();loadHistory();loadSocketHistory();loadOtherHistory();loadTuyaDevices();loadScenes();loadPluginConfig();loadAppVersion();setTimeout(()=>{_pullEl.classList.remove('show','refreshing');_pullIcon.className='bi bi-arrow-down';},800);}else{_pullEl.classList.remove('show','pulling');}},{passive:true});}
 
-async function loadAppVersion(){try{const r=await fetch('/api/app-version');const d=await r.json();if(d.success){const el=document.getElementById('update-info');if(el){el.innerHTML=d.isGit?'Version <strong>'+d.version+'</strong> ('+d.gitHash+') · Branch: '+d.gitBranch:'Version <strong>'+d.version+'</strong> (not a git repo)';if(!d.isGit)document.getElementById('btn-check-update').style.display='none';}}}catch(e){}}
+async function loadAppVersion(){try{const r=await fetch('/api/app-version');const d=await r.json();if(d.success){const el=document.getElementById('update-info');if(el){el.innerHTML=d.isGit?'Version <strong>'+d.version+'</strong> ('+d.gitHash+') · Branch: '+d.gitBranch:'Version <strong>'+d.version+'</strong> (not a git repo)';if(!d.isGit)document.getElementById('btn-check-update').style.display='none';}const sv=document.getElementById('sidebar-version');if(sv)sv.textContent='v'+d.version;}}catch(e){}}
 async function checkForUpdates(){const btn=document.getElementById('btn-check-update');const st=document.getElementById('update-status');btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Checking...';try{const r=await fetch('/api/update-check',{method:'POST'});const d=await r.json();if(!d.isGit){st.style.display='block';st.style.color='var(--text-secondary)';st.textContent='Not a git repository. Install via git clone to enable updates.';}else if(d.isUpToDate){st.style.display='block';st.style.color='#22c55e';st.innerHTML='<i class="bi bi-check-circle"></i> Up to date ('+d.local+')';document.getElementById('btn-apply-update').style.display='none';}else{st.style.display='block';st.style.color='#f59e0b';st.innerHTML='<i class="bi bi-arrow-down-circle"></i> '+d.commits.length+' new commit(s):<br>'+d.commits.map(c=>'&nbsp;&nbsp;'+c).join('<br>');document.getElementById('btn-apply-update').style.display='';}}catch(e){st.style.display='block';st.style.color='#ef4444';st.textContent='Error: '+e.message;}btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-clockwise"></i> Check for Updates';}
 async function applyUpdate(){const btn=document.getElementById('btn-apply-update');const st=document.getElementById('update-status');if(!confirm('Update app and restart?'))return;btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Updating...';st.style.display='block';st.style.color='#3b82f6';st.textContent='Pulling changes...';try{await fetch('/api/update-apply',{method:'POST'});st.textContent='Updated! Reconnecting...';setTimeout(()=>{let tries=0;const iv=setInterval(async()=>{tries++;try{const r=await fetch('/');if(r.ok){clearInterval(iv);location.reload();}}catch{}if(tries>30){clearInterval(iv);st.textContent='Restart timed out. Refresh the page manually.';}},1500);},3000);}catch(e){st.style.color='#ef4444';st.textContent='Update failed: '+e.message;btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Update & Restart';}}
 loadAppVersion();
 
 loadStatus();loadTuyaDevices();loadScenes();loadLogs();loadHistory('day');loadSocketHistory('day');loadOtherHistory('day');
 buildTiles();applyTileOrder();applyTileVisibility();buildTileEditor();
+(function(){const s=document.querySelector('.sidebar');if(!s||window.innerWidth<=768)return;const ls=localStorage.getItem('sidebarOpen');const isOpen=ls!==null?ls==='1':true;s.classList.toggle('open',isOpen);const btn=document.querySelector('.sidebar-toggle i');if(btn)btn.className=isOpen?'bi bi-chevron-left':'bi bi-chevron-right';})();
 setInterval(loadStatus,10000);
 setInterval(loadLogs,30000);
 setInterval(()=>loadHistory(),60000);
