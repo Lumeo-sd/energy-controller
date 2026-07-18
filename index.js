@@ -1326,6 +1326,10 @@ route('GET', '/api/history', async (req, res) => {
     const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
     let intervalMs, cutoffMs;
     switch (period) {
+      case '1h': intervalMs = 60 * 1000; cutoffMs = 60 * 60 * 1000; break;
+      case '3h': intervalMs = 60 * 1000; cutoffMs = 3 * 60 * 60 * 1000; break;
+      case '6h': intervalMs = 5 * 60 * 1000; cutoffMs = 6 * 60 * 60 * 1000; break;
+      case '12h': intervalMs = 5 * 60 * 1000; cutoffMs = 12 * 60 * 60 * 1000; break;
       case 'week': {
         const day = today.getDay();
         const diff = (day === 0 ? 6 : day - 1);
@@ -1355,6 +1359,10 @@ route('GET', '/api/socket-history', async (req, res) => {
     const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
     let intervalMs, cutoffMs;
     switch (period) {
+      case '1h': intervalMs = 60 * 1000; cutoffMs = 60 * 60 * 1000; break;
+      case '3h': intervalMs = 60 * 1000; cutoffMs = 3 * 60 * 60 * 1000; break;
+      case '6h': intervalMs = 5 * 60 * 1000; cutoffMs = 6 * 60 * 60 * 1000; break;
+      case '12h': intervalMs = 5 * 60 * 1000; cutoffMs = 12 * 60 * 60 * 1000; break;
       case 'week': {
         const day = today.getDay();
         const diff = (day === 0 ? 6 : day - 1);
@@ -1983,17 +1991,17 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div id="debug-grid" style="padding:.5rem .75rem;font-size:.78rem;font-family:monospace;color:var(--text);display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.25rem .75rem"></div>
 </div>
 <div class="hb-card chart-section">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-graph-up" style="margin-right:.5rem"></i>Power History</div><div class="chart-tabs" id="chartTabs"><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-graph-up" style="margin-right:.5rem"></i>Power History</div><div class="chart-tabs" id="chartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
 <div class="chart-current" id="historyCurrent"></div>
 <div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="historyChart"></canvas></div></div>
 </div>
 <div class="hb-card chart-section">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Socket Power History</div><div class="chart-tabs" id="socketChartTabs"><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Socket Power History</div><div class="chart-tabs" id="socketChartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
 <div class="chart-current" id="socketCurrent"></div>
 <div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="socketChart"></canvas></div></div>
 </div>
 <div class="hb-card chart-section">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-lightning" style="margin-right:.5rem"></i>Other Load</div><div class="chart-tabs" id="otherChartTabs"><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-lightning" style="margin-right:.5rem"></i>Other Load</div><div class="chart-tabs" id="otherChartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
 <div class="chart-current" id="otherCurrent"></div>
 <div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="otherChart"></canvas></div></div>
 </div>
@@ -2375,7 +2383,7 @@ try{
 const r=await fetch('/api/history?period='+currentPeriod);
 const d=await r.json();
 if(!d.success||!d.points||d.points.length===0){if(historyChart){historyChart.destroy();historyChart=null;}return;}
-const labels=d.points.map(p=>{const dt=new Date(p.ts);if(currentPeriod==='day')return dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(currentPeriod==='week')return dt.toLocaleDateString([],{weekday:'short',hour:'2-digit',minute:'2-digit'});if(currentPeriod==='month')return dt.toLocaleDateString([],{day:'numeric',hour:'2-digit'});return dt.toLocaleDateString([],{month:'short',day:'numeric'});});
+const labels=d.points.map(p=>{const dt=new Date(p.ts);if(currentPeriod==='day'||currentPeriod==='1h'||currentPeriod==='3h'||currentPeriod==='6h'||currentPeriod==='12h')return dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(currentPeriod==='week')return dt.toLocaleDateString([],{weekday:'short',hour:'2-digit',minute:'2-digit'});if(currentPeriod==='month')return dt.toLocaleDateString([],{day:'numeric',hour:'2-digit'});return dt.toLocaleDateString([],{month:'short',day:'numeric'});});
 const loadData=d.points.map(p=>p.load);
 const batData=d.points.map(p=>p.bat);
 const gridData=d.points.map(p=>p.grid);
@@ -2385,7 +2393,7 @@ if(historyChart)historyChart.destroy();
 historyChart=new Chart(ctx,{type:'line',plugins:[lineLabelsPlugin],data:{labels,datasets:[
 {label:'Load (W)',data:loadData,_lineLabel:'Load',borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2,order:1,segment:{borderColor:ctx2=>{const gi=gridData[ctx2.p0DataIndex];return gi?'#3b82f6':'#333333';}}},
 {label:'Battery (W)',data:batData,_lineLabel:'Battery',borderColor:'#22c55e',fill:false,tension:0.3,pointRadius:0,borderWidth:2,order:2,segment:{borderColor:ctx2=>{const v=batData[ctx2.p0DataIndex];return v>=0?'#22c55e':'#ef4444';}}}
-]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',borderColor:'rgba(255,255,255,0.09)',borderWidth:0.5,cornerRadius:10,padding:10,displayColors:true,callbacks:{label:function(ctx2){if(ctx2.dataset.label==='Load (W)')return 'Load: '+ctx2.raw+'W';if(ctx2.dataset.label==='Battery (W)')return 'Battery: '+(ctx2.raw>=0?'+':'')+ctx2.raw+'W';return ctx2.dataset.label+': '+ctx2.raw;},title:function(items){if(!items.length)return '';const idx=items[0].dataIndex;const pt=d.points[idx];const gridTxt=pt?'Grid: '+(pt.grid?'ON':'OFF'):'';return items[0].label+(gridTxt?' | '+gridTxt:'');}}}},scales:{x:{ticks:{color:'#98989f',font:{size:10},maxTicksLimit:currentPeriod==='day'?12:currentPeriod==='week'?14:currentPeriod==='month'?12:12,maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#98989f',font:{size:10},callback:v=>v+'W'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',borderColor:'rgba(255,255,255,0.09)',borderWidth:0.5,cornerRadius:10,padding:10,displayColors:true,callbacks:{label:function(ctx2){if(ctx2.dataset.label==='Load (W)')return 'Load: '+ctx2.raw+'W';if(ctx2.dataset.label==='Battery (W)')return 'Battery: '+(ctx2.raw>=0?'+':'')+ctx2.raw+'W';return ctx2.dataset.label+': '+ctx2.raw;},title:function(items){if(!items.length)return '';const idx=items[0].dataIndex;const pt=d.points[idx];const gridTxt=pt?'Grid: '+(pt.grid?'ON':'OFF'):'';return items[0].label+(gridTxt?' | '+gridTxt:'');}}}},scales:{x:{ticks:{color:'#98989f',font:{size:10},maxTicksLimit:currentPeriod==='day'||currentPeriod==='1h'||currentPeriod==='3h'||currentPeriod==='6h'||currentPeriod==='12h'?12:currentPeriod==='week'?14:currentPeriod==='month'?12:12,maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#98989f',font:{size:10},callback:v=>v+'W'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
 const lp=d.points[d.points.length-1];
 renderCurrentValues('historyCurrent',[
 {label:'Load',value:lp.load+'W',color:'#3b82f6'},
@@ -2423,7 +2431,7 @@ document.getElementById('socketChart').parentElement.style.display='';
 const allIds=new Set();
 d.points.forEach(p=>{if(p.devices)Object.keys(p.devices).forEach(k=>allIds.add(k));});
 if(allIds.size===0){if(socketChart){socketChart.destroy();socketChart=null;}return;}
-const labels=d.points.map(p=>{const dt=new Date(p.ts);if(socketPeriod==='day')return dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(socketPeriod==='week')return dt.toLocaleDateString([],{weekday:'short',hour:'2-digit',minute:'2-digit'});if(socketPeriod==='month')return dt.toLocaleDateString([],{day:'numeric',hour:'2-digit'});return dt.toLocaleDateString([],{month:'short',day:'numeric'});});
+const labels=d.points.map(p=>{const dt=new Date(p.ts);if(socketPeriod==='day'||socketPeriod==='1h'||socketPeriod==='3h'||socketPeriod==='6h'||socketPeriod==='12h')return dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(socketPeriod==='week')return dt.toLocaleDateString([],{weekday:'short',hour:'2-digit',minute:'2-digit'});if(socketPeriod==='month')return dt.toLocaleDateString([],{day:'numeric',hour:'2-digit'});return dt.toLocaleDateString([],{month:'short',day:'numeric'});});
 const datasets=[];
 for(const id of allIds){
 const data=d.points.map(p=>p.devices&&p.devices[id]!=null?p.devices[id]:null);
@@ -2434,7 +2442,7 @@ datasets.push({label:name,data,borderColor:col,backgroundColor:col+'15',fill:fal
 const ctx=document.getElementById('socketChart');
 if(!ctx)return;
 if(socketChart)socketChart.destroy();
-socketChart=new Chart(ctx,{type:'line',plugins:[lineLabelsPlugin],data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',borderColor:'rgba(255,255,255,0.09)',borderWidth:0.5,cornerRadius:10,padding:10,displayColors:true,callbacks:{label:function(ctx2){return ctx2.dataset.label+': '+ctx2.raw+'W';}}}},scales:{x:{ticks:{color:'#98989f',font:{size:10},maxTicksLimit:socketPeriod==='day'?12:socketPeriod==='week'?14:12,maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#98989f',font:{size:10},callback:v=>v+'W'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+socketChart=new Chart(ctx,{type:'line',plugins:[lineLabelsPlugin],data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',borderColor:'rgba(255,255,255,0.09)',borderWidth:0.5,cornerRadius:10,padding:10,displayColors:true,callbacks:{label:function(ctx2){return ctx2.dataset.label+': '+ctx2.raw+'W';}}}},scales:{x:{ticks:{color:'#98989f',font:{size:10},maxTicksLimit:socketPeriod==='day'||socketPeriod==='1h'||socketPeriod==='3h'||socketPeriod==='6h'||socketPeriod==='12h'?12:socketPeriod==='week'?14:12,maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#98989f',font:{size:10},callback:v=>v+'W'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
 const lastPt=d.points[d.points.length-1];
 const siItems=[];
 for(const id of allIds){const nm=d.deviceNames&&d.deviceNames[id]?d.deviceNames[id]:id.slice(-6);const val=lastPt.devices&&lastPt.devices[id]!=null?lastPt.devices[id]:0;siItems.push({label:nm,value:val+'W',color:getSocketColor(id)});}
@@ -2461,7 +2469,7 @@ try{
 const d=await(await fetch('/api/history?period='+otherPeriod)).json();
 if(!d.success||!d.points||d.points.length===0){if(otherChart){otherChart.destroy();otherChart=null;}document.getElementById('otherChart').parentElement.style.display='none';return;}
 document.getElementById('otherChart').parentElement.style.display='';
-const labels=d.points.map(p=>{const dt=new Date(p.ts);if(otherPeriod==='day')return dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(otherPeriod==='week')return dt.toLocaleDateString([],{weekday:'short',hour:'2-digit',minute:'2-digit'});if(otherPeriod==='month')return dt.toLocaleDateString([],{day:'numeric',hour:'2-digit'});return dt.toLocaleDateString([],{month:'short',day:'numeric'});});
+const labels=d.points.map(p=>{const dt=new Date(p.ts);if(otherPeriod==='day'||otherPeriod==='1h'||otherPeriod==='3h'||otherPeriod==='6h'||otherPeriod==='12h')return dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(otherPeriod==='week')return dt.toLocaleDateString([],{weekday:'short',hour:'2-digit',minute:'2-digit'});if(otherPeriod==='month')return dt.toLocaleDateString([],{day:'numeric',hour:'2-digit'});return dt.toLocaleDateString([],{month:'short',day:'numeric'});});
 const loadData=d.points.map(p=>p.load);
 const otherData=d.points.map(p=>p.otherLoad!=null?p.otherLoad:0);
 const sumData=d.points.map(p=>Math.max(0,Math.round((p.load-(p.otherLoad||0))*10)/10));
@@ -2472,7 +2480,7 @@ otherChart=new Chart(ctx,{type:'line',plugins:[lineLabelsPlugin],data:{labels,da
 {label:'Load (W)',data:loadData,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2,order:1,_lineLabel:'Load'},
 {label:'Socket Sum (W)',data:sumData,borderColor:'#00e5ff',backgroundColor:'rgba(0,229,255,0.06)',fill:false,tension:0.3,pointRadius:0,borderWidth:2,order:2,_lineLabel:'Sockets'},
 {label:'Other Load (W)',data:otherData,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2,order:3,_lineLabel:'Other'}
-]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',borderColor:'rgba(255,255,255,0.09)',borderWidth:0.5,cornerRadius:10,padding:10,displayColors:true,callbacks:{label:function(ctx2){return ctx2.dataset.label.split(' (')[0]+': '+ctx2.raw+'W';}}}},scales:{x:{ticks:{color:'#98989f',font:{size:10},maxTicksLimit:otherPeriod==='day'?12:otherPeriod==='week'?14:12,maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#98989f',font:{size:10},callback:v=>v+'W'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',borderColor:'rgba(255,255,255,0.09)',borderWidth:0.5,cornerRadius:10,padding:10,displayColors:true,callbacks:{label:function(ctx2){return ctx2.dataset.label.split(' (')[0]+': '+ctx2.raw+'W';}}}},scales:{x:{ticks:{color:'#98989f',font:{size:10},maxTicksLimit:otherPeriod==='day'||otherPeriod==='1h'||otherPeriod==='3h'||otherPeriod==='6h'||otherPeriod==='12h'?12:otherPeriod==='week'?14:12,maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#98989f',font:{size:10},callback:v=>v+'W'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
 const olp=d.points[d.points.length-1];
 const lastSum=sumData[sumData.length-1]||0;
 renderCurrentValues('otherCurrent',[
@@ -2677,8 +2685,8 @@ async function main() {
         pollInverter();
       }
     }, 10000);
-    setInterval(saveHistoryPoint, 60000);
   }
+  setInterval(saveHistoryPoint, 60000);
 
   // Initialize Tuya
   await initTuya();
