@@ -1462,27 +1462,24 @@ route('POST', '/api/update-check', async (req, res) => {
   try {
     const isGit = (await new Promise(r => exec('git rev-parse --is-inside-work-tree', { cwd: __dirname }, (e, o) => r(!e && o.trim() === 'true'))));
     if (!isGit) return sendJson(res, 200, { success: true, isGit: false, message: 'Not a git repository' });
-    await new Promise((resolve, reject) => { exec('git fetch origin', { cwd: __dirname }, (e) => e ? reject(e) : resolve()); });
+    try { await new Promise((resolve, reject) => { exec('git fetch --tags --force 2>/dev/null', { cwd: __dirname }, (e) => resolve()); }); } catch {}
+    const tags = (await new Promise(r => exec('git tag --sort=-v:refname', { cwd: __dirname }, (e, o) => r(o || '')))).trim().split('\n').filter(Boolean);
+    const currentTag = (await new Promise(r => exec('git describe --tags --exact-match 2>/dev/null || true', { cwd: __dirname }, (e, o) => r(o || '')))).trim();
     const local = (await new Promise(r => exec('git rev-parse HEAD', { cwd: __dirname }, (e, o) => r(o.trim())))).trim();
-    const remote = (await new Promise(r => exec('git rev-parse origin/main', { cwd: __dirname }, (e, o) => r(o.trim())))).trim();
-    const isUpToDate = local === remote;
-    let commits = [];
-    if (!isUpToDate) {
-      const log = (await new Promise(r => exec('git log HEAD..origin/main --oneline', { cwd: __dirname }, (e, o) => r(o || '')))).trim();
-      commits = log ? log.split('\n') : [];
-    }
-    sendJson(res, 200, { success: true, isGit: true, isUpToDate, local: local.slice(0, 7), remote: remote.slice(0, 7), commits });
+    sendJson(res, 200, { success: true, isGit: true, tags, currentTag, local: local.slice(0, 7) });
   } catch (err) {
     sendJson(res, 200, { success: false, message: err.message });
   }
 });
 
-// Update from git & restart
+// Update from git tag & restart
 route('POST', '/api/update-apply', (req, res) => {
-  sendJson(res, 200, { success: true, message: 'Updating...' });
+  const tag = req.body && req.body.tag;
+  if (!tag) return sendJson(res, 400, { success: false, message: 'Tag required' });
+  sendJson(res, 200, { success: true, message: 'Updating to ' + tag + '...' });
   setTimeout(() => {
-    exec('git pull origin main', { cwd: __dirname }, (err, stdout) => {
-      log.info('Git pull: ' + (err ? err.message : stdout.trim()));
+    exec('git stash --include-untracked 2>/dev/null; git fetch --tags --force 2>/dev/null; git checkout ' + tag + ' 2>&1 && git log -1 --oneline', { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err, stdout) => {
+      log.info('Git checkout: ' + (err ? err.message : stdout.trim()));
       setTimeout(() => { exec('sudo systemctl restart energy-controller', () => {}); }, 1000);
     });
   }, 500);
@@ -2013,6 +2010,9 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .backup-opt{display:flex;align-items:center;gap:.45rem;padding:.35rem .5rem;border-radius:6px;cursor:pointer;font-size:.82rem;color:var(--text);transition:background .15s}
 .backup-opt:hover{background:rgba(255,255,255,.05)}
 .backup-opt input[type=checkbox]{accent-color:var(--primary);width:16px;height:16px;cursor:pointer}
+.update-tag{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;border-radius:8px;cursor:pointer;font-size:.82rem;border:.5px solid var(--border);margin-bottom:.35rem;transition:background .15s,border-color .15s;color:var(--text)}
+.update-tag:hover{background:rgba(255,255,255,.06);border-color:var(--muted)}
+.update-tag.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 @media(max-width:768px){
   .mobile-only{display:block}
   body{display:block;overflow-x:hidden}
@@ -2191,10 +2191,12 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 </div>
 <div class="hb-card collapsed" style="margin-top:1rem">
-<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div><div style="display:flex;gap:.5rem"><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" id="btn-check-update" onclick="event.stopPropagation();checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check for Updates</button><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" id="btn-apply-update" onclick="event.stopPropagation();applyUpdate()" style="display:none"><i class="bi bi-download"></i> Update & Restart</button></div></div>
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" id="btn-check-update" onclick="event.stopPropagation();checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check</button></span></div>
 <div class="hb-card-body">
 <div id="update-info" style="font-size:.85rem;color:var(--text-secondary);margin-bottom:.75rem">Loading...</div>
-<div id="update-status" style="margin-top:.75rem;font-size:.8rem;display:none"></div>
+<div id="update-tags" style="display:none;margin-bottom:.75rem"></div>
+<button class="btn-hb btn-hb-outline btn-hb-sm" id="btn-apply-update" onclick="applyUpdate()" style="display:none;width:100%"><i class="bi bi-download"></i> Update & Restart</button>
+<div id="update-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
 </div>
 </div>
 <div class="hb-card collapsed" style="margin-top:1rem">
@@ -2769,8 +2771,10 @@ if(mainEl){mainEl.addEventListener('touchstart',function(e){if(mainEl.scrollTop<
 async function loadAppVersion(){try{const r=await fetch('/api/app-version');const d=await r.json();if(d.success){const el=document.getElementById('update-info');if(el){el.innerHTML=d.isGit?'Version <strong>'+d.version+'</strong> ('+d.gitHash+') · Branch: '+d.gitBranch:'Version <strong>'+d.version+'</strong> (not a git repo)';if(!d.isGit)document.getElementById('btn-check-update').style.display='none';}const sv=document.getElementById('sidebar-version');if(sv)sv.textContent='v'+d.version;}}catch(e){}}
 async function createBackup(){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Creating backup...';try{const scope=[];if(document.getElementById('bp-config').checked)scope.push('config');if(document.getElementById('bp-scenes').checked)scope.push('scenes');if(document.getElementById('bp-auth').checked)scope.push('auth');if(document.getElementById('bp-history').checked)scope.push('history');const r=await apiPost('/api/backup',{scope});if(!r.success||!r.backup)throw new Error(r.message||'Backup failed');const bk=r.backup;if(document.getElementById('bp-tiles').checked){bk.data.tilePrefs=loadTilePrefs();bk.data.tileOrder=loadTileOrder();}const blob=new Blob([JSON.stringify(bk,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='energy-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Backup downloaded.';setTimeout(()=>st.style.display='none',4000);}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}}
 async function restoreBackup(file){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Restoring...';try{const text=await file.text();const bk=JSON.parse(text);if(!bk.data)throw new Error('Invalid backup file');const overwrite=[];if(bk.data.config)overwrite.push('config');if(bk.data.scenes)overwrite.push('scenes');if(bk.data.auth)overwrite.push('auth');if(bk.data.history)overwrite.push('history');const r=await apiPost('/api/backup/restore',{data:bk.data,overwrite});if(!r.success)throw new Error(r.message||'Restore failed');if(bk.data.tilePrefs)saveTilePrefs(bk.data.tilePrefs);if(bk.data.tileOrder)saveTileOrder(bk.data.tileOrder);st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> '+r.message+'<br><small>Refresh to see changes.</small>';document.getElementById('restoreInput').value='';}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}}
-async function checkForUpdates(){const btn=document.getElementById('btn-check-update');const st=document.getElementById('update-status');btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Checking...';try{const r=await fetch('/api/update-check',{method:'POST'});const d=await r.json();if(!d.isGit){st.style.display='block';st.style.color='var(--text-secondary)';st.textContent='Not a git repository. Install via git clone to enable updates.';}else if(d.isUpToDate){st.style.display='block';st.style.color='#22c55e';st.innerHTML='<i class="bi bi-check-circle"></i> Up to date ('+d.local+')';document.getElementById('btn-apply-update').style.display='none';}else{st.style.display='block';st.style.color='#f59e0b';st.innerHTML='<i class="bi bi-arrow-down-circle"></i> '+d.commits.length+' new commit(s):<br>'+d.commits.map(c=>'&nbsp;&nbsp;'+c).join('<br>');document.getElementById('btn-apply-update').style.display='';}}catch(e){st.style.display='block';st.style.color='#ef4444';st.textContent='Error: '+e.message;}btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-clockwise"></i> Check for Updates';}
-async function applyUpdate(){const btn=document.getElementById('btn-apply-update');const st=document.getElementById('update-status');if(!confirm('Update app and restart?'))return;btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Updating...';st.style.display='block';st.style.color='#3b82f6';st.textContent='Pulling changes...';try{await fetch('/api/update-apply',{method:'POST'});st.textContent='Updated! Reconnecting...';setTimeout(()=>{let tries=0;const iv=setInterval(async()=>{tries++;try{const r=await fetch('/');if(r.ok){clearInterval(iv);location.reload();}}catch{}if(tries>30){clearInterval(iv);st.textContent='Restart timed out. Refresh the page manually.';}},1500);},3000);}catch(e){st.style.color='#ef4444';st.textContent='Update failed: '+e.message;btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Update & Restart';}}
+let _updateTags=[];
+async function checkForUpdates(){const btn=document.getElementById('btn-check-update');const st=document.getElementById('update-status');const tagsEl=document.getElementById('update-tags');st.style.display='none';tagsEl.style.display='none';btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i>';try{const r=await fetch('/api/update-check',{method:'POST'});const d=await r.json();if(!d.isGit){st.style.display='block';st.style.color='var(--text-secondary)';st.textContent='Not a git repository. Install via git clone to enable updates.';}else if(!d.tags.length){st.style.display='block';st.style.color='var(--text-secondary)';st.textContent='No tags found. Push a tag first (git tag v1.0.0 && git push --tags).';}else{_updateTags=d.tags;tagsEl.style.display='block';let html='<label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:.5rem">Select version:</label>';d.tags.forEach(t=>{const active=d.currentTag===t?' style="background:var(--primary);color:#fff;border-color:var(--primary)"':'';html+='<div class="update-tag'+(d.currentTag===t?' active':'')+'" data-tag="'+t+'" onclick="selectUpdateTag(this)"'+active+'><span>'+t+'</span>'+(d.currentTag===t?' <span style="font-size:.7rem;opacity:.7">(current)</span>':'')+'</div>';});tagsEl.innerHTML=html;document.getElementById('btn-apply-update').style.display='';}}catch(e){st.style.display='block';st.style.color='#ef4444';st.textContent='Error: '+e.message;}btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-clockwise"></i>';}
+function selectUpdateTag(el){document.querySelectorAll('.update-tag').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('btn-apply-update').disabled=false;}
+async function applyUpdate(){const btn=document.getElementById('btn-apply-update');const st=document.getElementById('update-status');const selected=document.querySelector('.update-tag.active');if(!selected){st.style.display='block';st.style.color='#f59e0b';st.textContent='Select a version first.';return;}const tag=selected.dataset.tag;if(!confirm('Update to '+tag+' and restart?'))return;btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Updating...';st.style.display='block';st.style.color='#3b82f6';st.textContent='Checking out '+tag+'...';try{await apiPost('/api/update-apply',{tag});st.textContent='Updated! Reconnecting...';setTimeout(()=>{let tries=0;const iv=setInterval(async()=>{tries++;try{const r=await fetch('/');if(r.ok){clearInterval(iv);location.reload();}}catch{}if(tries>30){clearInterval(iv);st.textContent='Restart timed out. Refresh the page manually.';}},1500);},3000);}catch(e){st.style.color='#ef4444';st.textContent='Update failed: '+e.message;btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Update & Restart';}}
 loadAppVersion();
 
 loadStatus();loadTuyaDevices();loadScenes();loadLogs();loadHistory('day');loadSocketHistory('day');loadOtherHistory('day');
