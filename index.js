@@ -585,50 +585,86 @@ async function pollInverter() {
 }
 
 // ============================================================
-// HISTORY STORAGE
+// RRD-STYLE HISTORY STORAGE (ring buffers, pre-aggregated)
 // ============================================================
-const HISTORY_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000;
-let lastHistorySave = 0;
-const HISTORY_SAVE_INTERVAL = 60 * 1000;
+const RRD_POWER = { '1m': [], '15m': [], '1h': [] };
+const RRD_SOCKET = { '1m': [], '15m': [], '1h': [] };
+const RRD_PENDING = [];
+const RRD_SOCKET_PENDING = [];
+const RRD_SIZE = { '1m': 1440, '15m': 672, '1h': 8760 };
+const RRD_INTERVAL = { '1m': 60000, '15m': 900000, '1h': 3600000 };
+let lastRrdFlush = 0;
+const RRD_FLUSH_MS = 300000; // flush to SD every 5 min
 
-async function loadHistory() {
-  try {
-    return JSON.parse(await fs.promises.readFile(HISTORY_FILE, 'utf8'));
-  } catch {
-    return { points: [] };
+async function rrdInit() {
+  let migrated = false;
+  for (const level of ['1m', '15m', '1h']) {
+    try { RRD_POWER[level] = JSON.parse(await fs.promises.readFile(DATA_DIR + '/history_' + level + '.json', 'utf8')); } catch { RRD_POWER[level] = []; }
+    try { RRD_SOCKET[level] = JSON.parse(await fs.promises.readFile(DATA_DIR + '/sockets_' + level + '.json', 'utf8')); } catch { RRD_SOCKET[level] = []; }
+  }
+  // One-time migration from old single-file format
+  if (RRD_POWER['1m'].length === 0 && RRD_POWER['15m'].length === 0) {
+    try {
+      const old = JSON.parse(await fs.promises.readFile(HISTORY_FILE, 'utf8'));
+      if (old && old.points && old.points.length) {
+        log.info('Migrating history.json → RRD format (' + old.points.length + ' points)');
+        RRD_POWER['1m'] = old.points;
+        if (RRD_POWER['1m'].length > RRD_SIZE['1m']) RRD_POWER['1m'].splice(0, RRD_POWER['1m'].length - RRD_SIZE['1m']);
+        rrdMergeM15();
+        rrdMergeM1h();
+        log.info('Migration complete: 1m=' + RRD_POWER['1m'].length + ' 15m=' + RRD_POWER['15m'].length + ' 1h=' + RRD_POWER['1h'].length);
+        migrated = true;
+      }
+    } catch {}
+    try {
+      const oldS = JSON.parse(await fs.promises.readFile(SOCKETS_FILE, 'utf8'));
+      if (oldS && oldS.points && oldS.points.length) {
+        log.info('Migrating sockets.json → RRD format (' + oldS.points.length + ' points)');
+        RRD_SOCKET['1m'] = oldS.points;
+        if (RRD_SOCKET['1m'].length > RRD_SIZE['1m']) RRD_SOCKET['1m'].splice(0, RRD_SOCKET['1m'].length - RRD_SIZE['1m']);
+        migrated = true;
+      }
+    } catch {}
+  }
+  // Write migrated data immediately
+  if (migrated) {
+    for (const level of ['1m', '15m', '1h']) {
+      await fs.promises.writeFile(DATA_DIR + '/history_' + level + '.json', JSON.stringify(RRD_POWER[level]), { mode: 0o600 });
+      await fs.promises.writeFile(DATA_DIR + '/sockets_' + level + '.json', JSON.stringify(RRD_SOCKET[level]), { mode: 0o600 });
+    }
   }
 }
 
-async function saveHistoryPoint() {
-  const now = Date.now();
-  if (now - lastHistorySave < HISTORY_SAVE_INTERVAL) return;
-  lastHistorySave = now;
-  try {
-    const history = await loadHistory();
-    const socketSum = tuyaDevices.reduce((a, d) => a + (d.power || 0), 0);
-    history.points.push({
-      ts: now,
-      grid: inverterData.gridPower,
-      soc: inverterData.batterySOC,
-      load: inverterData.loadPower,
-      bat: inverterData.batteryPower,
-      pv: inverterData.pvPower,
-      otherLoad: Math.max(0, Math.round((inverterData.loadPower - socketSum) * 10) / 10),
-    });
-    const cutoff = now - HISTORY_MAX_AGE_MS;
-    history.points = history.points.filter(p => p.ts > cutoff);
-    await fs.promises.writeFile(HISTORY_FILE, JSON.stringify(history), { mode: 0o600 });
-  } catch (err) {
-    log.error('History save failed: ' + err.message);
+function rrdAvg(arr) {
+  if (!arr.length) return 0;
+  let sum = 0;
+  for (const v of arr) sum += v;
+  return Math.round(sum / arr.length * 10) / 10;
+}
+
+function rrdPush(buf, entry, maxSize) {
+  if (buf.length < maxSize) {
+    buf.push(entry);
+  } else {
+    const oldestTs = buf[0].ts;
+    const newestTs = buf[buf.length - 1].ts;
+    const interval = newestTs - oldestTs < 2 * maxSize * 60000 ? 1 : 0; // heuristic
+    const slot = interval > 0 ? Math.floor((entry.ts - oldestTs) / 60000) : -1;
+    if (slot >= 0 && slot < maxSize && entry.ts - buf[slot].ts < 120000) {
+      buf[slot] = entry; // replace same slot
+    } else {
+      buf.push(entry);
+      buf.splice(0, Math.max(1, buf.length - maxSize));
+    }
   }
 }
 
-function aggregateHistory(points, intervalMs) {
-  if (!points.length) return [];
+function rrdMerge1m(rawPoints) {
+  if (!rawPoints.length) return [];
   const buckets = new Map();
-  for (const p of points) {
-    const key = Math.floor(p.ts / intervalMs) * intervalMs;
-    if (!buckets.has(key)) buckets.set(key, { ts: key, grid: [], soc: [], load: [], bat: [], pv: [], otherLoad: [], count: 0 });
+  for (const p of rawPoints) {
+    const key = Math.floor(p.ts / 60000) * 60000;
+    if (!buckets.has(key)) buckets.set(key, { ts: key, grid: [], soc: [], load: [], bat: [], pv: [], otherLoad: [] });
     const b = buckets.get(key);
     b.grid.push(p.grid ? 1 : 0);
     b.soc.push(p.soc);
@@ -636,76 +672,142 @@ function aggregateHistory(points, intervalMs) {
     b.bat.push(p.bat);
     b.pv.push(p.pv);
     b.otherLoad.push(p.otherLoad || 0);
-    b.count++;
   }
-  const avg = (arr) => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length * 10) / 10 : 0;
   return [...buckets.values()].map(b => ({
     ts: b.ts,
-    grid: b.grid.reduce((a, v) => a + v, 0) / b.count >= 0.5,
-    soc: avg(b.soc),
-    load: avg(b.load),
-    bat: avg(b.bat),
-    pv: avg(b.pv),
-    otherLoad: avg(b.otherLoad),
+    grid: b.grid.reduce((a, v) => a + v, 0) / b.grid.length >= 0.5,
+    soc: rrdAvg(b.soc),
+    load: rrdAvg(b.load),
+    bat: rrdAvg(b.bat),
+    pv: rrdAvg(b.pv),
+    otherLoad: rrdAvg(b.otherLoad),
   }));
 }
 
-// ============================================================
-// SOCKET POWER HISTORY
-// ============================================================
-let lastSocketSave = 0;
-const SOCKET_SAVE_INTERVAL = 60 * 1000;
-
-async function loadSocketHistory() {
-  try {
-    return JSON.parse(await fs.promises.readFile(SOCKETS_FILE, 'utf8'));
-  } catch {
-    return { points: [] };
-  }
-}
-
-async function saveSocketPoint() {
-  const now = Date.now();
-  if (now - lastSocketSave < SOCKET_SAVE_INTERVAL) return;
-  lastSocketSave = now;
-  try {
-    const history = await loadSocketHistory();
-    const devices = {};
-    for (const dev of tuyaDevices) {
-      if (dev.power !== undefined && dev.power !== null) {
-        devices[dev.id] = dev.power;
-      }
-    }
-    if (Object.keys(devices).length === 0) return;
-    history.points.push({ ts: now, devices });
-    const cutoff = now - HISTORY_MAX_AGE_MS;
-    history.points = history.points.filter(p => p.ts > cutoff);
-    await fs.promises.writeFile(SOCKETS_FILE, JSON.stringify(history), { mode: 0o600 });
-  } catch (err) {
-    log.error('Socket history save failed: ' + err.message);
-  }
-}
-
-function aggregateSocketHistory(points, intervalMs) {
-  if (!points.length) return [];
+function rrdMergeM15() {
+  const m1 = RRD_POWER['1m'];
+  const m15 = RRD_POWER['15m'];
+  const newestM15 = m15.length ? m15[m15.length - 1].ts : 0;
   const buckets = new Map();
-  for (const p of points) {
-    const key = Math.floor(p.ts / intervalMs) * intervalMs;
-    if (!buckets.has(key)) buckets.set(key, { ts: key, devices: {}, count: 0 });
+  for (const p of m1) {
+    if (p.ts <= newestM15) continue;
+    const key = Math.floor(p.ts / 900000) * 900000;
+    if (!buckets.has(key)) buckets.set(key, { ts: key, grid: 0, soc: [], load: [], bat: [], pv: [], otherLoad: [], count: 0 });
     const b = buckets.get(key);
-    for (const [id, val] of Object.entries(p.devices || {})) {
-      if (!b.devices[id]) b.devices[id] = [];
-      b.devices[id].push(val);
-    }
+    b.grid += p.grid ? 1 : 0;
+    b.soc.push(p.soc);
+    b.load.push(p.load);
+    b.bat.push(p.bat);
+    b.pv.push(p.pv);
+    b.otherLoad.push(p.otherLoad || 0);
     b.count++;
   }
-  return [...buckets.values()].map(b => {
-    const devices = {};
-    for (const [id, arr] of Object.entries(b.devices)) {
-      devices[id] = Math.round(arr.reduce((a, v) => a + v, 0) / arr.length * 10) / 10;
+  for (const b of buckets.values()) {
+    rrdPush(m15, {
+      ts: b.ts,
+      grid: b.grid / b.count >= 0.5,
+      soc: rrdAvg(b.soc),
+      load: rrdAvg(b.load),
+      bat: rrdAvg(b.bat),
+      pv: rrdAvg(b.pv),
+      otherLoad: rrdAvg(b.otherLoad),
+    }, RRD_SIZE['15m']);
+  }
+}
+
+function rrdMergeM1h() {
+  const m15 = RRD_POWER['15m'];
+  const m1h = RRD_POWER['1h'];
+  const newestM1h = m1h.length ? m1h[m1h.length - 1].ts : 0;
+  const buckets = new Map();
+  for (const p of m15) {
+    if (p.ts <= newestM1h) continue;
+    const key = Math.floor(p.ts / 3600000) * 3600000;
+    if (!buckets.has(key)) buckets.set(key, { ts: key, grid: 0, soc: [], load: [], bat: [], pv: [], otherLoad: [], count: 0 });
+    const b = buckets.get(key);
+    b.grid += p.grid ? 1 : 0;
+    b.soc.push(p.soc);
+    b.load.push(p.load);
+    b.bat.push(p.bat);
+    b.pv.push(p.pv);
+    b.otherLoad.push(p.otherLoad || 0);
+    b.count++;
+  }
+  for (const b of buckets.values()) {
+    rrdPush(m1h, {
+      ts: b.ts,
+      grid: b.grid / b.count >= 0.5,
+      soc: rrdAvg(b.soc),
+      load: rrdAvg(b.load),
+      bat: rrdAvg(b.bat),
+      pv: rrdAvg(b.pv),
+      otherLoad: rrdAvg(b.otherLoad),
+    }, RRD_SIZE['1h']);
+  }
+}
+
+async function rrdFlush() {
+  const now = Date.now();
+  if (now - lastRrdFlush < RRD_FLUSH_MS) return;
+  lastRrdFlush = now;
+  try {
+    // 1. Merge pending power points into 1m buffer
+    const m1Merged = rrdMerge1m(RRD_PENDING);
+    for (const p of m1Merged) rrdPush(RRD_POWER['1m'], p, RRD_SIZE['1m']);
+    RRD_PENDING.length = 0;
+
+    // 2. Merge pending socket points
+    const sockBuckets = new Map();
+    for (const p of RRD_SOCKET_PENDING) {
+      const key = Math.floor(p.ts / 60000) * 60000;
+      if (!sockBuckets.has(key)) sockBuckets.set(key, { ts: key, devices: {} });
+      const b = sockBuckets.get(key);
+      for (const [id, val] of Object.entries(p.devices || {})) {
+        if (!b.devices[id]) b.devices[id] = [];
+        b.devices[id].push(val);
+      }
     }
-    return { ts: b.ts, devices };
-  });
+    for (const b of sockBuckets.values()) {
+      const entry = { ts: b.ts, devices: {} };
+      for (const [id, arr] of Object.entries(b.devices)) {
+        entry.devices[id] = rrdAvg(arr);
+      }
+      rrdPush(RRD_SOCKET['1m'], entry, RRD_SIZE['1m']);
+    }
+    RRD_SOCKET_PENDING.length = 0;
+
+    // 3. Aggregate 1m → 15m
+    rrdMergeM15();
+
+    // 4. Aggregate 15m → 1h
+    rrdMergeM1h();
+
+    // 5. Write all 6 files to disk
+    for (const level of ['1m', '15m', '1h']) {
+      await fs.promises.writeFile(DATA_DIR + '/history_' + level + '.json', JSON.stringify(RRD_POWER[level]), { mode: 0o600 });
+      await fs.promises.writeFile(DATA_DIR + '/sockets_' + level + '.json', JSON.stringify(RRD_SOCKET[level]), { mode: 0o600 });
+    }
+  } catch (err) {
+    log.error('RRD flush failed: ' + err.message);
+  }
+}
+
+function rrdGetPower(level, cutoffMs) {
+  const buf = RRD_POWER[level];
+  const cutoff = Date.now() - cutoffMs;
+  return buf.filter(p => p.ts > cutoff);
+}
+
+function rrdGetSocket(level, cutoffMs) {
+  const buf = RRD_SOCKET[level];
+  const cutoff = Date.now() - cutoffMs;
+  return buf.filter(p => p.ts > cutoff);
+}
+
+function rrdPickLevel(period) {
+  if (period === 'week') return '15m';
+  if (period === 'month' || period === 'year') return '1h';
+  return '1m'; // day, 1h, 3h, 6h, 12h
 }
 
 // ============================================================
@@ -1332,71 +1434,55 @@ route('GET', '/api/logs', (req, res) => {
   }
 });
 
-// History data
-route('GET', '/api/history', async (req, res) => {
+// History data (RRD — data already pre-aggregated by level)
+route('GET', '/api/history', (req, res) => {
   try {
     const period = (req.url.split('period=')[1] || 'day').split('&')[0];
-    const history = await loadHistory();
-    const now = Date.now();
+    const level = rrdPickLevel(period);
     const today = new Date();
     const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-    let intervalMs, cutoffMs;
+    let cutoffMs;
     switch (period) {
-      case '1h': intervalMs = 60 * 1000; cutoffMs = 60 * 60 * 1000; break;
-      case '3h': intervalMs = 60 * 1000; cutoffMs = 3 * 60 * 60 * 1000; break;
-      case '6h': intervalMs = 5 * 60 * 1000; cutoffMs = 6 * 60 * 60 * 1000; break;
-      case '12h': intervalMs = 5 * 60 * 1000; cutoffMs = 12 * 60 * 60 * 1000; break;
-      case 'week': {
-        const day = today.getDay();
-        const diff = (day === 0 ? 6 : day - 1);
-        intervalMs = 15 * 60 * 1000;
-        cutoffMs = now - (midnight - diff * 24 * 60 * 60 * 1000);
-        break;
-      }
-      case 'month': intervalMs = 60 * 60 * 1000; cutoffMs = now - new Date(today.getFullYear(), today.getMonth(), 1).getTime(); break;
-      case 'year': intervalMs = 24 * 60 * 60 * 1000; cutoffMs = now - new Date(today.getFullYear(), 0, 1).getTime(); break;
-      default: intervalMs = 60 * 1000; cutoffMs = now - midnight;
+      case '1h': cutoffMs = 60 * 60 * 1000; break;
+      case '3h': cutoffMs = 3 * 60 * 60 * 1000; break;
+      case '6h': cutoffMs = 6 * 60 * 60 * 1000; break;
+      case '12h': cutoffMs = 12 * 60 * 60 * 1000; break;
+      case 'week': { const day = today.getDay(); const diff = (day === 0 ? 6 : day - 1); cutoffMs = Date.now() - (midnight - diff * 24 * 60 * 60 * 1000); break; }
+      case 'month': cutoffMs = Date.now() - new Date(today.getFullYear(), today.getMonth(), 1).getTime(); break;
+      case 'year': cutoffMs = Date.now() - new Date(today.getFullYear(), 0, 1).getTime(); break;
+      default: cutoffMs = Date.now() - midnight;
     }
-    const filtered = history.points.filter(p => p.ts > now - cutoffMs);
-    const aggregated = aggregateHistory(filtered, intervalMs);
-    sendJson(res, 200, { success: true, period, points: aggregated });
+    const points = rrdGetPower(level, cutoffMs);
+    sendJson(res, 200, { success: true, period, points });
   } catch (err) {
     sendJson(res, 500, { success: false, message: err.message });
   }
 });
 
-// Socket history data
-route('GET', '/api/socket-history', async (req, res) => {
+// Socket history data (RRD)
+route('GET', '/api/socket-history', (req, res) => {
   try {
     const period = (req.url.split('period=')[1] || 'day').split('&')[0];
-    const history = await loadSocketHistory();
-    const now = Date.now();
+    const level = rrdPickLevel(period);
     const today = new Date();
     const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-    let intervalMs, cutoffMs;
+    let cutoffMs;
     switch (period) {
-      case '1h': intervalMs = 60 * 1000; cutoffMs = 60 * 60 * 1000; break;
-      case '3h': intervalMs = 60 * 1000; cutoffMs = 3 * 60 * 60 * 1000; break;
-      case '6h': intervalMs = 5 * 60 * 1000; cutoffMs = 6 * 60 * 60 * 1000; break;
-      case '12h': intervalMs = 5 * 60 * 1000; cutoffMs = 12 * 60 * 60 * 1000; break;
-      case 'week': {
-        const day = today.getDay();
-        const diff = (day === 0 ? 6 : day - 1);
-        intervalMs = 15 * 60 * 1000;
-        cutoffMs = now - (midnight - diff * 24 * 60 * 60 * 1000);
-        break;
-      }
-      case 'month': intervalMs = 60 * 60 * 1000; cutoffMs = now - new Date(today.getFullYear(), today.getMonth(), 1).getTime(); break;
-      case 'year': intervalMs = 24 * 60 * 60 * 1000; cutoffMs = now - new Date(today.getFullYear(), 0, 1).getTime(); break;
-      default: intervalMs = 60 * 1000; cutoffMs = now - midnight;
+      case '1h': cutoffMs = 60 * 60 * 1000; break;
+      case '3h': cutoffMs = 3 * 60 * 60 * 1000; break;
+      case '6h': cutoffMs = 6 * 60 * 60 * 1000; break;
+      case '12h': cutoffMs = 12 * 60 * 60 * 1000; break;
+      case 'week': { const day = today.getDay(); const diff = (day === 0 ? 6 : day - 1); cutoffMs = Date.now() - (midnight - diff * 24 * 60 * 60 * 1000); break; }
+      case 'month': cutoffMs = Date.now() - new Date(today.getFullYear(), today.getMonth(), 1).getTime(); break;
+      case 'year': cutoffMs = Date.now() - new Date(today.getFullYear(), 0, 1).getTime(); break;
+      default: cutoffMs = Date.now() - midnight;
     }
-    const filtered = history.points.filter(p => p.ts > now - cutoffMs);
-    const aggregated = aggregateSocketHistory(filtered, intervalMs);
+    const points = rrdGetSocket(level, cutoffMs);
     const deviceNames = {};
     for (const dev of tuyaDevices) {
       deviceNames[dev.id] = dev.name;
     }
-    sendJson(res, 200, { success: true, period, points: aggregated, deviceNames });
+    sendJson(res, 200, { success: true, period, points, deviceNames });
   } catch (err) {
     sendJson(res, 500, { success: false, message: err.message });
   }
@@ -1502,7 +1588,7 @@ route('POST', '/api/backup', async (req, res) => {
         try { data.scenes = JSON.parse(await fs.promises.readFile(SCENES_FILE, 'utf8')); } catch { data.scenes = []; }
       }
       if (s === 'history') {
-        try { data.history = JSON.parse(await fs.promises.readFile(HISTORY_FILE, 'utf8')); } catch { data.history = { points: [] }; }
+        try { data.history = {}; for (const l of ['1m','15m','1h']) data.history[l] = JSON.parse(await fs.promises.readFile(DATA_DIR + '/history_' + l + '.json', 'utf8')); } catch { data.history = {}; }
       }
     }
     const pkg = await new Promise(r => exec('git rev-parse --short HEAD', { cwd: __dirname }, (e, o) => r(e ? 'unknown' : o.trim())));
@@ -1529,7 +1615,9 @@ route('POST', '/api/backup/restore', async (req, res) => {
         await fs.promises.writeFile(SCENES_FILE, JSON.stringify(data.scenes, null, 2), { mode: 0o600 });
       }
       if (f === 'history' && data.history) {
-        await fs.promises.writeFile(HISTORY_FILE, JSON.stringify(data.history, null, 2), { mode: 0o600 });
+        for (const l of ['1m','15m','1h']) {
+          if (data.history[l]) await fs.promises.writeFile(DATA_DIR + '/history_' + l + '.json', JSON.stringify(data.history[l], null, 2), { mode: 0o600 });
+        }
       }
     }
     sendJson(res, 200, { success: true, message: 'Restore complete. Restart to apply config changes.' });
@@ -2821,6 +2909,7 @@ async function main() {
 
   // Initialize
   await ensureAuth();
+  await rrdInit();
   await loadScenes();
   const cfg = await loadConfig();
   const port = cfg.webPort || WEB_PORT_DEFAULT;
@@ -2845,16 +2934,41 @@ async function main() {
       }
     }, 10000);
   }
-  setInterval(saveHistoryPoint, 60000);
+  // Collect raw data every 60s (in-memory only — flushed to SD every 5 min)
+  setInterval(() => {
+    const now = Date.now();
+    const socketSum = tuyaDevices.reduce((a, d) => a + (d.power || 0), 0);
+    RRD_PENDING.push({
+      ts: now,
+      grid: inverterData.gridPower,
+      soc: inverterData.batterySOC,
+      load: inverterData.loadPower,
+      bat: inverterData.batteryPower,
+      pv: inverterData.pvPower,
+      otherLoad: Math.max(0, Math.round((inverterData.loadPower - socketSum) * 10) / 10),
+    });
+  }, 60000);
+
+  // Flush RRD to SD every 5 min
+  setInterval(rrdFlush, RRD_FLUSH_MS);
 
   // Initialize Tuya
   await initTuya();
-  await saveSocketPoint();
+  // Push initial socket snapshot
+  const devs = {};
+  for (const dev of tuyaDevices) {
+    if (dev.power !== undefined && dev.power !== null) devs[dev.id] = dev.power;
+  }
+  if (Object.keys(devs).length > 0) RRD_SOCKET_PENDING.push({ ts: Date.now(), devices: devs });
 
-  // Periodic Tuya status polling + socket history
+  // Periodic Tuya status polling + socket data collection
   setInterval(async () => {
     await fetchDeviceStatuses();
-    await saveSocketPoint();
+    const devs2 = {};
+    for (const dev of tuyaDevices) {
+      if (dev.power !== undefined && dev.power !== null) devs2[dev.id] = dev.power;
+    }
+    if (Object.keys(devs2).length > 0) RRD_SOCKET_PENDING.push({ ts: Date.now(), devices: devs2 });
   }, 60000);
 
   // Scene check loop
