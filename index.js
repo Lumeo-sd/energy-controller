@@ -892,9 +892,16 @@ function verifyPassword(password, salt, hash) {
 async function ensureAuth() {
   try {
     if (!fs.existsSync(AUTH_FILE)) {
-      const { salt, hash } = hashPassword('admin');
-      await fs.promises.writeFile(AUTH_FILE, JSON.stringify({ username: 'admin', salt, hash }, null, 2), { mode: 0o600 });
+      const password = crypto.randomBytes(6).toString('base64url');
+      const { salt, hash } = hashPassword(password);
+      await fs.promises.writeFile(AUTH_FILE, JSON.stringify({ username: 'admin', salt, hash, mustChangePassword: true }, null, 2), { mode: 0o600 });
       log.info('Auth file created');
+      console.log('');
+      console.log('╔══════════════════════════════════════════════╗');
+      console.log('║  🔐 Initial admin password: ' + password.padEnd(32) + '║');
+      console.log('║  Please change it after first login.         ║');
+      console.log('╚══════════════════════════════════════════════╝');
+      console.log('');
     }
   } catch (err) {
     log.error('Failed to initialize auth: ' + err.message);
@@ -911,15 +918,21 @@ async function loadAuthFile() {
 
 function createSession() {
   const token = crypto.randomBytes(32).toString('hex');
-  sessions[token] = Date.now() + SESSION_TTL;
-  return token;
+  const csrf = crypto.randomBytes(16).toString('hex');
+  sessions[token] = { exp: Date.now() + SESSION_TTL, csrf };
+  return { token, csrf };
+}
+
+function getSessionCsrf(token) {
+  const s = sessions[token];
+  return s ? s.csrf : null;
 }
 
 function isSessionValid(token) {
-  const exp = sessions[token];
-  if (!exp) return false;
-  if (Date.now() > exp) { delete sessions[token]; return false; }
-  sessions[token] = Date.now() + SESSION_TTL;
+  const s = sessions[token];
+  if (!s) return false;
+  if (Date.now() > s.exp) { delete sessions[token]; return false; }
+  s.exp = Date.now() + SESSION_TTL;
   return true;
 }
 
@@ -1133,9 +1146,9 @@ route('POST', '/login', async (req, res) => {
     const passOk = userOk && verifyPassword(password || '', auth.salt, auth.hash);
     if (passOk) {
       delete loginAttempts[ip];
-      const token = createSession();
+      const { token, csrf } = createSession();
       setCookie(res, 'ecm_session', token, SESSION_TTL / 1000);
-      return sendJson(res, 200, { success: true });
+      return sendJson(res, 200, { success: true, csrfToken: csrf, mustChangePassword: !!auth.mustChangePassword });
     }
     loginAttempts[ip].push(now);
     return sendJson(res, 401, { success: false, message: 'Invalid login or password' });
@@ -1163,10 +1176,11 @@ route('POST', '/api/change-password', async (req, res) => {
     const { salt, hash } = hashPassword(newPassword);
     auth.salt = salt;
     auth.hash = hash;
+    auth.mustChangePassword = false;
     await fs.promises.writeFile(AUTH_FILE, JSON.stringify(auth, null, 2), { mode: 0o600 });
     sessions = {};
     log.info('Password changed, all sessions invalidated');
-    sendJson(res, 200, { success: true });
+    sendJson(res, 200, { success: true, mustChangePassword: false });
   } catch (err) {
     sendJson(res, 500, { success: false, message: err.message });
   }
@@ -1174,7 +1188,9 @@ route('POST', '/api/change-password', async (req, res) => {
 
 // Inverter data
 route('GET', '/api/status', (req, res) => {
-  sendJson(res, 200, {
+  const cookies = parseCookies(req);
+  const csrfToken = getSessionCsrf(cookies.ecm_session);
+  sendJson(res, 200, { csrfToken,
     gridPower: inverterData.gridPower,
     gridRaw: inverterData.gridRaw,
     gridVoltage: inverterData.gridVoltage,
@@ -1587,7 +1603,17 @@ function authMiddleware(req, res) {
 
   const cookies = parseCookies(req);
   const token = cookies['ecm_session'];
-  if (token && isSessionValid(token)) return true;
+  if (token && isSessionValid(token)) {
+    if (['POST', 'PATCH', 'DELETE'].includes(req.method) && req.url.startsWith('/api/')) {
+      const csrf = getSessionCsrf(token);
+      const header = req.headers['x-csrf-token'];
+      if (!header || header !== csrf) {
+        sendJson(res, 403, { success: false, message: 'CSRF token invalid' });
+        return false;
+      }
+    }
+    return true;
+  }
 
   if (req.url.startsWith('/api/')) {
     sendJson(res, 401, { success: false, message: 'Unauthorized' });
@@ -1646,6 +1672,8 @@ function getLoginPage() {
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:radial-gradient(circle at 20% 0%,#1c1030 0%,#000 45%),#000;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;color:var(--text)}
 .card{width:100%;max-width:360px;background:var(--card);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:.5px solid var(--border);border-radius:22px;padding:2rem 1.75rem;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:999;padding:1.5rem}
+.overlay.show{display:flex}
 .icon{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--primary),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1rem}
 h1{font-size:1.3rem;text-align:center;font-weight:700;margin-bottom:.25rem;letter-spacing:-.01em}
 p.sub{text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
@@ -1669,7 +1697,33 @@ button:disabled{opacity:.6}
 <button type="submit" id="loginBtn">Sign In</button>
 <div class="error" id="loginError"></div>
 </form>
+<div class="overlay" id="changeOverlay">
+<div class="card" style="max-width:360px">
+<div class="icon"><i class="bi bi-shield-lock-fill"></i></div>
+<h1>Change Password</h1>
+<p class="sub">First login requires a new password</p>
+<div class="field"><label>New Password</label><input type="password" id="newPass" minlength="6" required /></div>
+<div class="field"><label>Confirm Password</label><input type="password" id="confirmPass" minlength="6" required /></div>
+<button type="button" id="changeBtn" onclick="doChange()">Set Password</button>
+<div class="error" id="changeError"></div>
+</div>
+</div>
 <script>
+async function doChange(){
+const btn=document.getElementById('changeBtn');
+const err=document.getElementById('changeError');
+const np=document.getElementById('newPass').value;
+const cp=document.getElementById('confirmPass').value;
+if(!np||np.length<6){err.textContent='Minimum 6 characters';return;}
+if(np!==cp){err.textContent='Passwords do not match';return;}
+btn.disabled=true;btn.textContent='Saving...';
+try{
+const r=await fetch('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currentPassword:window._tmpPass,newPassword:np})});
+const d=await r.json();
+if(d.success){document.getElementById('changeOverlay').classList.remove('show');window.location.href='/';}
+else{err.textContent=d.message||'Error';btn.disabled=false;btn.textContent='Set Password';}
+}catch(e){err.textContent='Connection error';btn.disabled=false;btn.textContent='Set Password';}
+}
 document.getElementById('loginForm').addEventListener('submit', async function(e){
 e.preventDefault();
 const btn=document.getElementById('loginBtn');
@@ -1682,7 +1736,10 @@ username:document.getElementById('username').value,
 password:document.getElementById('password').value
 })});
 const d=await r.json();
-if(d.success){window.location.href='/';}
+if(d.success){
+if(d.mustChangePassword){window._tmpPass=document.getElementById('password').value;btn.disabled=false;btn.textContent='Sign In';document.getElementById('changeOverlay').classList.add('show');}
+else{window.location.href='/';}
+}
 else{err.textContent=d.message||'Login error';btn.disabled=false;btn.textContent='Sign In';}
 }catch(e){err.textContent='Connection error';btn.disabled=false;btn.textContent='Sign In';}
 });
@@ -2175,6 +2232,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </main>
 <script>
 let tuyaDevices=[];
+let _csrfToken=null;
 document.querySelectorAll('.menu-item').forEach(item=>{
 item.addEventListener('click',function(){
 const tab=this.dataset.tab;
@@ -2195,12 +2253,13 @@ if(tab==='settings'){loadPluginConfig();loadAppVersion();}
 function showToast(t,b,e){const el=document.getElementById('toast');document.getElementById('toastTitle').textContent=t;document.getElementById('toastBody').textContent=b;el.className='hb-toast show'+(e?' error':'');clearTimeout(el._hide);el._hide=setTimeout(()=>el.classList.remove('show'),4000);}
 function handleAuthStatus(r){if(r.status===401){window.location.href='/login';throw new Error('Unauthorized');}return r;}
 async function apiGet(p){const r=handleAuthStatus(await fetch(p));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
-async function apiPost(p,b){const r=handleAuthStatus(await fetch(p,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
-async function apiDelete(p){const r=handleAuthStatus(await fetch(p,{method:'DELETE'}));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
-async function apiPatch(p,b){const r=handleAuthStatus(await fetch(p,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+async function apiPost(p,b){const h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=handleAuthStatus(await fetch(p,{method:'POST',headers:h,body:JSON.stringify(b)}));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+async function apiDelete(p){const h={};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=handleAuthStatus(await fetch(p,{method:'DELETE',headers:h}));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+async function apiPatch(p,b){const h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=handleAuthStatus(await fetch(p,{method:'PATCH',headers:h,body:JSON.stringify(b)}));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 async function loadStatus(){
 try{
 const d=await apiGet('/api/status');
+if(d.csrfToken)_csrfToken=d.csrfToken;
 updateTiles(d,d.debug||{});
 const dg=d.debug||{};
 const dgEl=document.getElementById('debug-grid');
