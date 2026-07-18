@@ -1059,6 +1059,13 @@ function parseCookies(req) {
 let scenes = [];
 let sceneTimers = {};
 let _checkingScenes = false;
+const sceneTraces = [];
+const SCENE_TRACES_MAX = 200;
+
+function pushSceneTrace(sceneName, action, detail) {
+  sceneTraces.push({ ts: Date.now(), scene: sceneName, action, detail, condSnapshot: { grid: inverterData.gridPower, soc: inverterData.batterySOC } });
+  if (sceneTraces.length > SCENE_TRACES_MAX) sceneTraces.splice(0, sceneTraces.length - SCENE_TRACES_MAX);
+}
 
 async function loadScenes() {
   try {
@@ -1127,7 +1134,8 @@ async function checkScenes() {
               try {
                 await controlDevice(action.device, !action.value);
                 log.info('Scene "' + scene.name + '" reverted ' + action.device + ' after ' + action.duration + 'min');
-              } catch (err) { log.error('Scene revert failed: ' + err.message); }
+                pushSceneTrace(scene.name, 'revert (timeout)', action.device + '=' + (!action.value ? 'ON' : 'OFF'));
+              } catch (err) { log.error('Scene revert failed: ' + err.message); pushSceneTrace(scene.name, 'revert:error', err.message); }
               state.active = false;
               state.revertedAt = now;
             }
@@ -1138,17 +1146,19 @@ async function checkScenes() {
               try {
                 await controlDevice(action.device, action.value);
                 log.info('Scene "' + scene.name + '" applied ' + action.device + ' = ' + (action.value ? 'ON' : 'OFF'));
-              } catch (err) { log.error('Scene action failed: ' + err.message); }
+                pushSceneTrace(scene.name, 'apply', action.device + '=' + (action.value ? 'ON' : 'OFF'));
+              } catch (err) { log.error('Scene action failed: ' + err.message); pushSceneTrace(scene.name, 'apply:error', err.message); }
               state.active = true;
               state.appliedAt = now;
             }
           }
         } else {
           if (state.active) {
-            try {
-              await controlDevice(action.device, !action.value);
-              log.info('Scene "' + scene.name + '" reverted (conditions changed)');
-            } catch (err) { log.error('Scene revert failed: ' + err.message); }
+              try {
+                await controlDevice(action.device, !action.value);
+                log.info('Scene "' + scene.name + '" reverted (conditions changed)');
+                pushSceneTrace(scene.name, 'revert (conditions)', action.device + '=' + (!action.value ? 'ON' : 'OFF'));
+              } catch (err) { log.error('Scene revert failed: ' + err.message); pushSceneTrace(scene.name, 'revert:error', err.message); }
             state.active = false;
             state.revertedAt = now;
           }
@@ -1467,6 +1477,16 @@ route('PATCH', '/api/scenes/:name', async (req, res) => {
   scene.enabled = (req.body || {}).enabled === true;
   await saveScenes();
   sendJson(res, 200, { success: true, enabled: scene.enabled });
+});
+
+route('GET', '/api/scene-traces', (req, res) => {
+  const last = parseInt(req.url.split('last=')[1]) || 5;
+  const map = {};
+  for (const t of sceneTraces) {
+    if (!map[t.scene]) map[t.scene] = [];
+    map[t.scene].push(t);
+  }
+  sendJson(res, 200, { success: true, traces: map });
 });
 
 // Device ping (safe from command injection)
@@ -2129,6 +2149,12 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .automation-rule{font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:.85rem;word-break:break-word}
 .automation-rule b{color:var(--text);font-weight:600}
 .automation-footer{display:flex;align-items:center;justify-content:flex-end;gap:.5rem}
+.scene-traces{display:flex;flex-direction:column;gap:2px;margin-bottom:.5rem;font-size:.7rem;line-height:1.3;font-family:'SF Mono',SFMono-Regular,ui-monospace,'Fira Code',monospace}
+.trace-item{display:flex;align-items:center;gap:.3rem;color:var(--muted);padding:2px 4px;border-radius:4px;background:rgba(255,255,255,.03)}
+.trace-err{color:var(--danger);background:rgba(255,69,58,.08)}
+.trace-ts{white-space:nowrap;color:var(--text-dim);min-width:4.5em;font-size:.65rem}
+.trace-act{font-weight:600;white-space:nowrap;min-width:7em;font-size:.7rem}
+.trace-d{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hb-toast{position:fixed;bottom:calc(2rem + var(--safe-b));right:2rem;background:var(--card-solid);
   -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:.5px solid var(--border);
   border-radius:var(--radius-md);padding:.9rem 1.25rem;box-shadow:0 12px 40px rgba(0,0,0,.55);
@@ -2563,6 +2589,9 @@ finally{btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-repeat"></i> Syn
 async function loadScenes(){
 try{
 const scenes=await apiGet('/api/scenes');
+const traceRes=await fetch('/api/scene-traces');
+const traceData=traceRes.ok?await traceRes.json():{traces:{}};
+const allTraces=traceData.traces||{};
 document.getElementById('scene-count-badge2').textContent=scenes.length;
 document.getElementById('sidebar-scene-count').textContent=scenes.length;
 const list=document.getElementById('scenes-list');
@@ -2588,10 +2617,27 @@ const en=s.enabled!==false;
 const toggleBtn=en
 ?'<button class="btn-hb btn-hb-sm btn-hb-icon" style="background:rgba(255,69,58,.15);color:var(--danger)" onclick="toggleScene(\\''+escHtml(s.name)+'\\',false,this)" title="Pause"><i class="bi bi-pause-fill"></i></button>'
 :'<button class="btn-hb btn-hb-sm btn-hb-icon" style="background:rgba(48,209,88,.15);color:var(--success)" onclick="toggleScene(\\''+escHtml(s.name)+'\\',true,this)" title="Resume"><i class="bi bi-play-fill"></i></button>';
+const sceneT=allTraces[s.name];
+let traceHtml='';
+if(sceneT&&sceneT.length){
+const last=sceneT.slice(-3).reverse();
+traceHtml='<div class="scene-traces">'+last.map(t=>{
+const d=new Date(t.ts);
+const tm=d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');
+let lbl=t.action;
+if(t.action==='apply')lbl='Applied';
+else if(t.action==='revert (timeout)')lbl='Revert (timeout)';
+else if(t.action==='revert (conditions)')lbl='Revert (changed)';
+else if(t.action.endsWith(':error'))lbl='Error';
+const err=t.action.endsWith(':error');
+return '<span class="trace-item'+(err?' trace-err':'')+'"><span class="trace-ts">'+tm+'</span><span class="trace-act">'+lbl+'</span><span class="trace-d">'+(t.detail||'')+'</span></span>';
+}).join('')+'</div>';
+}
 return '<div class="entity-card automation-card'+(en?' is-active':'')+'">'
 +'<div class="automation-card-top"><span class="automation-dot '+(en?'on':'off')+'"></span><span class="automation-name">'+escHtml(s.name)+'</span><span class="badge-hb '+(en?'active':'inactive')+'">'+(en?'Active':'Paused')+'</span></div>'
-+'<div class="automation-rule"><b>IF</b> '+escHtml(ifT)+' <b>\\u2192 THEN</b> '+escHtml(thenT)+'</div>'
-+'<div class="automation-footer">'+toggleBtn+'<button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="deleteScene(\\''+escHtml(s.name)+'\\')"><i class="bi bi-trash"></i></button></div>'
++'<div class="automation-rule"><b>IF</b> '+escHtml(ifT)+' <b>\u2192 THEN</b> '+escHtml(thenT)+'</div>'
++traceHtml
++'<div class="automation-footer">'+toggleBtn+'<button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="deleteScene(\''+escHtml(s.name)+'\')"><i class="bi bi-trash"></i></button></div>'
 +'</div>';
 }).join('')+'</div>';
 }catch(e){console.error('loadScenes',e);}
