@@ -1724,6 +1724,7 @@ a{color:inherit}
 .hb-card.collapsed .hb-card-header{cursor:pointer}
 .hb-card.collapsed .hb-card-header:hover{background:rgba(255,255,255,.03)}
 .hb-card.collapsed .save-btn-h{display:none}
+.hb-card.collapsed #syncBtn{display:none}
 .tiles-container{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem;contain:layout style}
 .tiles-container .tile{flex:0 0 calc(25% - .5625rem);min-width:0}
 .tile{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
@@ -1750,6 +1751,7 @@ a{color:inherit}
 .tile-edit-item:active{background:rgba(255,255,255,.08)}
 .tile-edit-item input{accent-color:var(--primary)}
 .tile-edit-item.hidden-tile{opacity:.4}
+.tile-edit-cat{grid-column:1/-1;font-size:.7rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;padding:.6rem 0 .2rem;border-bottom:1px solid var(--border);margin-top:.3rem}
 #pull-indicator{position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-60px);width:40px;height:40px;border-radius:50%;background:rgba(30,30,32,.9);border:.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform .25s ease;z-index:200;pointer-events:none}
 #pull-indicator.show{transform:translateX(-50%) translateY(20px)}
 #pull-indicator.pulling{transform:translateX(-50%) translateY(40px)}
@@ -1837,13 +1839,13 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .toast-title{font-weight:700;margin-bottom:.2rem}
 .toast-body{color:var(--muted);font-size:.85rem}
 .hb-toast.show{display:block;animation:slideUp .3s cubic-bezier(.25,.8,.25,1)}
-.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;align-items:center;justify-content:center}
-.modal-backdrop.show{display:flex}
-.modal-box{background:var(--card-solid);border:1px solid var(--separator);border-radius:14px;padding:1.5rem;max-width:340px;width:90%;text-align:center}
-.modal-box h3{margin:0 0 .4rem;font-size:1rem;color:var(--text)}
-.modal-box p{margin:0 0 1.2rem;font-size:.85rem;color:var(--muted)}
-.modal-btns{display:flex;gap:.6rem;justify-content:center}
-.modal-btns .btn-hb{flex:1;max-width:140px}
+.modal-backdrop{display:none!important;position:fixed!important;inset:0!important;background:rgba(0,0,0,.5)!important;backdrop-filter:blur(20px)!important;-webkit-backdrop-filter:blur(20px)!important;z-index:999!important;align-items:center!important;justify-content:center!important}
+.modal-backdrop.show{display:flex!important}
+.modal-box{background:rgba(44,44,46,.85)!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:16px!important;padding:2rem 1.5rem!important;max-width:360px!important;width:92%!important;text-align:center!important;box-shadow:0 8px 32px rgba(0,0,0,.4)!important;backdrop-filter:blur(40px)!important;-webkit-backdrop-filter:blur(40px)!important}
+.modal-box h3{margin:0 0 .5rem!important;font-size:1.1rem!important;color:#fff!important}
+.modal-box p{margin:0 0 1.4rem!important;font-size:.88rem!important;color:rgba(255,255,255,.6)!important}
+.modal-btns{display:flex!important;gap:.6rem!important;justify-content:center!important}
+.modal-btns .btn-hb{flex:1!important;max-width:160px!important}
 @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .spinner-hb{display:inline-block;width:1rem;height:1rem;border:2px solid rgba(255,255,255,.25);
   border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
@@ -1870,9 +1872,9 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .chart-current .cc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .chart-current .cc-val{color:#f5f5f7;font-weight:600;font-variant-numeric:tabular-nums}
 .chart-tabs{display:flex;gap:.4rem;margin-bottom:.75rem}
-.chart-tab{padding:.35rem .75rem;border-radius:980px;font-size:.75rem;font-weight:600;cursor:pointer;border:.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s}
-.chart-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.chart-tab:hover:not(.active){color:var(--text);border-color:rgba(255,255,255,.2)}
+.chart-tab{padding:.4rem .85rem;border-radius:980px;font-size:.75rem;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);transition:all .15s;min-height:34px;display:inline-flex;align-items:center;justify-content:center}
+.chart-tab.active{border-color:var(--primary);color:var(--text)}
+.chart-tab:hover{border-color:var(--primary);color:var(--text)}
 .chart-wrap{position:relative;height:220px;width:100%}
 @media(max-width:768px){.chart-wrap{height:180px}}
 .device-controls{display:flex;gap:.5rem;align-items:center}
@@ -1966,26 +1968,10 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <main class="main">
 <div class="tab-pane active" id="tab-status">
 <div id="pull-indicator"><i class="bi bi-arrow-down"></i></div>
-<div class="page-header"><h1>Status</h1><div style="display:flex;gap:.4rem"><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="loadStatus();loadLogs()" id="refreshBtn"><i class="bi bi-arrow-clockwise"></i></button><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="toggleTileEditor()" id="editTilesBtn"><i class="bi bi-pencil-square"></i></button></div></div>
-<div class="tile-edit-panel" id="tileEditPanel">
-<div class="tile-edit-grid" id="tileEditGrid"></div>
-</div>
-<div class="tiles-container" id="tilesContainer">
-<div class="tile" id="tile-grid"><span class="icon"><i class="bi bi-plug"></i></span><div class="label">City Grid</div><div class="value" id="grid-status">--</div><div class="sub" id="grid-voltage"></div></div>
-<div class="tile" id="tile-battery"><span class="icon"><i class="bi bi-battery-half"></i></span><div class="label">Battery</div><div class="value" id="battery-status">--%</div><div class="sub" id="battery-power"></div></div>
-<div class="tile" id="tile-pv"><span class="icon"><i class="bi bi-sun"></i></span><div class="label">Solar PV</div><div class="value" id="pv-status">--</div><div class="sub" id="pv-detail"></div></div>
-<div class="tile" id="tile-load"><span class="icon"><i class="bi bi-laptop"></i></span><div class="label">Load</div><div class="value" id="load-status">--</div><div class="sub" id="clock-tile">consumption</div></div>
-<div class="tile" id="tile-day-pv"><span class="icon"><i class="bi bi-sun"></i></span><div class="label">Solar Today</div><div class="value" id="day-pv-status">-- kWh</div><div class="sub" id="day-pv-sub"></div></div>
-<div class="tile" id="tile-day-import"><span class="icon"><i class="bi bi-box-arrow-in-down"></i></span><div class="label">Grid Import</div><div class="value" id="day-import-status">-- kWh</div><div class="sub" id="day-import-sub">today</div></div>
-<div class="tile" id="tile-day-export"><span class="icon"><i class="bi bi-box-arrow-up"></i></span><div class="label">Grid Export</div><div class="value" id="day-export-status">-- kWh</div><div class="sub" id="day-export-sub">today</div></div>
-<div class="tile" id="tile-day-load"><span class="icon"><i class="bi bi-lightning"></i></span><div class="label">Load Today</div><div class="value" id="day-load-status">-- kWh</div><div class="sub" id="day-load-sub">consumed</div></div>
-<div class="tile" id="tile-day-batcharge"><span class="icon"><i class="bi bi-battery-charging"></i></span><div class="label">Bat Charge</div><div class="value" id="day-batcharge-status">-- kWh</div><div class="sub" id="day-batcharge-sub">today</div></div>
-<div class="tile" id="tile-day-batdischarge"><span class="icon"><i class="bi bi-battery"></i></span><div class="label">Bat Discharge</div><div class="value" id="day-batdischarge-status">-- kWh</div><div class="sub" id="day-batdischarge-sub">today</div></div>
-<div class="tile" id="tile-battemp"><span class="icon"><i class="bi bi-thermometer-half"></i></span><div class="label">Battery Temp</div><div class="value" id="bat-temp-status">-- °C</div><div class="sub" id="bat-temp-sub"></div></div>
-<div class="tile" id="tile-envtemp"><span class="icon"><i class="bi bi-thermometer"></i></span><div class="label">Environment</div><div class="value" id="env-temp-status">-- °C</div><div class="sub" id="env-temp-sub">temperature</div></div>
-</div>
+<div class="page-header"><h1>Status</h1></div>
+<div class="tiles-container" id="tilesContainer"></div>
 <div class="hb-card chart-section collapsed" style="margin-bottom:.75rem">
-<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cpu" style="margin-right:.5rem"></i>Inverter Debug</div><div style="font-size:.8rem;color:var(--muted)">tap to toggle <i class="bi bi-chevron-down toggle-arrow" style="font-size:.7rem;margin-left:.2rem"></i></div></div>
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cpu" style="margin-right:.5rem"></i>Inverter Debug</div></div>
 <div id="debug-grid" style="padding:.5rem .75rem;font-size:.78rem;font-family:monospace;color:var(--text);display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.25rem .75rem"></div>
 </div>
 <div class="hb-card chart-section">
@@ -2004,14 +1990,14 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="otherChart"></canvas></div></div>
 </div>
 <div class="hb-card">
-<div class="hb-card-header"><div class="hb-card-title">Logs</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="loadLogs()"><i class="bi bi-arrow-repeat"></i> Refresh</button></div>
+<div class="hb-card-header"><div class="hb-card-title">Logs</div></div>
 <div class="hb-card-body" style="padding:.5rem"><div class="terminal" id="log-container">Loading logs...</div></div>
 </div>
 </div>
 <div class="tab-pane" id="tab-devices">
 <div class="page-header"><h1>Devices</h1></div>
-<div class="hb-card">
-<div class="hb-card-header"><div class="hb-card-title">Sync with Tuya</div><button class="btn-hb btn-hb-primary btn-hb-sm" id="syncBtn" onclick="syncTuya()"><i class="bi bi-arrow-repeat"></i> Sync Devices</button></div>
+<div class="hb-card collapsed">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-arrow-repeat" style="margin-right:.5rem"></i>Sync with Tuya</div><span><button class="btn-hb btn-hb-outline btn-hb-sm" id="syncBtn" onclick="event.stopPropagation();syncTuya()"><i class="bi bi-arrow-repeat"></i> Sync Devices</button></span></div>
 <div class="hb-card-body"><p class="text-muted-hb">Pull devices from your Tuya account.</p></div>
 </div>
 <div class="hb-card" style="margin-top:1rem">
@@ -2022,7 +2008,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="tab-pane" id="tab-automations">
 <div class="page-header"><h1>Automations</h1></div>
 <div class="hb-card collapsed" id="new-automation-card">
-<div class="hb-card-header" onclick="toggleNewAutomation()"><div class="hb-card-title"><i class="bi bi-plus-circle" style="margin-right:.5rem"></i>New Automation</div><span><i class="bi bi-chevron-down toggle-arrow" style="font-size:.85rem;color:var(--muted)"></i><button class="btn-hb btn-hb-primary btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveScene()" style="margin-left:.5rem"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-header" onclick="toggleNewAutomation()"><div class="hb-card-title"><i class="bi bi-plus-circle" style="margin-right:.5rem"></i>New Automation</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveScene()" style="margin-left:.5rem"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Name</label><input type="text" id="scene-name" class="form-hb" placeholder="e.g. Battery Saver" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">IF (all must be true)</label><div id="if-conditions"></div><button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addCondition()"><i class="bi bi-plus"></i> Add Condition</button></div>
@@ -2035,9 +2021,15 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 </div>
 <div class="tab-pane" id="tab-settings">
-<div class="page-header"><h1>Settings</h1><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="loadPluginConfig()"><i class="bi bi-arrow-clockwise"></i> Refresh</button></div>
+<div class="page-header"><h1>Settings</h1></div>
 <div class="hb-card">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Inverter</div><button class="btn-hb btn-hb-primary btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-pencil-square" style="margin-right:.5rem"></i>Status Tiles</div></div>
+<div class="hb-card-body">
+<div class="tile-edit-grid" id="tileEditGrid"></div>
+</div>
+</div>
+<div class="hb-card" style="margin-top:1rem">
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Inverter</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Inverter IP</label><input type="text" id="cfg-inverter-ip" class="form-hb" placeholder="192.168.0.116" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Serial Number</label><input type="text" id="cfg-inverter-serial" class="form-hb" placeholder="2317564280" /></div>
@@ -2045,7 +2037,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 </div>
 <div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cloud" style="margin-right:.5rem"></i>Tuya Cloud</div><button class="btn-hb btn-hb-primary btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cloud" style="margin-right:.5rem"></i>Tuya Cloud</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Access ID</label><input type="text" id="cfg-tuya-accessId" class="form-hb" placeholder="Enter Tuya Access ID" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Access Key</label><input type="password" id="cfg-tuya-accessKey" class="form-hb" placeholder="Enter Tuya Access Key" /></div>
@@ -2056,13 +2048,13 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 </div>
 <div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-globe" style="margin-right:.5rem"></i>Web UI</div><button class="btn-hb btn-hb-primary btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-globe" style="margin-right:.5rem"></i>Web UI</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="savePluginConfig()"><i class="bi bi-save"></i> Save</button></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Web Port</label><input type="number" id="cfg-webPort" class="form-hb" value="8583" /></div>
 </div>
 </div>
 <div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-shield-lock" style="margin-right:.5rem"></i>Security</div><button class="btn-hb btn-hb-primary btn-hb-sm" onclick="changePassword()"><i class="bi bi-key"></i> Update</button></div>
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-shield-lock" style="margin-right:.5rem"></i>Security</div><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="changePassword()"><i class="bi bi-key"></i> Update</button></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Current password</label><input type="password" id="cp-current" class="form-hb" autocomplete="current-password" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">New password (min. 6 characters)</label><input type="password" id="cp-new" class="form-hb" autocomplete="new-password" /></div>
@@ -2070,13 +2062,9 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 </div>
 <div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div></div>
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div><div style="display:flex;gap:.5rem"><button class="btn-hb btn-hb-outline btn-hb-sm" id="btn-check-update" onclick="checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check for Updates</button><button class="btn-hb btn-hb-outline btn-hb-sm" id="btn-apply-update" onclick="applyUpdate()" style="display:none"><i class="bi bi-download"></i> Update & Restart</button></div></div>
 <div class="hb-card-body">
 <div id="update-info" style="font-size:.85rem;color:var(--text-secondary);margin-bottom:.75rem">Loading...</div>
-<div style="display:flex;gap:.5rem;flex-wrap:wrap">
-<button class="btn-hb btn-hb-outline btn-hb-sm" id="btn-check-update" onclick="checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check for Updates</button>
-<button class="btn-hb btn-hb-primary btn-hb-sm" id="btn-apply-update" onclick="applyUpdate()" style="display:none"><i class="bi bi-download"></i> Update & Restart</button>
-</div>
 <div id="update-status" style="margin-top:.75rem;font-size:.8rem;display:none"></div>
 </div>
 </div>
@@ -2085,15 +2073,15 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card-body">
 <div style="display:flex;flex-direction:column;gap:.6rem">
 <button class="btn-hb btn-hb-outline w-100" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> Restart UI</button>
-<button class="btn-hb btn-hb-outline w-100" onclick="restartApp()" style="color:var(--primary)"><i class="bi bi-arrow-repeat"></i> Restart App</button>
-<button class="btn-hb btn-hb-danger w-100" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="restartApp()"><i class="bi bi-arrow-repeat"></i> Restart App</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
 </div>
 </div>
 </div>
 
 </div>
 <div class="hb-toast" id="toast"><div class="toast-title" id="toastTitle">Success</div><div class="toast-body" id="toastBody">Done.</div></div>
-<div class="modal-backdrop" id="restartModal"><div class="modal-box"><h3>Restart now?</h3><p>Settings saved. Restart to apply changes now or later.</p><div class="modal-btns"><button class="btn-hb btn-hb-primary" onclick="restartApp()"><i class="bi bi-arrow-repeat"></i> Restart</button><button class="btn-hb btn-hb-outline" onclick="document.getElementById('restartModal').classList.remove('show')">Cancel</button></div></div></div>
+<div class="modal-backdrop" id="restartModal" style="background:#000!important"><div class="modal-box" style="background:#1c1c1e!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:14px!important;padding:1.8rem 1.5rem!important;max-width:340px;width:90%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,.7)!important"><h3 style="margin:0 0 .5rem;font-size:1.05rem;color:#f5f5f7!important">Restart now?</h3><p style="margin:0 0 1.2rem;font-size:.85rem;color:#a1a1a6!important">Settings saved. Restart to apply changes now or later.</p><div style="display:flex;gap:.6rem;justify-content:center"><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="restartApp()" style="flex:1;max-width:160px"><i class="bi bi-arrow-repeat"></i> Restart</button><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="document.getElementById('restartModal').classList.remove('show')" style="flex:1;max-width:160px">Cancel</button></div></div></div>
 </main>
 <script>
 let tuyaDevices=[];
@@ -2123,28 +2111,7 @@ async function apiPatch(p,b){const r=handleAuthStatus(await fetch(p,{method:'PAT
 async function loadStatus(){
 try{
 const d=await apiGet('/api/status');
-const on=d.gridPower===true;
-document.getElementById('grid-status').textContent=on?'ON':'OFF';
-const tg=document.getElementById('tile-grid');
-tg.classList.toggle('on',on);tg.classList.toggle('off',!on);
-document.getElementById('grid-voltage').textContent=(on&&d.gridVoltage>0)?d.gridVoltage.toFixed(1)+'V':'\\u2014';
-document.getElementById('battery-status').textContent=(d.batterySOC||0)+'%';
-const bp=d.batteryPower||0;
-document.getElementById('battery-power').textContent=(bp>0?'+'+bp+'W (charging)':bp<0?bp+'W (discharging)':'0W');
-const pv1=d.pvPower||0;const pv2=d.pvPower2||0;
-document.getElementById('pv-status').textContent=(pv1+pv2)?(pv1+pv2)+'W':'0W';
-document.getElementById('pv-detail').textContent=pv2>0?'PV1='+pv1+'W PV2='+pv2+'W':'PV='+pv1+'W';
-document.getElementById('load-status').textContent=d.loadPower?d.loadPower+'W':'0W';
-document.getElementById('clock-tile').textContent=new Date().toLocaleTimeString();
-document.getElementById('day-pv-status').textContent=(d.dayPV||0).toFixed(1)+' kWh';
-document.getElementById('day-import-status').textContent=(d.dayGridImport||0).toFixed(1)+' kWh';
-document.getElementById('day-export-status').textContent=(d.dayGridExport||0).toFixed(1)+' kWh';
-document.getElementById('day-load-status').textContent=(d.dayLoadEnergy||0).toFixed(1)+' kWh';
-document.getElementById('day-batcharge-status').textContent=(d.dayBatCharge||0).toFixed(1)+' kWh';
-document.getElementById('day-batdischarge-status').textContent=(d.dayBatDischarge||0).toFixed(1)+' kWh';
-document.getElementById('bat-temp-status').textContent=(d.batteryTemp||0).toFixed(1)+' °C';
-document.getElementById('env-temp-status').textContent=(d.envTemp||0).toFixed(1)+' °C';
-const dg=d.debug||{};
+updateTiles(d,d.debug||{});
 const dgEl=document.getElementById('debug-grid');
 if(dgEl){
 const groups=[
@@ -2245,15 +2212,14 @@ const dev=tuyaDevices.find(d=>d.id===id);
 if(dev)dev.switch=value;
 try{
 const r=await apiPost('/api/tuya-control',{deviceId:id,value});
-if(r.success)showToast('Success','Device '+(value?'ON':'OFF'));
-else{showToast('Error',r.message||'Control failed',true);if(iconEl)iconEl.className=prevClass;}
+if(!r.success){showToast('Error',r.message||'Control failed',true);if(iconEl)iconEl.className=prevClass;}
 }catch(e){showToast('Error',e.message,true);if(iconEl)iconEl.className=prevClass;}
 finally{if(iconEl)setTimeout(()=>iconEl.classList.remove('pulse'),600);}
 }
 async function syncTuya(){
 const btn=document.getElementById('syncBtn');
 btn.disabled=true;btn.innerHTML='<span class="spinner-hb"></span> Syncing...';
-try{const d=await apiPost('/api/sync-tuya',{});if(d.success){showToast('Synced',d.count+' devices loaded.');await loadTuyaDevices();}else showToast('Sync error',d.message||'Unknown error',true);}
+try{const d=await apiPost('/api/sync-tuya',{});if(d.success){await loadTuyaDevices();}else showToast('Sync error',d.message||'Unknown error',true);}
 catch(e){showToast('Sync error',e.message,true);}
 finally{btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-repeat"></i> Sync Devices';}
 }
@@ -2285,7 +2251,7 @@ const toggleBtn=en
 return '<div class="entity-card automation-card'+(en?' is-active':'')+'">'
 +'<div class="automation-card-top"><span class="automation-dot '+(en?'on':'off')+'"></span><span class="automation-name">'+escHtml(s.name)+'</span><span class="badge-hb '+(en?'active':'inactive')+'">'+(en?'Active':'Paused')+'</span></div>'
 +'<div class="automation-rule"><b>IF</b> '+escHtml(ifT)+' <b>\\u2192 THEN</b> '+escHtml(thenT)+'</div>'
-+'<div class="automation-footer">'+toggleBtn+'<button class="btn-hb btn-hb-danger btn-hb-sm btn-hb-icon" onclick="deleteScene(\\''+escHtml(s.name)+'\\')"><i class="bi bi-trash"></i></button></div>'
++'<div class="automation-footer">'+toggleBtn+'<button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="deleteScene(\\''+escHtml(s.name)+'\\')"><i class="bi bi-trash"></i></button></div>'
 +'</div>';
 }).join('')+'</div>';
 }catch(e){console.error('loadScenes',e);}
@@ -2299,12 +2265,12 @@ if(dot){dot.classList.remove('on','off');dot.classList.add(enabled?'on':'off');}
 const badge=card.querySelector('.badge-hb.active,.badge-hb.inactive');
 if(badge){badge.classList.remove('active','inactive');badge.classList.add(enabled?'active':'inactive');badge.textContent=enabled?'Active':'Paused';}
 }
-try{const r=await apiPatch('/api/scenes/'+encodeURIComponent(name),{enabled});if(r.success)showToast(enabled?'Resumed':'Paused','Automation "'+name+'" '+(enabled?'resumed':'paused')+'.');else showToast('Error',r.message||'Toggle failed',true);loadScenes();}
+try{const r=await apiPatch('/api/scenes/'+encodeURIComponent(name),{enabled});if(!r.success)showToast('Error',r.message||'Toggle failed',true);loadScenes();}
 catch(e){showToast('Error',e.message,true);loadScenes();}
 }
 async function deleteScene(n){
 if(!confirm('Delete automation "'+n+'"?'))return;
-try{await apiDelete('/api/scenes/'+encodeURIComponent(n));showToast('Deleted','Automation removed.');loadScenes();}
+try{await apiDelete('/api/scenes/'+encodeURIComponent(n));loadScenes();}
 catch(e){showToast('Error',e.message,true);}
 }
 function toggleNewAutomation(){
@@ -2318,7 +2284,7 @@ function addCondition(){
 expandNewAutomation();
 const c=document.getElementById('if-conditions');
 const r=document.createElement('div');r.className='rule-row';
-r.innerHTML='<select class="form-hb rule-field condition-type" onchange="updateConditionOptions(this)"><option value="">\\u2014 Source \\u2014</option><option value="grid">City Grid</option><option value="battery">Battery Level</option></select><div class="rule-field condition-operator-col" style="display:none"><select class="form-hb condition-operator"><option value="<">< Less</option><option value=">">> Greater</option><option value="=">= Equal</option></select></div><div class="rule-field condition-value-col" style="display:none"><input type="number" class="form-hb condition-value" placeholder="Value" /></div><div class="rule-remove"><button class="btn-hb btn-hb-danger btn-hb-sm btn-hb-icon" onclick="this.closest(\\'.rule-row\\').remove()"><i class="bi bi-x"></i></button></div>';
+r.innerHTML='<select class="form-hb rule-field condition-type" onchange="updateConditionOptions(this)"><option value="">\\u2014 Source \\u2014</option><option value="grid">City Grid</option><option value="battery">Battery Level</option></select><div class="rule-field condition-operator-col" style="display:none"><select class="form-hb condition-operator"><option value="<">< Less</option><option value=">">> Greater</option><option value="=">= Equal</option></select></div><div class="rule-field condition-value-col" style="display:none"><input type="number" class="form-hb condition-value" placeholder="Value" /></div><div class="rule-remove"><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="this.closest(\\'.rule-row\\').remove()"><i class="bi bi-x"></i></button></div>';
 c.appendChild(r);
 }
 function updateConditionOptions(sel){
@@ -2335,7 +2301,7 @@ expandNewAutomation();
 const c=document.getElementById('then-actions');
 const r=document.createElement('div');r.className='rule-row';
 const opts=tuyaDevices.map(d=>'<option value="'+escHtml(d.id)+'">'+escHtml(d.name)+'</option>').join('');
-r.innerHTML='<select class="form-hb rule-field action-device"><option value="">\\u2014 Device \\u2014</option>'+opts+'</select><select class="form-hb rule-field-sm action-value"><option value="true">ON</option><option value="false">OFF</option></select><input type="number" class="form-hb rule-field-sm action-duration" placeholder="Dur. min" min="0" /><input type="number" class="form-hb rule-field-sm action-interval" placeholder="Int. min" min="0" /><div class="rule-remove"><button class="btn-hb btn-hb-danger btn-hb-sm btn-hb-icon" onclick="this.closest(\\'.rule-row\\').remove()"><i class="bi bi-x"></i></button></div>';
+r.innerHTML='<select class="form-hb rule-field action-device"><option value="">\\u2014 Device \\u2014</option>'+opts+'</select><select class="form-hb rule-field-sm action-value"><option value="true">ON</option><option value="false">OFF</option></select><input type="number" class="form-hb rule-field-sm action-duration" placeholder="Dur. min" min="0" /><input type="number" class="form-hb rule-field-sm action-interval" placeholder="Int. min" min="0" /><div class="rule-remove"><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="this.closest(\\'.rule-row\\').remove()"><i class="bi bi-x"></i></button></div>';
 c.appendChild(r);
 }
 function populateDeviceSelects(){
@@ -2345,7 +2311,7 @@ sels.forEach(s=>{const cur=s.value;s.innerHTML='<option value="">\\u2014 Device 
 }
 async function saveScene(){
 const name=document.getElementById('scene-name').value.trim();
-if(!name){showToast('Error','Enter automation name.',true);return;}
+if(!name)return;
 const conds=[];
 document.querySelectorAll('#if-conditions > .rule-row').forEach(r=>{
 const t=r.querySelector('.condition-type').value;
@@ -2359,7 +2325,7 @@ const c={type:t,value:val};
 if(o&&o.value)c.operator=o.value;
 conds.push(c);
 });
-if(conds.length===0){showToast('Error','Add at least one condition.',true);return;}
+if(conds.length===0)return;
 const acts=[];
 document.querySelectorAll('#then-actions > .rule-row').forEach(r=>{
 const d=r.querySelector('.action-device').value;
@@ -2368,10 +2334,9 @@ const dur=parseInt(r.querySelector('.action-duration').value)||0;
 const int=parseInt(r.querySelector('.action-interval').value)||0;
 if(d)acts.push({type:'tuya',device:d,value:v,duration:dur,interval:int});
 });
-if(acts.length===0){showToast('Error','Add at least one action.',true);return;}
+if(acts.length===0)return;
 try{
 await apiPost('/api/scenes',{name,if:{conditions:conds},then:{actions:acts}});
-showToast('Saved','Automation "'+name+'" created.');
 document.getElementById('scene-name').value='';
 document.getElementById('if-conditions').innerHTML='';
 document.getElementById('then-actions').innerHTML='';
@@ -2380,7 +2345,7 @@ loadScenes();
 }
 function escHtml(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 async function logout(){try{await apiPost('/api/logout',{});}catch(e){}window.location.href='/login';}
-async function restartApp(){try{await apiPost('/api/restart',{});showToast('Restarting','App will restart in a few seconds...');setTimeout(()=>{window.location.reload();},5000);}catch(e){showToast('Error',e.message);}}
+async function restartApp(){try{await apiPost('/api/restart',{});setTimeout(()=>{window.location.reload();},5000);}catch(e){showToast('Error',e.message);}}
 
 // ============================================================
 // HISTORY CHART
@@ -2414,8 +2379,7 @@ const lp=d.points[d.points.length-1];
 renderCurrentValues('historyCurrent',[
 {label:'Load',value:lp.load+'W',color:'#3b82f6'},
 {label:'Battery',value:(lp.bat>=0?'+':'')+lp.bat+'W',color:lp.bat>=0?'#22c55e':'#ef4444'},
-{label:'Grid',value:lp.grid?'ON':'OFF',color:lp.grid?'#22c55e':'#ef4444'},
-{label:'PV',value:lp.pv+'W',color:'#f59e0b'}
+{label:'Grid',value:lp.grid?'ON':'OFF',color:lp.grid?'#22c55e':'#ef4444'}
 ]);
 }catch(e){console.error('loadHistory',e);}
 }
@@ -2522,7 +2486,7 @@ const cf=document.getElementById('cp-confirm').value;
 if(!cur||!nw){showToast('Error','Fill in all fields.',true);return;}
 if(nw.length<6){showToast('Error','New password must be at least 6 characters.',true);return;}
 if(nw!==cf){showToast('Error','Passwords do not match.',true);return;}
-try{const r=await fetch('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currentPassword:cur,newPassword:nw})});const d=await r.json();if(d.success){showToast('Success','Password updated.');document.getElementById('cp-current').value='';document.getElementById('cp-new').value='';document.getElementById('cp-confirm').value='';}else showToast('Error',d.message||'Failed.',true);}
+try{const r=await fetch('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currentPassword:cur,newPassword:nw})});const d=await r.json();if(d.success){document.getElementById('cp-current').value='';document.getElementById('cp-new').value='';document.getElementById('cp-confirm').value='';}else showToast('Error',d.message||'Failed.',true);}
 catch(e){showToast('Error',e.message,true);}
 }
 async function loadPluginConfig(){
@@ -2553,24 +2517,102 @@ const r=await apiPost('/api/plugin-config',{config:cfg});
 if(r.success){document.getElementById('restartModal').classList.add('show');}else showToast('Error',r.message||'Save failed',true);
 }catch(e){showToast('Error',e.message,true);}
 }
-// Tile editor
-const ALL_TILES=['tile-grid','tile-battery','tile-pv','tile-load','tile-day-pv','tile-day-import','tile-day-export','tile-day-load','tile-day-batcharge','tile-day-batdischarge','tile-battemp','tile-envtemp'];
-const TILE_LABELS={};
-document.querySelectorAll('.tile[id]').forEach(t=>{const l=t.querySelector('.label');if(l)TILE_LABELS[t.id]=l.textContent;});
+// Tile registry
+const TILE_REGISTRY=[
+// Main tiles
+{id:'tile-grid',label:'City Grid',icon:'bi-plug',cat:'main',def:true,update:d=>{const on=d.gridPower===true;return{value:on?'ON':'OFF',sub:(on&&d.gridVoltage>0)?d.gridVoltage.toFixed(1)+'V':'\u2014',cls:on?'on':'off'};}},
+{id:'tile-battery',label:'Battery',icon:'bi-battery-half',cat:'main',def:true,update:d=>{const bp=d.batteryPower||0;return{value:(d.batterySOC||0)+'%',sub:bp>0?'+'+bp+'W':bp<0?bp+'W':'0W'};}},
+{id:'tile-pv',label:'Solar PV',icon:'bi-sun',cat:'main',def:true,update:d=>{const pv1=d.pvPower||0,pv2=d.pvPower2||0;return{value:(pv1+pv2)?(pv1+pv2)+'W':'0W',sub:pv2>0?'PV1='+pv1+'W PV2='+pv2+'W':'PV='+pv1+'W'};}},
+{id:'tile-load',label:'Load',icon:'bi-laptop',cat:'main',def:true,update:d=>({value:d.loadPower?d.loadPower+'W':'0W',sub:new Date().toLocaleTimeString()})},
+{id:'tile-day-pv',label:'Solar Today',icon:'bi-sun',cat:'main',def:true,update:d=>({value:(d.dayPV||0).toFixed(1)+' kWh',sub:''})},
+{id:'tile-day-import',label:'Grid Import',icon:'bi-box-arrow-in-down',cat:'main',def:true,update:d=>({value:(d.dayGridImport||0).toFixed(1)+' kWh',sub:'today'})},
+{id:'tile-day-export',label:'Grid Export',icon:'bi-box-arrow-up',cat:'main',def:true,update:d=>({value:(d.dayGridExport||0).toFixed(1)+' kWh',sub:'today'})},
+{id:'tile-day-load',label:'Load Today',icon:'bi-lightning',cat:'main',def:true,update:d=>({value:(d.dayLoadEnergy||0).toFixed(1)+' kWh',sub:'consumed'})},
+{id:'tile-day-batcharge',label:'Bat Charge',icon:'bi-battery-charging',cat:'main',def:true,update:d=>({value:(d.dayBatCharge||0).toFixed(1)+' kWh',sub:'today'})},
+{id:'tile-day-batdischarge',label:'Bat Discharge',icon:'bi-battery',cat:'main',def:true,update:d=>({value:(d.dayBatDischarge||0).toFixed(1)+' kWh',sub:'today'})},
+{id:'tile-battemp',label:'Battery Temp',icon:'bi-thermometer-half',cat:'main',def:true,update:d=>({value:(d.batteryTemp||0).toFixed(1)+' °C',sub:''})},
+{id:'tile-envtemp',label:'Environment',icon:'bi-thermometer',cat:'main',def:true,update:d=>({value:(d.envTemp||0).toFixed(1)+' °C',sub:'temperature'})},
+// DC Block debug tiles
+{id:'tile-d-overall',label:'Overall State',icon:'bi-gear',cat:'dc',def:false,update:(_,g)=>({value:g.overallState??'--',sub:'reg59'})},
+{id:'tile-d-dayActive',label:'Day Active',icon:'bi-graph-up',cat:'dc',def:false,update:(_,g)=>({value:(g.dayActiveEnergy??0)+' kWh',sub:'reg60'})},
+{id:'tile-d-monthPV',label:'Month PV',icon:'bi-sun',cat:'dc',def:false,update:(_,g)=>({value:(g.monthPV??0)+' kWh',sub:'reg65'})},
+{id:'tile-d-monthLoad',label:'Month Load',icon:'bi-lightning',cat:'dc',def:false,update:(_,g)=>({value:(g.monthLoad??0)+' kWh',sub:'reg66'})},
+{id:'tile-d-monthGrid',label:'Month Grid',icon:'bi-plug',cat:'dc',def:false,update:(_,g)=>({value:(g.monthGrid??0)+' kWh',sub:'reg67'})},
+{id:'tile-d-totalBatChg',label:'Total Bat Charge',icon:'bi-battery-charging',cat:'dc',def:false,update:(_,g)=>({value:(g.totalBatCharge??0)+' kWh',sub:'reg72-73'})},
+{id:'tile-d-totalBatDisch',label:'Total Bat Discharge',icon:'bi-battery',cat:'dc',def:false,update:(_,g)=>({value:(g.totalBatDischarge??0)+' kWh',sub:'reg74-75'})},
+{id:'tile-d-totalGridImp',label:'Total Grid Import',icon:'bi-box-arrow-in-down',cat:'dc',def:false,update:(_,g)=>({value:(g.totalGridImport??0)+' kWh',sub:'reg78+80'})},
+{id:'tile-d-totalGridExp',label:'Total Grid Export',icon:'bi-box-arrow-up',cat:'dc',def:false,update:(_,g)=>({value:(g.totalGridExport??0)+' kWh',sub:'reg81-82'})},
+{id:'tile-d-gridFreq',label:'Grid Frequency',icon:'bi-activity',cat:'dc',def:false,update:(_,g)=>({value:(g.gridFreq??0)+' Hz',sub:'reg79'})},
+{id:'tile-d-totalLoad',label:'Total Load',icon:'bi-graph-down',cat:'dc',def:false,update:(_,g)=>({value:(g.totalLoadEnergy??0)+' kWh',sub:'reg85-86'})},
+{id:'tile-d-totalPV',label:'Total PV',icon:'bi-sun',cat:'dc',def:false,update:(_,g)=>({value:(g.totalPV??0)+' kWh',sub:'reg96-97'})},
+{id:'tile-d-yearGridExp',label:'Year Grid Export',icon:'bi-calendar',cat:'dc',def:false,update:(_,g)=>({value:(g.yearGridExport??0)+' kWh',sub:'reg98-99'})},
+{id:'tile-d-dcTransfTemp',label:'DC Transformer',icon:'bi-thermometer-half',cat:'dc',def:false,update:(_,g)=>({value:(g.dcTransfTemp??0)+' °C',sub:'reg90'})},
+{id:'tile-d-radiator',label:'Radiator Temp',icon:'bi-thermometer',cat:'dc',def:false,update:(_,g)=>({value:(g.radiatorTemp??0)+' °C',sub:'reg91'})},
+{id:'tile-d-pv1V',label:'PV1 Voltage',icon:'bi-lightning',cat:'dc',def:false,update:(_,g)=>({value:(g.pv1Voltage??0)+' V',sub:'reg109'})},
+{id:'tile-d-pv1A',label:'PV1 Current',icon:'bi-lightning',cat:'dc',def:false,update:(_,g)=>({value:(g.pv1Current??0)+' A',sub:'reg110'})},
+{id:'tile-d-pv2V',label:'PV2 Voltage',icon:'bi-lightning',cat:'dc',def:false,update:(_,g)=>({value:(g.pv2Voltage??0)+' V',sub:'reg111'})},
+{id:'tile-d-fault1',label:'Fault Code 1',icon:'bi-exclamation-triangle',cat:'dc',def:false,update:(_,g)=>({value:g.fault1??'--',sub:'reg103'})},
+{id:'tile-d-fault2',label:'Fault Code 2',icon:'bi-exclamation-triangle',cat:'dc',def:false,update:(_,g)=>({value:g.fault2??'--',sub:'reg104'})},
+{id:'tile-d-fault3',label:'Fault Code 3',icon:'bi-exclamation-triangle',cat:'dc',def:false,update:(_,g)=>({value:g.fault3??'--',sub:'reg105'})},
+{id:'tile-d-fault4',label:'Fault Code 4',icon:'bi-exclamation-triangle',cat:'dc',def:false,update:(_,g)=>({value:g.fault4??'--',sub:'reg106'})},
+// AC Block debug tiles
+{id:'tile-a-invV',label:'Inverter Voltage',icon:'bi-plug',cat:'ac',def:false,update:(_,g)=>({value:(g.inverterVoltage??0)+' V',sub:'reg154'})},
+{id:'tile-a-gridI1',label:'Grid Current 1',icon:'bi-graph-up',cat:'ac',def:false,update:(_,g)=>({value:g.gridCurrent1??'--',sub:'reg160'})},
+{id:'tile-a-gridI2',label:'Grid Current 2',icon:'bi-graph-up',cat:'ac',def:false,update:(_,g)=>({value:g.gridCurrent2??'--',sub:'reg161'})},
+{id:'tile-a-invI',label:'Inverter Current',icon:'bi-graph-up',cat:'ac',def:false,update:(_,g)=>({value:(g.inverterCurrent??0)+' A',sub:'reg164'})},
+{id:'tile-a-auxPower',label:'Aux Power',icon:'bi-lightning',cat:'ac',def:false,update:(_,g)=>({value:(g.auxPower??0)+' W',sub:'reg166'})},
+{id:'tile-a-gridL1',label:'Grid L1 Power',icon:'bi-plug',cat:'ac',def:false,update:(_,g)=>({value:(g.gridL1Power??0)+' W',sub:'reg167'})},
+{id:'tile-a-gridCT',label:'Grid CT Power',icon:'bi-plug',cat:'ac',def:false,update:(_,g)=>({value:(g.gridCTPower??0)+' W',sub:'reg172'})},
+{id:'tile-a-invPower',label:'Inverter Power',icon:'bi-lightning',cat:'ac',def:false,update:(_,g)=>({value:(g.inverterPower??0)+' W',sub:'reg175'})},
+{id:'tile-a-offGrid',label:'Off-Grid Mode',icon:'bi-power',cat:'ac',def:false,update:(_,g)=>({value:g.offGridMode??'--',sub:'reg179'})},
+{id:'tile-a-batV',label:'Battery Voltage',icon:'bi-battery-half',cat:'ac',def:false,update:(_,g)=>({value:(g.batteryVoltage??0)+' V',sub:'reg183'})},
+{id:'tile-a-batI',label:'Battery Current',icon:'bi-battery-half',cat:'ac',def:false,update:(_,g)=>({value:(g.batteryCurrent??0)+' A',sub:'reg191'})},
+{id:'tile-a-pv1Pwr',label:'PV1 Power',icon:'bi-sun',cat:'ac',def:false,update:(_,g)=>({value:(g.pv1Power??0)+' W',sub:'reg186'})},
+{id:'tile-a-pv2Pwr',label:'PV2 Power',icon:'bi-sun',cat:'ac',def:false,update:(_,g)=>({value:(g.pv2Power??0)+' W',sub:'reg187'})},
+{id:'tile-a-loadFreq',label:'Load Frequency',icon:'bi-activity',cat:'ac',def:false,update:(_,g)=>({value:(g.loadFreq??0)+' Hz',sub:'reg192'})},
+{id:'tile-a-invFreq',label:'Inverter Frequency',icon:'bi-activity',cat:'ac',def:false,update:(_,g)=>({value:(g.inverterFreq??0)+' Hz',sub:'reg193'})},
+{id:'tile-a-gridConn',label:'Grid Connected',icon:'bi-plug',cat:'ac',def:false,update:(_,g)=>({value:g.gridConnected??'--',sub:'reg194'})},
+// Settings debug tiles
+{id:'tile-s-ctrlMode',label:'Control Mode',icon:'bi-gear',cat:'settings',def:false,update:(_,g)=>({value:g.controlMode??'--',sub:'reg200'})},
+{id:'tile-s-batEqV',label:'Bat EQ Voltage',icon:'bi-battery-half',cat:'settings',def:false,update:(_,g)=>({value:(g.batteryEqVoltage??0)+' V',sub:'reg201'})},
+{id:'tile-s-batAbsV',label:'Bat Abs Voltage',icon:'bi-battery-half',cat:'settings',def:false,update:(_,g)=>({value:(g.batteryAbsVoltage??0)+' V',sub:'reg202'})},
+{id:'tile-s-batFloatV',label:'Bat Float Voltage',icon:'bi-battery-half',cat:'settings',def:false,update:(_,g)=>({value:(g.batteryFloatVoltage??0)+' V',sub:'reg203'})},
+{id:'tile-s-upsDelay',label:'UPS Delay',icon:'bi-clock',cat:'settings',def:false,update:(_,g)=>({value:g.upsDelayTime??'--',sub:'reg209'})},
+{id:'tile-s-maxChgI',label:'Max Charge Current',icon:'bi-battery-charging',cat:'settings',def:false,update:(_,g)=>({value:g.batMaxChargeCurrent??'--',sub:'reg210'})},
+{id:'tile-s-maxDisI',label:'Max Discharge Current',icon:'bi-battery',cat:'settings',def:false,update:(_,g)=>({value:g.batMaxDischargeCurrent??'--',sub:'reg211'})},
+{id:'tile-s-shdSOC',label:'Shutdown SOC',icon:'bi-exclamation-triangle',cat:'settings',def:false,update:(_,g)=>({value:g.batShutdownSOC??'--',sub:'reg217'})},
+{id:'tile-s-rstSOC',label:'Restart SOC',icon:'bi-arrow-clockwise',cat:'settings',def:false,update:(_,g)=>({value:g.batRestartSOC??'--',sub:'reg218'})},
+{id:'tile-s-lowSOC',label:'Low SOC',icon:'bi-exclamation',cat:'settings',def:false,update:(_,g)=>({value:g.batLowSOC??'--',sub:'reg219'})},
+{id:'tile-s-shdV',label:'Shutdown Voltage',icon:'bi-exclamation-triangle',cat:'settings',def:false,update:(_,g)=>({value:(g.batShutdownVoltage??0)+' V',sub:'reg220'})},
+{id:'tile-s-rstV',label:'Restart Voltage',icon:'bi-arrow-clockwise',cat:'settings',def:false,update:(_,g)=>({value:(g.batRestartVoltage??0)+' V',sub:'reg221'})},
+{id:'tile-s-lowV',label:'Low Voltage',icon:'bi-exclamation',cat:'settings',def:false,update:(_,g)=>({value:(g.batLowVoltage??0)+' V',sub:'reg222'})},
+{id:'tile-s-remoteCfg',label:'Remote Config',icon:'bi-gear',cat:'settings',def:false,update:(_,g)=>({value:g.remoteConfig??'--',sub:'reg228'})},
+{id:'tile-s-gridChg',label:'Grid Charge',icon:'bi-plug',cat:'settings',def:false,update:(_,g)=>({value:g.gridChargeEnabled??'--',sub:'reg230'})},
+{id:'tile-s-priority',label:'Priority Load',icon:'bi-lightning',cat:'settings',def:false,update:(_,g)=>({value:g.priorityLoad??'--',sub:'reg243'})},
+{id:'tile-s-loadLimit',label:'Load Limit',icon:'bi-speedometer',cat:'settings',def:false,update:(_,g)=>({value:g.loadLimit??'--',sub:'reg244'})},
+{id:'tile-s-maxSell',label:'Max Sell Power',icon:'bi-cash',cat:'settings',def:false,update:(_,g)=>({value:g.maxSellPower??'--',sub:'reg245'})},
+{id:'tile-s-solarExport',label:'Solar Export',icon:'bi-box-arrow-up',cat:'settings',def:false,update:(_,g)=>({value:g.solarExport??'--',sub:'reg247'})},
+{id:'tile-s-useTimer',label:'Use Timer',icon:'bi-clock',cat:'settings',def:false,update:(_,g)=>({value:g.useTimer??'--',sub:'reg248'})}
+];
+const TILE_IDS=TILE_REGISTRY.map(t=>t.id);
+const TILE_MAP={};TILE_REGISTRY.forEach(t=>{TILE_MAP[t.id]=t;});
+const TILE_CATEGORIES=[{id:'main',label:'Main'},{id:'dc',label:'DC Block (48-111)'},{id:'ac',label:'AC Block (150-249)'},{id:'settings',label:'Settings (200-249)'}];
+function buildTiles(){const c=document.getElementById('tilesContainer');c.innerHTML='';TILE_REGISTRY.forEach(t=>{const tile=document.createElement('div');tile.className='tile';tile.id=t.id;tile.innerHTML='<span class="icon"><i class="bi '+t.icon+'"></i></span><div class="label">'+t.label+'</div><div class="value">--</div><div class="sub"></div>';c.appendChild(tile);});}
+function updateTiles(d,g){const dg=g||{};TILE_REGISTRY.forEach(t=>{const el=document.getElementById(t.id);if(!el)return;try{const r=t.update(d,dg);if(!r)return;const v=el.querySelector('.value');const s=el.querySelector('.sub');if(v)v.textContent=r.value;if(s)s.textContent=r.sub;el.classList.remove('on','off');if(r.cls)el.classList.add(r.cls);}catch{}})}
 function loadTilePrefs(){try{return JSON.parse(localStorage.getItem('tileVis')||'null')||{}}catch{return{}}}
 function saveTilePrefs(p){localStorage.setItem('tileVis',JSON.stringify(p));}
-function loadTileOrder(){try{const o=JSON.parse(localStorage.getItem('tileOrder')||'null');if(Array.isArray(o)){const ids=ALL_TILES.filter(id=>o.includes(id));ALL_TILES.forEach(id=>{if(!ids.includes(id))ids.push(id);});return ids;}}catch{}return[...ALL_TILES];}
+function loadTileOrder(){try{const o=JSON.parse(localStorage.getItem('tileOrder')||'null');if(Array.isArray(o)){const ids=TILE_IDS.filter(id=>o.includes(id));TILE_IDS.forEach(id=>{if(!ids.includes(id))ids.push(id);});return ids;}}catch{}return[...TILE_IDS];}
 function saveTileOrder(o){localStorage.setItem('tileOrder',JSON.stringify(o));}
-function applyTileVisibility(){const p=loadTilePrefs();ALL_TILES.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=p[id]===false?'none':'';});}
+function applyTileVisibility(){const p=loadTilePrefs();TILE_IDS.forEach(id=>{const el=document.getElementById(id);if(!el)return;const t=TILE_MAP[id];const vis=t?(p[id]!==undefined?p[id]:t.def):true;el.style.display=vis===false?'none':'';});}
 function applyTileOrder(){const order=loadTileOrder();const c=document.getElementById('tilesContainer');order.forEach(id=>{const el=document.getElementById(id);if(el)c.appendChild(el);});}
 function moveTile(id,dir){const order=loadTileOrder();const idx=order.indexOf(id);if(idx<0)return;const ni=idx+dir;if(ni<0||ni>=order.length)return;[order[idx],order[ni]]=[order[ni],order[idx]];saveTileOrder(order);applyTileOrder();}
-function buildTileEditor(){const p=loadTilePrefs();const order=loadTileOrder();const g=document.getElementById('tileEditGrid');g.innerHTML='';order.forEach(id=>{const lbl=TILE_LABELS[id]||id;const vis=p[id]!==false;const d=document.createElement('label');d.className='tile-edit-item'+(vis?'':' hidden-tile');d.dataset.tile=id;d.innerHTML='<input type="checkbox" '+(vis?'checked':'')+' data-tile="'+id+'">'+lbl+'<div class="tile-edit-arrows"><button type="button" title="Move up" class="tile-arrow-btn" data-dir="-1">▲</button><button type="button" title="Move down" class="tile-arrow-btn" data-dir="1">▼</button></div>';d.querySelector('input').addEventListener('change',function(){const pp=loadTilePrefs();pp[this.dataset.tile]=this.checked;saveTilePrefs(pp);d.classList.toggle('hidden-tile',!this.checked);applyTileVisibility();});d.querySelectorAll('.tile-arrow-btn').forEach(btn=>{btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();moveTile(id,parseInt(this.dataset.dir));buildTileEditor();});});g.appendChild(d);});}
+function buildTileEditor(){const p=loadTilePrefs();const order=loadTileOrder();const g=document.getElementById('tileEditGrid');g.innerHTML='';TILE_CATEGORIES.forEach(cat=>{const catTiles=order.filter(id=>{const t=TILE_MAP[id];return t&&t.cat===cat.id;});if(!catTiles.length)return;const hdr=document.createElement('div');hdr.className='tile-edit-cat';hdr.textContent=cat.label;g.appendChild(hdr);catTiles.forEach(id=>{const t=TILE_MAP[id];const lbl=t?t.label:id;const vis=p[id]!==undefined?p[id]:t?t.def:true;const d=document.createElement('label');d.className='tile-edit-item'+(vis?'':' hidden-tile');d.dataset.tile=id;d.innerHTML='<input type="checkbox" '+(vis?'checked':'')+' data-tile="'+id+'">'+lbl+'<div class="tile-edit-arrows"><button type="button" title="Move up" class="tile-arrow-btn" data-dir="-1">\u25B2</button><button type="button" title="Move down" class="tile-arrow-btn" data-dir="1">\u25BC</button></div>';d.querySelector('input').addEventListener('change',function(){const pp=loadTilePrefs();pp[this.dataset.tile]=this.checked;saveTilePrefs(pp);d.classList.toggle('hidden-tile',!this.checked);applyTileVisibility();});d.querySelectorAll('.tile-arrow-btn').forEach(btn=>{btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();moveTile(id,parseInt(this.dataset.dir));buildTileEditor();});});g.appendChild(d);});});}
 // Pull-to-refresh
 let _pullStart=0,_pulling=false;
 const _pullEl=document.getElementById('pull-indicator');
 const _pullIcon=_pullEl?_pullEl.querySelector('i'):null;
 const mainEl=document.querySelector('.main');
-if(mainEl){mainEl.addEventListener('touchstart',function(e){if(mainEl.scrollTop<=0){_pullStart=e.touches[0].clientY;_pulling=true;}},{passive:true});mainEl.addEventListener('touchmove',function(e){if(!_pulling)return;const dy=e.touches[0].clientY-_pullStart;if(dy>0&&mainEl.scrollTop<=0){const pct=Math.min(dy/100,1);_pullEl.classList.add('show');_pullIcon.style.transform='rotate('+pct*180+'deg)';if(pct>=1){_pullEl.classList.add('pulling');}}},{passive:true});mainEl.addEventListener('touchend',function(){if(!_pulling)return;_pulling=false;if(_pullEl.classList.contains('pulling')){_pullEl.classList.remove('pulling');_pullEl.classList.add('refreshing');_pullIcon.className='bi bi-arrow-clockwise';loadStatus();loadLogs();loadHistory();loadSocketHistory();loadOtherHistory();setTimeout(()=>{_pullEl.classList.remove('show','refreshing');_pullIcon.className='bi bi-arrow-down';},800);}else{_pullEl.classList.remove('show','pulling');}},{passive:true});}
+if(mainEl){mainEl.addEventListener('touchstart',function(e){if(mainEl.scrollTop<=0){_pullStart=e.touches[0].clientY;_pulling=true;}},{passive:true});mainEl.addEventListener('touchmove',function(e){if(!_pulling)return;const dy=e.touches[0].clientY-_pullStart;if(dy>0&&mainEl.scrollTop<=0){const pct=Math.min(dy/100,1);_pullEl.classList.add('show');_pullIcon.style.transform='rotate('+pct*180+'deg)';if(pct>=1){_pullEl.classList.add('pulling');}}},{passive:true});mainEl.addEventListener('touchend',function(){if(!_pulling)return;_pulling=false;if(_pullEl.classList.contains('pulling')){_pullEl.classList.remove('pulling');_pullEl.classList.add('refreshing');_pullIcon.className='bi bi-arrow-clockwise';loadStatus();loadLogs();loadHistory();loadSocketHistory();loadOtherHistory();loadTuyaDevices();loadScenes();loadPluginConfig();loadAppVersion();setTimeout(()=>{_pullEl.classList.remove('show','refreshing');_pullIcon.className='bi bi-arrow-down';},800);}else{_pullEl.classList.remove('show','pulling');}},{passive:true});}
 
 async function loadAppVersion(){try{const r=await fetch('/api/app-version');const d=await r.json();if(d.success){const el=document.getElementById('update-info');if(el){el.innerHTML=d.isGit?'Version <strong>'+d.version+'</strong> ('+d.gitHash+') · Branch: '+d.gitBranch:'Version <strong>'+d.version+'</strong> (not a git repo)';if(!d.isGit)document.getElementById('btn-check-update').style.display='none';}}}catch(e){}}
 async function checkForUpdates(){const btn=document.getElementById('btn-check-update');const st=document.getElementById('update-status');btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Checking...';try{const r=await fetch('/api/update-check',{method:'POST'});const d=await r.json();if(!d.isGit){st.style.display='block';st.style.color='var(--text-secondary)';st.textContent='Not a git repository. Install via git clone to enable updates.';}else if(d.isUpToDate){st.style.display='block';st.style.color='#22c55e';st.innerHTML='<i class="bi bi-check-circle"></i> Up to date ('+d.local+')';document.getElementById('btn-apply-update').style.display='none';}else{st.style.display='block';st.style.color='#f59e0b';st.innerHTML='<i class="bi bi-arrow-down-circle"></i> '+d.commits.length+' new commit(s):<br>'+d.commits.map(c=>'&nbsp;&nbsp;'+c).join('<br>');document.getElementById('btn-apply-update').style.display='';}}catch(e){st.style.display='block';st.style.color='#ef4444';st.textContent='Error: '+e.message;}btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-clockwise"></i> Check for Updates';}
@@ -2578,7 +2620,7 @@ async function applyUpdate(){const btn=document.getElementById('btn-apply-update
 loadAppVersion();
 
 loadStatus();loadTuyaDevices();loadScenes();loadLogs();loadHistory('day');loadSocketHistory('day');loadOtherHistory('day');
-applyTileOrder();buildTileEditor();applyTileVisibility();
+buildTiles();applyTileOrder();applyTileVisibility();buildTileEditor();
 setInterval(loadStatus,10000);
 setInterval(loadLogs,30000);
 setInterval(()=>loadHistory(),60000);
