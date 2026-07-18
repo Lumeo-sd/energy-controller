@@ -105,6 +105,23 @@ fi
 # Set ownership (git clone as root sets root:root, fix that)
 chown -R hb-service:hb-service "$INSTALL_DIR"
 
+# Download vendor static files (Chart.js, Bootstrap, Bootstrap Icons)
+mkdir -p "$INSTALL_DIR/public/vendor/fonts"
+echo -e "${CYAN}📦${NC} Downloading vendor assets..."
+[ ! -f "$INSTALL_DIR/public/vendor/chart.umd.min.js" ] && \
+  curl -fsSL "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" \
+    -o "$INSTALL_DIR/public/vendor/chart.umd.min.js"
+[ ! -f "$INSTALL_DIR/public/vendor/bootstrap.min.css" ] && \
+  curl -fsSL "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" \
+    -o "$INSTALL_DIR/public/vendor/bootstrap.min.css"
+[ ! -f "$INSTALL_DIR/public/vendor/bootstrap-icons.css" ] && \
+  curl -fsSL "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" \
+    -o "$INSTALL_DIR/public/vendor/bootstrap-icons.css"
+[ ! -f "$INSTALL_DIR/public/vendor/fonts/bootstrap-icons.woff2" ] && \
+  curl -fsSL "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/fonts/bootstrap-icons.woff2" \
+    -o "$INSTALL_DIR/public/vendor/fonts/bootstrap-icons.woff2"
+echo -e "  ${GREEN}✓${NC} Vendor assets ready"
+
 # Grant narrow sudo permission for systemctl restart only
 echo "hb-service ALL=(root) NOPASSWD: /bin/systemctl restart $SERVICE_NAME" \
   > /etc/sudoers.d/energy-controller

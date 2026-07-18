@@ -1597,6 +1597,7 @@ function authMiddleware(req, res) {
   if (req.url === '/login' || req.url === '/api/login') return true;
   if (req.method === 'POST' && req.url === '/login') return true;
   if (req.url === '/sw.js' || req.url === '/manifest.json') return true;
+  if (req.url.startsWith('/vendor/')) return true;
 
   const cookies = parseCookies(req);
   const token = cookies['ecm_session'];
@@ -1644,6 +1645,25 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Vendor static files
+    if (urlPath.startsWith('/vendor/')) {
+      const full = path.join(__dirname, 'public', urlPath.slice(1));
+      if (full.startsWith(path.join(__dirname, 'public', 'vendor'))) {
+        try {
+          const data = fs.readFileSync(full);
+          const ext = path.extname(full).toLowerCase();
+          const mimes = { '.js':'application/javascript','.css':'text/css','.woff2':'font/woff2','.woff':'font/woff','.ttf':'font/ttf','.svg':'image/svg+xml','.png':'image/png','.ico':'image/x-icon' };
+          res.writeHead(200, { 'Content-Type': mimes[ext] || 'application/octet-stream', 'Cache-Control': 'public, max-age=31536000, immutable' });
+          res.end(data);
+        } catch {
+          sendJson(res, 404, { error: 'Not found' });
+        }
+      } else {
+        sendJson(res, 403, { error: 'Forbidden' });
+      }
+      return;
+    }
+
     // 404
     sendJson(res, 404, { error: 'Not found' });
   } catch (err) {
@@ -1663,7 +1683,7 @@ function getLoginPage() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
 <meta name="theme-color" content="#000000" />
 <title>Login · Energy Controller</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+<link href="/vendor/bootstrap-icons.css" rel="stylesheet" />
 <style>
 :root{--bg:#000;--card:rgba(28,28,30,.72);--border:rgba(255,255,255,.09);--text:#f5f5f7;--muted:#98989f;--primary:#bf5af2;--primary-dark:#a742d6;--danger:#ff453a}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -1761,9 +1781,9 @@ function getWebUI() {
 <meta name="theme-color" content="#000000" />
 <link rel="manifest" href="/manifest.json" />
 <title>Energy Controller</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="/vendor/bootstrap.min.css" rel="stylesheet" />
+<link href="/vendor/bootstrap-icons.css" rel="stylesheet" />
+<script src="/vendor/chart.umd.min.js"></script>
 <style>
 :root{
   --bg:#000000;
