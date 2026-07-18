@@ -1086,17 +1086,30 @@ async function checkScenes() {
     const now = Date.now();
     for (const scene of scenes) {
       if (scene.enabled === false) continue;
-      let conditionsMet = true;
-      for (const cond of scene.if.conditions) {
+      const logic = scene.if && scene.if.logic === 'OR' ? 'OR' : 'AND';
+      let condResults = [];
+      for (const cond of (scene.if && scene.if.conditions) || []) {
+        let met = false;
         if (cond.type === 'grid') {
-          if (inverterData.gridPower !== cond.value) { conditionsMet = false; break; }
+          met = inverterData.gridPower === cond.value;
         } else if (cond.type === 'battery') {
           const op = cond.operator || '=';
-          if (op === '<' && !(inverterData.batterySOC < cond.value)) { conditionsMet = false; break; }
-          else if (op === '>' && !(inverterData.batterySOC > cond.value)) { conditionsMet = false; break; }
-          else if (op === '=' && !(inverterData.batterySOC === cond.value)) { conditionsMet = false; break; }
+          if (op === '<') met = inverterData.batterySOC < cond.value;
+          else if (op === '>') met = inverterData.batterySOC > cond.value;
+          else met = inverterData.batterySOC === cond.value;
+        } else if (cond.type === 'time') {
+          const t = new Date();
+          const cur = t.getHours() * 60 + t.getMinutes();
+          const after = cond.after ? cond.after.split(':').reduce((h,m)=>h*60+ +m,0) : -1;
+          const before = cond.before ? cond.before.split(':').reduce((h,m)=>h*60+ +m,1440) : 1440;
+          met = cur >= after && cur <= before;
+        } else if (cond.type === 'weekday') {
+          const days = cond.days || [];
+          met = days.includes(new Date().getDay());
         }
+        condResults.push(met);
       }
+      const conditionsMet = logic === 'AND' ? condResults.every(Boolean) : condResults.some(Boolean);
 
       for (const action of scene.then.actions) {
         const key = scene.name + ':' + action.device;
@@ -2167,6 +2180,9 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .backup-opt{display:flex;align-items:center;gap:.45rem;padding:.35rem .5rem;border-radius:6px;cursor:pointer;font-size:.82rem;color:var(--text);transition:background .15s}
 .backup-opt:hover{background:rgba(255,255,255,.05)}
 .backup-opt input[type=checkbox]{accent-color:var(--primary);width:16px;height:16px;cursor:pointer}
+.wdays{display:flex;flex-wrap:wrap;gap:.3rem}
+.wday-lbl{display:flex;align-items:center;gap:.2rem;font-size:.72rem;color:var(--text);padding:.2rem .35rem;border-radius:6px;cursor:pointer;background:rgba(255,255,255,.05)}
+.wday-lbl input{accent-color:var(--primary)}
 .update-tag{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;border-radius:8px;cursor:pointer;font-size:.82rem;border:.5px solid var(--border);margin-bottom:.35rem;transition:background .15s,border-color .15s;color:var(--text)}
 .update-tag:hover{background:rgba(255,255,255,.06);border-color:var(--muted)}
 .update-tag.active{background:var(--primary);color:#fff;border-color:var(--primary)}
@@ -2297,7 +2313,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card-header" onclick="toggleNewAutomation()"><div class="hb-card-title"><i class="bi bi-plus-circle" style="margin-right:.5rem"></i>New Automation</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveScene()" style="margin-left:.5rem"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Name</label><input type="text" id="scene-name" class="form-hb" placeholder="e.g. Battery Saver" /></div>
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">IF (all must be true)</label><div id="if-conditions"></div><button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addCondition()"><i class="bi bi-plus"></i> Add Condition</button></div>
+<div class="mb-3"><select id="scene-logic" class="form-hb" style="margin-bottom:.5rem;font-size:.8rem"><option value="AND">Match ALL conditions (AND)</option><option value="OR">Match ANY condition (OR)</option></select><div id="if-conditions"></div><button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addCondition()"><i class="bi bi-plus"></i> Add Condition</button></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">THEN (actions)</label><div id="then-actions"></div><button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addAction()"><i class="bi bi-plus"></i> Add Action</button></div>
 </div>
 </div>
@@ -2552,11 +2568,14 @@ document.getElementById('sidebar-scene-count').textContent=scenes.length;
 const list=document.getElementById('scenes-list');
 if(scenes.length===0){list.innerHTML='<div class="empty-state"><i class="bi bi-diagram-3"></i><p>No automations yet.</p></div>';return;}
 list.innerHTML='<div class="automation-grid">'+scenes.map(s=>{
+const lg=s.if&&s.if.logic==='OR'?' OR ':' AND ';
 const ifT=(s.if&&s.if.conditions)?s.if.conditions.map(c=>{
 if(c.type==='grid')return 'Grid '+(c.value?'ON':'OFF');
 if(c.type==='battery')return 'Battery '+(c.operator||'=')+' '+c.value+'%';
+if(c.type==='time')return 'Time '+c.after+'-'+c.before;
+if(c.type==='weekday'&&c.days){const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];return c.days.map(d=>wd[d]).join('/');}
 return '';
-}).join(' AND '):'\\u2014';
+}).join(lg):'\\u2014';
 const thenT=(s.then&&s.then.actions)?s.then.actions.map(a=>{
 const dev=tuyaDevices.find(d=>d.id===a.device);
 const dn=dev?dev.name:a.device;
@@ -2605,7 +2624,7 @@ function addCondition(){
 expandNewAutomation();
 const c=document.getElementById('if-conditions');
 const r=document.createElement('div');r.className='rule-row';
-r.innerHTML='<select class="form-hb rule-field condition-type" onchange="updateConditionOptions(this)"><option value="">\\u2014 Source \\u2014</option><option value="grid">City Grid</option><option value="battery">Battery Level</option></select><div class="rule-field condition-operator-col" style="display:none"><select class="form-hb condition-operator"><option value="<">< Less</option><option value=">">> Greater</option><option value="=">= Equal</option></select></div><div class="rule-field condition-value-col" style="display:none"><input type="number" class="form-hb condition-value" placeholder="Value" /></div><div class="rule-remove"><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="this.closest(\\'.rule-row\\').remove()"><i class="bi bi-x"></i></button></div>';
+r.innerHTML='<select class="form-hb rule-field condition-type" onchange="updateConditionOptions(this)"><option value="">\\u2014 Source \\u2014</option><option value="grid">City Grid</option><option value="battery">Battery Level</option><option value="time">Time of Day</option><option value="weekday">Day of Week</option></select><div class="rule-field condition-operator-col" style="display:none"><select class="form-hb condition-operator"><option value="<">< Less</option><option value=">">> Greater</option><option value="=">= Equal</option></select></div><div class="rule-field condition-value-col" style="display:none"><input type="number" class="form-hb condition-value" placeholder="Value" /></div><div class="rule-remove"><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="this.closest(\\'.rule-row\\').remove()"><i class="bi bi-x"></i></button></div>';
 c.appendChild(r);
 }
 function updateConditionOptions(sel){
@@ -2615,6 +2634,8 @@ const vc=r.querySelector('.condition-value-col');
 const vi=r.querySelector('.condition-value');
 if(sel.value==='grid'){op.style.display='none';vc.style.display='block';vi.outerHTML='<select class="form-hb condition-value"><option value="true">ON</option><option value="false">OFF</option></select>';}
 else if(sel.value==='battery'){op.style.display='block';vc.style.display='block';vi.outerHTML='<input type="number" class="form-hb condition-value" placeholder="%" min="0" max="100" />';}
+else if(sel.value==='time'){op.style.display='none';vc.style.display='block';vi.outerHTML='<span style="display:flex;gap:.4rem;align-items:center"><input type="time" class="form-hb condition-after" style="flex:1" value="00:00" /><span style="color:var(--muted);font-size:.75rem">to</span><input type="time" class="form-hb condition-before" style="flex:1" value="23:59" /></span>';}
+else if(sel.value==='weekday'){op.style.display='none';vc.style.display='block';vi.outerHTML='<span class="wdays">["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d,i)=>\'<label class="wday-lbl"><input type="checkbox" class="wday-cb" value="\'+i+\'"\'+(i>0&&i<6?\' checked\':\'\')+\' />\'+d+\'</label>\').join("")</span>';}
 else{op.style.display='none';vc.style.display='none';}
 }
 function addAction(){
@@ -2633,17 +2654,29 @@ sels.forEach(s=>{const cur=s.value;s.innerHTML='<option value="">\\u2014 Device 
 async function saveScene(){
 const name=document.getElementById('scene-name').value.trim();
 if(!name)return;
+const logic=document.getElementById('scene-logic').value;
 const conds=[];
 document.querySelectorAll('#if-conditions > .rule-row').forEach(r=>{
 const t=r.querySelector('.condition-type').value;
 const v=r.querySelector('.condition-value');
 const o=r.querySelector('.condition-operator');
 if(!t)return;
+let c;
+if(t==='time'){
+const after=r.querySelector('.condition-after');
+const before=r.querySelector('.condition-before');
+c={type:'time',after:after?after.value:'00:00',before:before?before.value:'23:59'};
+}else if(t==='weekday'){
+const cbs=r.querySelectorAll('.wday-cb:checked');
+const days=Array.from(cbs).map(cb=>parseInt(cb.value));
+c={type:'weekday',days};
+}else{
 let val=v?v.value:'';
 if(t==='grid')val=val==='true';
 else if(t==='battery')val=parseInt(val)||0;
-const c={type:t,value:val};
+c={type:t,value:val};
 if(o&&o.value)c.operator=o.value;
+}
 conds.push(c);
 });
 if(conds.length===0)return;
@@ -2657,7 +2690,7 @@ if(d)acts.push({type:'tuya',device:d,value:v,duration:dur,interval:int});
 });
 if(acts.length===0)return;
 try{
-await apiPost('/api/scenes',{name,if:{conditions:conds},then:{actions:acts}});
+await apiPost('/api/scenes',{name,if:{logic,conditions:conds},then:{actions:acts}});
 document.getElementById('scene-name').value='';
 document.getElementById('if-conditions').innerHTML='';
 document.getElementById('then-actions').innerHTML='';
