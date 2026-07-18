@@ -1472,6 +1472,59 @@ route('POST', '/api/update-apply', (req, res) => {
   }, 500);
 });
 
+// Backup — package selected data into downloadable JSON
+route('POST', '/api/backup', async (req, res) => {
+  try {
+    const { scope } = req.body || {};
+    if (!Array.isArray(scope)) return sendJson(res, 400, { success: false, message: 'Invalid scope' });
+    const data = {};
+    for (const s of scope) {
+      if (s === 'config') {
+        try { data.config = JSON.parse(await fs.promises.readFile(CONFIG_FILE, 'utf8')); } catch { data.config = {}; }
+      }
+      if (s === 'auth') {
+        try { data.auth = JSON.parse(await fs.promises.readFile(AUTH_FILE, 'utf8')); } catch { data.auth = {}; }
+      }
+      if (s === 'scenes') {
+        try { data.scenes = JSON.parse(await fs.promises.readFile(SCENES_FILE, 'utf8')); } catch { data.scenes = []; }
+      }
+      if (s === 'history') {
+        try { data.history = JSON.parse(await fs.promises.readFile(HISTORY_FILE, 'utf8')); } catch { data.history = { points: [] }; }
+      }
+    }
+    const pkg = await new Promise(r => exec('git rev-parse --short HEAD', { cwd: __dirname }, (e, o) => r(e ? 'unknown' : o.trim())));
+    sendJson(res, 200, { success: true, backup: { version: '1.0', createdAt: new Date().toISOString(), gitHash: pkg, data } });
+  } catch (err) {
+    sendJson(res, 500, { success: false, message: err.message });
+  }
+});
+
+// Restore — write backup data back
+route('POST', '/api/backup/restore', async (req, res) => {
+  try {
+    const { data, overwrite } = req.body || {};
+    if (!data) return sendJson(res, 400, { success: false, message: 'No backup data' });
+    const files = overwrite || ['config', 'auth', 'scenes', 'history'];
+    for (const f of files) {
+      if (f === 'config' && data.config) {
+        try { const cur = JSON.parse(await fs.promises.readFile(CONFIG_FILE, 'utf8')); const m = { ...cur, ...data.config }; await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(m, null, 2), { mode: 0o600 }); } catch { await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(data.config, null, 2), { mode: 0o600 }); }
+      }
+      if (f === 'auth' && data.auth && data.auth.salt && data.auth.hash) {
+        await fs.promises.writeFile(AUTH_FILE, JSON.stringify(data.auth, null, 2), { mode: 0o600 });
+      }
+      if (f === 'scenes' && data.scenes) {
+        await fs.promises.writeFile(SCENES_FILE, JSON.stringify(data.scenes, null, 2), { mode: 0o600 });
+      }
+      if (f === 'history' && data.history) {
+        await fs.promises.writeFile(HISTORY_FILE, JSON.stringify(data.history, null, 2), { mode: 0o600 });
+      }
+    }
+    sendJson(res, 200, { success: true, message: 'Restore complete. Restart to apply config changes.' });
+  } catch (err) {
+    sendJson(res, 500, { success: false, message: err.message });
+  }
+});
+
 // Main UI
 route('GET', '/', (req, res) => {
   sendHtml(res, 200, getWebUI());
@@ -1900,6 +1953,9 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 @media(max-width:768px){.chart-wrap{height:180px}}
 .device-controls{display:flex;gap:.5rem;align-items:center}
 .device-controls .btn-hb{padding:.4rem .9rem;font-size:.75rem}
+.backup-opt{display:flex;align-items:center;gap:.45rem;padding:.35rem .5rem;border-radius:6px;cursor:pointer;font-size:.82rem;color:var(--text);transition:background .15s}
+.backup-opt:hover{background:rgba(255,255,255,.05)}
+.backup-opt input[type=checkbox]{accent-color:var(--primary);width:16px;height:16px;cursor:pointer}
 @media(max-width:768px){
   .mobile-only{display:block}
   body{display:block;overflow-x:hidden}
@@ -2082,6 +2138,24 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card-body">
 <div id="update-info" style="font-size:.85rem;color:var(--text-secondary);margin-bottom:.75rem">Loading...</div>
 <div id="update-status" style="margin-top:.75rem;font-size:.8rem;display:none"></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-archive" style="margin-right:.5rem"></i>Backup & Restore</div></div>
+<div class="hb-card-body">
+<div style="margin-bottom:.65rem"><label class="text-muted-hb" style="font-size:.78rem;margin-bottom:.35rem;display:block">Select data to include:</label>
+<label class="backup-opt"><input type="checkbox" id="bp-config" checked /> Config (Inverter, Tuya, Web UI)</label>
+<label class="backup-opt"><input type="checkbox" id="bp-scenes" checked /> Automations</label>
+<label class="backup-opt"><input type="checkbox" id="bp-tiles" checked /> Status Tiles layout</label>
+<label class="backup-opt"><input type="checkbox" id="bp-auth" /> Security (passwords)</label>
+<label class="backup-opt"><input type="checkbox" id="bp-history" /> History data (charts)</label>
+</div>
+<div style="display:flex;gap:.5rem;flex-wrap:wrap">
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="createBackup()"><i class="bi bi-download"></i> Backup</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="document.getElementById('restoreInput').click()"><i class="bi bi-upload"></i> Restore</button>
+<input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreBackup(this.files[0])" />
+</div>
+<div id="backup-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
 </div>
 </div>
 <div class="hb-card mobile-only" style="margin-top:1rem">
@@ -2634,6 +2708,8 @@ const mainEl=document.querySelector('.main');
 if(mainEl){mainEl.addEventListener('touchstart',function(e){if(mainEl.scrollTop<=0){_pullStart=e.touches[0].clientY;_pulling=true;}},{passive:true});mainEl.addEventListener('touchmove',function(e){if(!_pulling)return;const dy=e.touches[0].clientY-_pullStart;if(dy>0&&mainEl.scrollTop<=0){const pct=Math.min(dy/100,1);_pullEl.classList.add('show');_pullIcon.style.transform='rotate('+pct*180+'deg)';if(pct>=1){_pullEl.classList.add('pulling');}}},{passive:true});mainEl.addEventListener('touchend',function(){if(!_pulling)return;_pulling=false;if(_pullEl.classList.contains('pulling')){_pullEl.classList.remove('pulling');_pullEl.classList.add('refreshing');_pullIcon.className='bi bi-arrow-clockwise';loadStatus();loadLogs();loadHistory();loadSocketHistory();loadOtherHistory();loadTuyaDevices();loadScenes();loadPluginConfig();loadAppVersion();setTimeout(()=>{_pullEl.classList.remove('show','refreshing');_pullIcon.className='bi bi-arrow-down';},800);}else{_pullEl.classList.remove('show','pulling');}},{passive:true});}
 
 async function loadAppVersion(){try{const r=await fetch('/api/app-version');const d=await r.json();if(d.success){const el=document.getElementById('update-info');if(el){el.innerHTML=d.isGit?'Version <strong>'+d.version+'</strong> ('+d.gitHash+') · Branch: '+d.gitBranch:'Version <strong>'+d.version+'</strong> (not a git repo)';if(!d.isGit)document.getElementById('btn-check-update').style.display='none';}const sv=document.getElementById('sidebar-version');if(sv)sv.textContent='v'+d.version;}}catch(e){}}
+async function createBackup(){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Creating backup...';try{const scope=[];if(document.getElementById('bp-config').checked)scope.push('config');if(document.getElementById('bp-scenes').checked)scope.push('scenes');if(document.getElementById('bp-auth').checked)scope.push('auth');if(document.getElementById('bp-history').checked)scope.push('history');const r=await apiPost('/api/backup',{scope});if(!r.success||!r.backup)throw new Error(r.message||'Backup failed');const bk=r.backup;if(document.getElementById('bp-tiles').checked){bk.data.tilePrefs=loadTilePrefs();bk.data.tileOrder=loadTileOrder();}const blob=new Blob([JSON.stringify(bk,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='energy-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Backup downloaded.';setTimeout(()=>st.style.display='none',4000);}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}}
+async function restoreBackup(file){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Restoring...';try{const text=await file.text();const bk=JSON.parse(text);if(!bk.data)throw new Error('Invalid backup file');const overwrite=[];if(bk.data.config)overwrite.push('config');if(bk.data.scenes)overwrite.push('scenes');if(bk.data.auth)overwrite.push('auth');if(bk.data.history)overwrite.push('history');const r=await apiPost('/api/backup/restore',{data:bk.data,overwrite});if(!r.success)throw new Error(r.message||'Restore failed');if(bk.data.tilePrefs)saveTilePrefs(bk.data.tilePrefs);if(bk.data.tileOrder)saveTileOrder(bk.data.tileOrder);st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> '+r.message+'<br><small>Refresh to see changes.</small>';document.getElementById('restoreInput').value='';}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}}
 async function checkForUpdates(){const btn=document.getElementById('btn-check-update');const st=document.getElementById('update-status');btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Checking...';try{const r=await fetch('/api/update-check',{method:'POST'});const d=await r.json();if(!d.isGit){st.style.display='block';st.style.color='var(--text-secondary)';st.textContent='Not a git repository. Install via git clone to enable updates.';}else if(d.isUpToDate){st.style.display='block';st.style.color='#22c55e';st.innerHTML='<i class="bi bi-check-circle"></i> Up to date ('+d.local+')';document.getElementById('btn-apply-update').style.display='none';}else{st.style.display='block';st.style.color='#f59e0b';st.innerHTML='<i class="bi bi-arrow-down-circle"></i> '+d.commits.length+' new commit(s):<br>'+d.commits.map(c=>'&nbsp;&nbsp;'+c).join('<br>');document.getElementById('btn-apply-update').style.display='';}}catch(e){st.style.display='block';st.style.color='#ef4444';st.textContent='Error: '+e.message;}btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-clockwise"></i> Check for Updates';}
 async function applyUpdate(){const btn=document.getElementById('btn-apply-update');const st=document.getElementById('update-status');if(!confirm('Update app and restart?'))return;btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Updating...';st.style.display='block';st.style.color='#3b82f6';st.textContent='Pulling changes...';try{await fetch('/api/update-apply',{method:'POST'});st.textContent='Updated! Reconnecting...';setTimeout(()=>{let tries=0;const iv=setInterval(async()=>{tries++;try{const r=await fetch('/');if(r.ok){clearInterval(iv);location.reload();}}catch{}if(tries>30){clearInterval(iv);st.textContent='Restart timed out. Refresh the page manually.';}},1500);},3000);}catch(e){st.style.color='#ef4444';st.textContent='Update failed: '+e.message;btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Update & Restart';}}
 loadAppVersion();
