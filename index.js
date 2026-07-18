@@ -2155,6 +2155,14 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .trace-ts{white-space:nowrap;color:var(--text-dim);min-width:4.5em;font-size:.65rem}
 .trace-act{font-weight:600;white-space:nowrap;min-width:7em;font-size:.7rem}
 .trace-d{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flow-section{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;align-items:center}
+.flow-svg-wrap{flex:1;min-width:260px}
+.flow-svg-wrap svg{width:100%;height:auto;border-radius:var(--radius-md);background:var(--card);border:.5px solid var(--border);padding:.5rem}
+.flow-metrics{display:flex;flex-wrap:wrap;gap:.35rem;min-width:200px}
+.metric-card{flex:1;min-width:90px;background:var(--card);border:.5px solid var(--border);border-radius:var(--radius-md);padding:.5rem .65rem;display:flex;flex-direction:column;gap:2px}
+.metric-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.metric-val{font-size:1rem;font-weight:700;color:var(--text)}
+.metric-sub{font-size:.65rem;color:var(--muted)}
 .hb-toast{position:fixed;bottom:calc(2rem + var(--safe-b));right:2rem;background:var(--card-solid);
   -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:.5px solid var(--border);
   border-radius:var(--radius-md);padding:.9rem 1.25rem;box-shadow:0 12px 40px rgba(0,0,0,.55);
@@ -2298,6 +2306,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div id="pull-indicator"><i class="bi bi-arrow-down"></i></div>
 <div class="page-header"><h1>Status</h1></div>
 <div class="tiles-container" id="tilesContainer"></div>
+<div class="flow-section" id="flowSection"><div class="flow-metrics" id="flowMetrics"></div><div class="flow-svg-wrap"><svg id="energyFlow" viewBox="0 0 400 190" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
 <div class="hb-card chart-section collapsed" style="margin-bottom:.75rem">
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cpu" style="margin-right:.5rem"></i>Inverter Debug</div></div>
 <div id="debug-grid" style="padding:.5rem .75rem;font-size:.78rem;font-family:monospace;color:var(--text);display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.25rem .75rem"></div>
@@ -2474,6 +2483,7 @@ try{
 const d=await apiGet('/api/status');
 if(d.csrfToken)_csrfToken=d.csrfToken;
 updateTiles(d,d.debug||{});
+renderEnergyFlow(d);
 const dg=d.debug||{};
 const dgEl=document.getElementById('debug-grid');
 if(dgEl){
@@ -3033,6 +3043,40 @@ const _pullIcon=_pullEl?_pullEl.querySelector('i'):null;
 const mainEl=document.querySelector('.main');
 if(mainEl){mainEl.addEventListener('touchstart',function(e){if(mainEl.scrollTop<=0){_pullStart=e.touches[0].clientY;_pulling=true;}},{passive:true});mainEl.addEventListener('touchmove',function(e){if(!_pulling)return;const dy=e.touches[0].clientY-_pullStart;if(dy>0&&mainEl.scrollTop<=0){const pct=Math.min(dy/100,1);_pullEl.classList.add('show');_pullIcon.style.transform='rotate('+pct*180+'deg)';if(pct>=1){_pullEl.classList.add('pulling');}}},{passive:true});mainEl.addEventListener('touchend',function(){if(!_pulling)return;_pulling=false;if(_pullEl.classList.contains('pulling')){_pullEl.classList.remove('pulling');_pullEl.classList.add('refreshing');_pullIcon.className='bi bi-arrow-clockwise';loadStatus();loadLogs();loadHistory();loadSocketHistory();loadOtherHistory();loadTuyaDevices();loadScenes();loadPluginConfig();loadAppVersion();setTimeout(()=>{_pullEl.classList.remove('show','refreshing');_pullIcon.className='bi bi-arrow-down';},800);}else{_pullEl.classList.remove('show','pulling');}},{passive:true});}
 
+function renderEnergyFlow(d){
+const svg=document.getElementById('energyFlow');if(!svg)return;
+const pv=(d.pvPower||0)+(d.pvPower2||0);
+const load=d.loadPower||0;
+const bp=d.batteryPower||0;
+const gridOn=d.gridPower===true;
+const dayPV=d.dayPV||0;
+const dayGridImport=d.dayGridImport||0;
+const dayGridExport=d.dayGridExport||0;
+const dayLoadEnergy=d.dayLoadEnergy||0;
+const charging=bp<0;const discharging=bp>0;
+const toGrid=gridOn&&pv>load+Math.max(0,-bp);
+const fromGrid=gridOn&&pv+Math.max(0,bp)<load;
+const soc=d.batterySOC||0;
+const sc=dayPV>0?((dayPV-dayGridExport)/dayPV*100):0;
+const aut=dayLoadEnergy>0?((dayLoadEnergy-dayGridImport)/dayLoadEnergy*100):0;
+const html='<defs><marker id="ar" markerWidth="6" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke-width="1.2" stroke="var(--muted)"/></marker><marker id="ar-pv" markerWidth="6" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke-width="1.6" stroke="#f59e0b"/></marker></defs>'
++'<rect x="10" y="10" width="90" height="44" rx="8" fill="rgba(245,158,11,.15)" stroke="#f59e0b" stroke-width="1"/><text x="55" y="28" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="600">Solar</text><text x="55" y="46" text-anchor="middle" fill="var(--text)" font-size="13" font-weight="700">'+(pv||'0')+' W</text>'
++'<rect x="10" y="136" width="90" height="44" rx="8" fill="rgba(48,209,88,.15)" stroke="#30d158" stroke-width="1"/><text x="55" y="154" text-anchor="middle" fill="#30d158" font-size="11" font-weight="600">Battery</text><text x="55" y="172" text-anchor="middle" fill="var(--text)" font-size="13" font-weight="700">'+soc+'%</text><text x="55" y="133" text-anchor="middle" fill="var(--muted)" font-size="9">'+(bp?bp+'W':'0W')+'</text>'
++'<rect x="145" y="73" width="90" height="44" rx="8" fill="rgba(191,90,242,.15)" stroke="#bf5af2" stroke-width="1"/><text x="190" y="91" text-anchor="middle" fill="#bf5af2" font-size="11" font-weight="600">Home</text><text x="190" y="109" text-anchor="middle" fill="var(--text)" font-size="13" font-weight="700">'+(load||'0')+' W</text>'
++'<rect x="295" y="73" width="90" height="44" rx="8" fill="rgba(255,69,58,.12)" stroke="#ff453a" stroke-width="1"/><text x="340" y="91" text-anchor="middle" fill="#ff453a" font-size="11" font-weight="600">Grid</text><text x="340" y="109" text-anchor="middle" fill="var(--text)" font-size="12" font-weight="700">'+(gridOn?'ON':'OFF')+'</text>'
+// Solar → Home arrow
++'<line x1="100" y1="32" x2="145" y2="95" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ar)"/>'
+// Battery ↔ Home arrow
++'<line x1="100" y1="158" x2="145" y2="117" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ar)"/>'
+// Home ↔ Grid arrow
++(gridOn?'<line x1="235" y1="95" x2="295" y2="95" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ar)"/>':'');
+const scEl=document.getElementById('flowMetrics');
+if(scEl){
+scEl.innerHTML='<div class="metric-card"><span class="metric-lbl">Self-Consumption</span><span class="metric-val">'+sc.toFixed(1)+'%</span><span class="metric-sub">of solar used locally</span></div>'
++'<div class="metric-card"><span class="metric-lbl">Autonomy</span><span class="metric-val">'+aut.toFixed(1)+'%</span><span class="metric-sub">of load from non-grid</span></div>'
++'<div class="metric-card"><span class="metric-lbl">Solar Today</span><span class="metric-val">'+dayPV.toFixed(1)+' kWh</span><span class="metric-sub">generated</span></div>';}
+svg.innerHTML=html;
+}
 async function loadAppVersion(){try{const r=await fetch('/api/app-version');const d=await r.json();if(d.success){const el=document.getElementById('update-info');if(el){el.innerHTML=d.isGit?'Version <strong>'+d.version+'</strong> ('+d.gitHash+') · Branch: '+d.gitBranch:'Version <strong>'+d.version+'</strong> (not a git repo)';if(!d.isGit)document.getElementById('btn-check-update').style.display='none';}const sv=document.getElementById('sidebar-version');if(sv)sv.textContent='v'+d.version;}}catch(e){}}
 async function createBackup(){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Creating backup...';try{const scope=[];if(document.getElementById('bp-config').checked)scope.push('config');if(document.getElementById('bp-scenes').checked)scope.push('scenes');if(document.getElementById('bp-auth').checked)scope.push('auth');if(document.getElementById('bp-history').checked)scope.push('history');const r=await apiPost('/api/backup',{scope});if(!r.success||!r.backup)throw new Error(r.message||'Backup failed');const bk=r.backup;if(document.getElementById('bp-tiles').checked){bk.data.tilePrefs=loadTilePrefs();bk.data.tileOrder=loadTileOrder();}const blob=new Blob([JSON.stringify(bk,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='energy-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Backup downloaded.';setTimeout(()=>st.style.display='none',4000);}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}}
 async function restoreBackup(file){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Restoring...';try{const text=await file.text();const bk=JSON.parse(text);if(!bk.data)throw new Error('Invalid backup file');const overwrite=[];if(bk.data.config)overwrite.push('config');if(bk.data.scenes)overwrite.push('scenes');if(bk.data.auth)overwrite.push('auth');if(bk.data.history)overwrite.push('history');const r=await apiPost('/api/backup/restore',{data:bk.data,overwrite});if(!r.success)throw new Error(r.message||'Restore failed');if(bk.data.tilePrefs)saveTilePrefs(bk.data.tilePrefs);if(bk.data.tileOrder)saveTileOrder(bk.data.tileOrder);st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> '+r.message+'<br><small>Refresh to see changes.</small>';document.getElementById('restoreInput').value='';}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}}
