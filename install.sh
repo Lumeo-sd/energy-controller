@@ -96,6 +96,21 @@ if [ ! -f "$INSTALL_DIR/data/scenes.json" ]; then
   echo '[]' > "$INSTALL_DIR/data/scenes.json"
 fi
 
+# Create hb-service system user (if not exists)
+if ! id -u hb-service &>/dev/null; then
+  useradd --system --no-create-home hb-service
+  echo -e "  ${GREEN}✓${NC} Created system user 'hb-service'"
+fi
+
+# Set ownership (git clone as root sets root:root, fix that)
+chown -R hb-service:hb-service "$INSTALL_DIR"
+
+# Grant narrow sudo permission for systemctl restart only
+echo "hb-service ALL=(root) NOPASSWD: /bin/systemctl restart $SERVICE_NAME" \
+  > /etc/sudoers.d/energy-controller
+chmod 440 /etc/sudoers.d/energy-controller
+echo -e "  ${GREEN}✓${NC} Sudoers rule added (restart only)"
+
 # Create systemd service
 echo -e "${CYAN}🔧${NC} Creating systemd service..."
 cat > /etc/systemd/system/"$SERVICE_NAME".service << EOF
@@ -106,12 +121,16 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+User=hb-service
+Group=hb-service
 ExecStart=$NODE_PATH $INSTALL_DIR/index.js
 ExecStartPre=/bin/sleep 10
 Restart=always
 RestartSec=5
 WorkingDirectory=$INSTALL_DIR
 Environment=NODE_ENV=production
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
@@ -140,7 +159,8 @@ if systemctl is-active --quiet "$SERVICE_NAME"; then
   echo -e "${GREEN}✓${NC} Energy Controller installed and running!"
   echo ""
   echo -e "  Web UI:  ${CYAN}http://$IP:8583${NC}"
-  echo -e "  Login:   ${YELLOW}admin${NC} / ${YELLOW}admin${NC} (change immediately)"
+  echo -e "  Login:   ${YELLOW}admin${NC} / see password in journal:"
+  echo -e "           ${CYAN}sudo journalctl -u $SERVICE_NAME | grep 'Initial admin'${NC}"
   echo ""
   echo -e "  Commands:"
   echo -e "    sudo systemctl status $SERVICE_NAME"
