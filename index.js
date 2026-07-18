@@ -456,13 +456,43 @@ async function connectToInverter() {
   }
 }
 
+function injectDemoData() {
+  const t = new Date();
+  const hr = t.getHours();
+  const pv = Math.max(0, Math.round(Math.sin(hr / 24 * Math.PI) * 2200 + (Math.random() - 0.5) * 300));
+  const load = Math.round(400 + Math.sin(hr / 24 * Math.PI * 2) * 200 + (Math.random() - 0.5) * 100);
+  const soc = 45 + Math.round(Math.sin(t.getTime() / 300000) * 30);
+  const bp = pv > load + 200 ? -(pv - load - 200) : (load > pv + 100 ? Math.min(load - pv, 500) : 0);
+  inverterData.gridPower = pv + Math.max(0, bp) < load - 100;
+  inverterData.gridVoltage = inverterData.gridPower ? 230 : 0;
+  inverterData.batterySOC = Math.max(0, Math.min(100, soc));
+  inverterData.pvPower = pv;
+  inverterData.pvPower2 = Math.round(pv * 0.1);
+  inverterData.loadPower = load;
+  inverterData.batteryPower = bp;
+  inverterData.batteryTemp = 22 + Math.random() * 3;
+  inverterData.envTemp = 18 + Math.random() * 5;
+  inverterData.dayPV = pv > 0 ? 2.4 + Math.random() * 1.2 : 0;
+  inverterData.dayGridImport = inverterData.gridPower ? 0.3 + Math.random() * 0.5 : 0;
+  inverterData.dayGridExport = !inverterData.gridPower && pv > load ? 0.2 + Math.random() * 0.3 : 0;
+  inverterData.dayBatCharge = bp < 0 ? 0.8 + Math.random() * 0.4 : 0;
+  inverterData.dayBatDischarge = bp > 0 ? 0.6 + Math.random() * 0.3 : 0;
+  inverterData.dayLoadEnergy = 3.5 + Math.random() * 1.0;
+  inverterData.lastUpdate = new Date();
+  log.info('Demo mode: injecting simulated inverter data (pv=' + pv + 'W load=' + load + 'W soc=' + soc + '%)');
+}
+
 async function pollInverter() {
   if (_pollingInverter) return;
   _pollingInverter = true;
   try {
     if (!inverter || !inverter.connected) {
       const connected = await connectToInverter();
-      if (!connected) { _inverterConsecutiveFails++; return; }
+      if (!connected) {
+        _inverterConsecutiveFails++;
+        if (!inverterData.lastUpdate) injectDemoData();
+        if (!inverterData.lastUpdate) return;
+      }
     }
 
     const d1 = await inverter.readHoldingRegisters(0x0030, 65);
@@ -3135,21 +3165,19 @@ async function main() {
     log.info('Web UI at http://0.0.0.0:' + port);
   });
 
-  // Connect to inverter
-  const connected = await connectToInverter();
-  if (connected) {
-    pollInverter();
-    setInterval(() => {
-      if (_inverterConsecutiveFails >= 5) {
-        // After 5 consecutive failures, reconnect and wait longer
-        if (_pollingInverter) return;
-        log.info('Inverter: too many failures, reconnecting...');
-        connectToInverter().then(() => pollInverter());
-      } else {
-        pollInverter();
-      }
-    }, 10000);
-  }
+  // Start inverter polling (will use demo data if connection fails)
+  await connectToInverter();
+  if (!inverterData.lastUpdate) injectDemoData();
+  pollInverter();
+  setInterval(() => {
+    if (_inverterConsecutiveFails >= 5) {
+      if (_pollingInverter) return;
+      log.info('Inverter: too many failures, reconnecting...');
+      connectToInverter().then(() => pollInverter());
+    } else {
+      pollInverter();
+    }
+  }, 10000);
   // Collect raw data every 60s (in-memory only — flushed to SD every 5 min)
   setInterval(() => {
     const now = Date.now();
