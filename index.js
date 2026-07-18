@@ -1644,13 +1644,26 @@ route('POST', '/api/update-check', async (req, res) => {
 route('POST', '/api/update-apply', (req, res) => {
   const tag = req.body && req.body.tag;
   if (!tag) return sendJson(res, 400, { success: false, message: 'Tag required' });
-  sendJson(res, 200, { success: true, message: 'Updating to ' + tag + '...' });
-  setTimeout(() => {
-    exec('git stash --include-untracked 2>/dev/null; git fetch --tags --force 2>/dev/null; git checkout ' + tag + ' 2>&1 && git log -1 --oneline', { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err, stdout) => {
-      log.info('Git checkout: ' + (err ? err.message : stdout.trim()));
-      setTimeout(() => { exec('sudo systemctl restart energy-controller', () => {}); }, 1000);
-    });
-  }, 500);
+  execFile('git', ['tag', '--list'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err, stdout) => {
+    if (err) return sendJson(res, 500, { success: false, message: 'Failed to list tags' });
+    const validTags = (stdout || '').trim().split('\n').filter(Boolean);
+    if (!validTags.includes(tag)) return sendJson(res, 400, { success: false, message: 'Unknown tag: ' + tag });
+    if (tag.includes('\n')) return sendJson(res, 400, { success: false, message: 'Invalid tag' });
+    sendJson(res, 200, { success: true, message: 'Updating to ' + tag + '...' });
+    setTimeout(() => {
+      execFile('git', ['stash', '--include-untracked'], { cwd: __dirname }, () => {
+        execFile('git', ['fetch', '--tags', '--force'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, () => {
+          execFile('git', ['checkout', tag], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err2, stdout2) => {
+            log.info('Git checkout: ' + (err2 ? err2.message : (stdout2 || '').trim()));
+            execFile('git', ['log', '-1', '--oneline'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err3, stdout3) => {
+              if (!err3) log.info('Checked out: ' + (stdout3 || '').trim());
+              setTimeout(() => { exec('sudo systemctl restart energy-controller', () => {}); }, 1000);
+            });
+          });
+        });
+      });
+    }, 500);
+  });
 });
 
 // Backup — package selected data into downloadable JSON
