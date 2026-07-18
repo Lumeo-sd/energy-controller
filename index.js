@@ -958,6 +958,7 @@ async function loadConfig() {
     inverter: { ip: '', serial: '', port: 8899 },
     tuya: { accessId: '', accessKey: '', countryCode: 48, username: '', password: '', appSchema: 'tuyaSmart' },
     webPort: 8583,
+    notifications: { ntfyTopic: '', telegramToken: '', telegramChatId: '', lowSocAlert: 20, connTimeout: 10 },
   };
 }
 
@@ -1373,11 +1374,59 @@ route('POST', '/api/plugin-config', async (req, res) => {
       }
     }
     if (newCfg.webPort !== undefined) merged.webPort = parseInt(newCfg.webPort) || 8583;
+    if (newCfg.notifications) {
+      merged.notifications = merged.notifications || {};
+      for (const k of ['ntfyTopic', 'telegramToken', 'telegramChatId']) {
+        if (newCfg.notifications[k] !== undefined) merged.notifications[k] = newCfg.notifications[k];
+      }
+      if (newCfg.notifications.lowSocAlert !== undefined) merged.notifications.lowSocAlert = parseInt(newCfg.notifications.lowSocAlert) || 20;
+      if (newCfg.notifications.connTimeout !== undefined) merged.notifications.connTimeout = parseInt(newCfg.notifications.connTimeout) || 10;
+    }
     await saveConfig(merged);
     sendJson(res, 200, { success: true, message: 'Config saved. Restart to apply.' });
   } catch (err) {
     sendJson(res, 500, { success: false, message: err.message });
   }
+});
+
+// Notifications — send via ntfy.sh and/or Telegram
+async function sendNotification(title, message) {
+  try {
+    const cfg = await loadConfig();
+    const n = cfg.notifications || {};
+    const results = [];
+    if (n.ntfyTopic) {
+      try {
+        const body = JSON.stringify({ topic: n.ntfyTopic, title, message, priority: 4 });
+        await new Promise((resolve, reject) => {
+          const req2 = https.request('https://ntfy.sh', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': body.length } }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
+          req2.on('error', reject);
+          req2.write(body);
+          req2.end();
+        });
+        results.push('ntfy: OK');
+      } catch (e) { results.push('ntfy: ' + e.message); }
+    }
+    if (n.telegramToken && n.telegramChatId) {
+      try {
+        const body = JSON.stringify({ chat_id: n.telegramChatId, text: '*' + title + '*\n' + message, parse_mode: 'Markdown' });
+        await new Promise((resolve, reject) => {
+          const req2 = https.request('https://api.telegram.org/bot' + n.telegramToken + '/sendMessage', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': body.length } }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
+          req2.on('error', reject);
+          req2.write(body);
+          req2.end();
+        });
+        results.push('telegram: OK');
+      } catch (e) { results.push('telegram: ' + e.message); }
+    }
+    if (results.length) log.info('Notification (' + title + '): ' + results.join(', '));
+    return results;
+  } catch (e) { return ['error: ' + e.message]; }
+}
+
+route('POST', '/api/test-notification', async (req, res) => {
+  const results = await sendNotification('Test', 'Energy Controller notification test at ' + new Date().toLocaleString());
+  sendJson(res, 200, { success: true, results });
 });
 
 // Scenes
@@ -2299,6 +2348,18 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 </div>
 <div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveNotifConfig()"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">ntfy.sh topic</label><input type="text" id="cfg-ntfy-topic" class="form-hb" placeholder="my-topic" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Telegram Bot Token</label><input type="password" id="cfg-tg-token" class="form-hb" placeholder="123456:ABC-DEF1234..." /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Telegram Chat ID</label><input type="text" id="cfg-tg-chat" class="form-hb" placeholder="-1001234567890" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Low SOC alert (%)</label><input type="number" id="cfg-soc-alert" class="form-hb" min="0" max="100" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Connection timeout (min)</label><input type="number" id="cfg-conn-timeout" class="form-hb" min="0" /></div>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="testNotification()" style="width:100%"><i class="bi bi-send"></i> Send Test</button>
+<div id="notif-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" id="btn-check-update" onclick="event.stopPropagation();checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check</button></span></div>
 <div class="hb-card-body">
 <div id="update-info" style="font-size:.85rem;color:var(--text-secondary);margin-bottom:.75rem">Loading...</div>
@@ -2765,7 +2826,12 @@ document.getElementById('cfg-tuya-countryCode').value=(c.tuya&&c.tuya.countryCod
 document.getElementById('cfg-tuya-username').value=(c.tuya&&c.tuya.username)||'';
 document.getElementById('cfg-tuya-password').value=(c.tuya&&c.tuya.password)||'';
 document.getElementById('cfg-tuya-appSchema').value=(c.tuya&&c.tuya.appSchema)||'tuyaSmart';
-document.getElementById('cfg-webPort').value=c.webPort||8583;
+ document.getElementById('cfg-webPort').value=c.webPort||8583;
+ document.getElementById('cfg-ntfy-topic').value=(c.notifications&&c.notifications.ntfyTopic)||'';
+ document.getElementById('cfg-tg-token').value=(c.notifications&&c.notifications.telegramToken)||'';
+ document.getElementById('cfg-tg-chat').value=(c.notifications&&c.notifications.telegramChatId)||'';
+ document.getElementById('cfg-soc-alert').value=(c.notifications&&c.notifications.lowSocAlert)||20;
+ document.getElementById('cfg-conn-timeout').value=(c.notifications&&c.notifications.connTimeout)||10;
 }catch(e){}
 }
 async function savePluginConfig(){
@@ -2773,11 +2839,23 @@ try{
 const cfg={
 inverter:{ip:document.getElementById('cfg-inverter-ip').value.trim(),serial:document.getElementById('cfg-inverter-serial').value.trim(),port:parseInt(document.getElementById('cfg-inverter-port').value)||8899},
 tuya:{accessId:document.getElementById('cfg-tuya-accessId').value.trim(),accessKey:document.getElementById('cfg-tuya-accessKey').value,countryCode:parseInt(document.getElementById('cfg-tuya-countryCode').value)||48,username:document.getElementById('cfg-tuya-username').value.trim(),password:document.getElementById('cfg-tuya-password').value,appSchema:document.getElementById('cfg-tuya-appSchema').value},
-webPort:parseInt(document.getElementById('cfg-webPort').value)||8583
+webPort:parseInt(document.getElementById('cfg-webPort').value)||8583,
+notifications:{ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
 };
 const r=await apiPost('/api/plugin-config',{config:cfg});
 if(r.success){document.getElementById('restartModal').classList.add('show');}else showToast('Error',r.message||'Save failed',true);
 }catch(e){showToast('Error',e.message,true);}
+}
+async function saveNotifConfig(){
+const cfg={
+notifications:{ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
+};
+const st=document.getElementById('notif-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';
+try{const r=await apiPost('/api/plugin-config',{config:cfg});if(r.success){st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Saved. Restart to apply.';setTimeout(()=>st.style.display='none',4000);}else st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+(r.message||'Error');}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}
+}
+async function testNotification(){
+const st=document.getElementById('notif-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Sending...';
+try{const r=await apiPost('/api/test-notification',{});st.innerHTML=r.results&&r.results.length?'<span style="color:var(--text)">'+r.results.join('<br>')+'</span>':'<span style="color:#22c55e">Sent</span>';}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}
 }
 // Tile registry
 const TILE_REGISTRY=[
@@ -2973,6 +3051,26 @@ async function main() {
 
   // Scene check loop
   setInterval(checkScenes, 10000);
+
+  // Notification triggers (check every 2 min)
+  let _notifiedLowSoc = false;
+  setInterval(async () => {
+    try {
+      const cfg = await loadConfig();
+      const n = cfg.notifications || {};
+      if (!n.ntfyTopic && !n.telegramToken) return;
+      const soc = inverterData.batterySOC;
+      if (soc > 0 && soc <= (n.lowSocAlert || 20) && !_notifiedLowSoc) {
+        _notifiedLowSoc = true;
+        sendNotification('Low Battery', 'SOC: ' + soc + '% — below ' + (n.lowSocAlert || 20) + '% threshold');
+      } else if (soc > (n.lowSocAlert || 20) + 5) {
+        _notifiedLowSoc = false; // reset when back above threshold + hysteresis
+      }
+      if (_inverterConsecutiveFails >= 5 && n.connTimeout) {
+        sendNotification('Inverter Offline', _inverterConsecutiveFails + ' consecutive poll failures. Check connection.');
+      }
+    } catch {}
+  }, 120000);
 
   // Session cleanup
   setInterval(() => {
