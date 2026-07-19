@@ -1437,15 +1437,16 @@ function sendText(res, status, text) {
   res.end(text);
 }
 
-function setCookie(res, name, value, maxAge) {
+function setCookie(res, name, value, maxAge, req) {
   const existing = res.getHeader('Set-Cookie') || [];
   const cookies = Array.isArray(existing) ? existing : [existing];
-  cookies.push(`${name}=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}`);
+  const secure = req && (req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https');
+  cookies.push(`${name}=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}${secure ? '; Secure' : ''}`);
   res.setHeader('Set-Cookie', cookies);
 }
 
-function clearCookie(res, name) {
-  setCookie(res, name, '', 0);
+function clearCookie(res, name, req) {
+  setCookie(res, name, '', 0, req);
 }
 
 // Route table
@@ -1520,7 +1521,7 @@ route('POST', '/login', async (req, res) => {
     if (passOk) {
       delete loginAttempts[ip];
       const { token, csrf } = createSession();
-      setCookie(res, 'ecm_session', token, SESSION_TTL / 1000);
+      setCookie(res, 'ecm_session', token, SESSION_TTL / 1000, req);
       return sendJson(res, 200, { success: true, csrfToken: csrf, mustChangePassword: !!auth.mustChangePassword });
     }
     loginAttempts[ip].push(now);
@@ -1534,7 +1535,7 @@ route('POST', '/login', async (req, res) => {
 route('POST', '/api/logout', (req, res) => {
   const cookies = parseCookies(req);
   if (cookies.ecm_session) destroySession(cookies.ecm_session);
-  clearCookie(res, 'ecm_session');
+  clearCookie(res, 'ecm_session', req);
   sendJson(res, 200, { success: true });
 });
 
