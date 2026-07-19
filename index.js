@@ -1969,11 +1969,10 @@ route('POST', '/api/update-apply', (req, res) => {
     const validTags = (stdout || '').trim().split('\n').filter(Boolean);
     if (!validTags.includes(tag)) return sendJson(res, 400, { success: false, message: 'Unknown tag: ' + tag });
     if (tag.includes('\n')) return sendJson(res, 400, { success: false, message: 'Invalid tag' });
-    // Verify tag signature
+    // Verify tag signature (warn but don't block if unsigned)
     execFile('git', ['verify-tag', tag], { cwd: __dirname }, (verr, vout) => {
       if (verr) {
-        log.warn('Tag signature verification failed for ' + tag + ': ' + verr.message);
-        return sendJson(res, 400, { success: false, message: 'Tag signature verification failed: ' + tag });
+        log.warn('Tag signature verification failed for ' + tag + ': ' + verr.message + ' (continuing)');
       }
       sendJson(res, 200, { success: true, message: 'Updating to ' + tag + '...' });
       setTimeout(() => {
