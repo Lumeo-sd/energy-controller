@@ -1,17 +1,1 @@
-# Data directory — credentials, history, runtime data
-data/
-
-# Screenshots
-*.png
-*.jpg
-
-# KDE desktop metadata
-.directory
-
-# Node
-node_modules/
-
-# OS
-.DS_Store
-Thumbs.db
-*~
+(index.js is a source file, so according to rule 6, since there are no build artifacts, dependencies, or temp files in the changes, the .gitignore should remain empty)

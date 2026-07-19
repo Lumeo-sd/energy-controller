@@ -1143,6 +1143,9 @@ const LOGIN_WINDOW = 60 * 1000;
 let sessions = {};
 const SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
+// Graceful shutdown tracking
+const activeIntervals = [];
+
 async function loadSessions() {
   try {
     const raw = await fs.promises.readFile(SESSIONS_FILE, 'utf8');
@@ -1441,7 +1444,7 @@ function setCookie(res, name, value, maxAge, req) {
   const existing = res.getHeader('Set-Cookie') || [];
   const cookies = Array.isArray(existing) ? existing : [existing];
   const secure = req && (req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https');
-  cookies.push(`${name}=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}${secure ? '; Secure' : ''}`);
+  cookies.push(`${name}=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}${secure ? '; Secure' : ''}`);
   res.setHeader('Set-Cookie', cookies);
 }
 
@@ -1454,6 +1457,43 @@ const routes = [];
 
 function route(method, path, handler) {
   routes.push({ method, path, handler });
+}
+
+// Input validation helper
+function validateBody(req, requiredFields = []) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', (chunk) => { 
+      body += chunk;
+      // Limit body size to 1MB
+      if (body.length > 1024 * 1024) {
+        reject(new Error('Request body too large'));
+      }
+    });
+    req.on('end', () => {
+      if (!body) {
+        if (requiredFields.length > 0) {
+          reject(new Error('Missing required fields'));
+          return;
+        }
+        return resolve({});
+      }
+      try {
+        const parsed = JSON.parse(body);
+        // Validate required fields
+        for (const field of requiredFields) {
+          if (!(field in parsed)) {
+            reject(new Error(`Missing required field: ${field}`));
+            return;
+          }
+        }
+        resolve(parsed);
+      } catch (e) {
+        reject(new Error('Invalid JSON'));
+      }
+    });
+    req.on('error', reject);
+  });
 }
 
 function matchRoute(method, urlPath) {
@@ -2174,7 +2214,12 @@ const server = http.createServer(async (req, res) => {
       req.params = matched.params;
       req.body = {};
       if (req.method === 'POST' || req.method === 'PATCH' || req.method === 'PUT') {
-        req.body = await parseBody(req);
+        try {
+          req.body = await validateBody(req, []);
+        } catch (err) {
+          sendJson(res, 400, { success: false, message: err.message });
+          return;
+        }
       }
       await matched.handler(req, res);
       return;
@@ -3701,7 +3746,7 @@ async function main() {
   await connectToInverter();
   if (!inverterData.lastUpdate) injectDemoData();
   pollInverter();
-  setInterval(() => {
+  const iv1 = setInterval(() => {
     if (_inverterConsecutiveFails >= 5) {
       if (_pollingInverter) return;
       log.info('Inverter: too many failures, reconnecting...');
@@ -3710,8 +3755,9 @@ async function main() {
       pollInverter();
     }
   }, 10000);
+  activeIntervals.push(iv1);
   // Collect raw data every 60s (in-memory only — flushed to SD every 5 min)
-  setInterval(() => {
+  const iv2 = setInterval(() => {
     const now = Date.now();
     const socketSum = tuyaDevices.reduce((a, d) => a + (d.power || 0), 0);
     RRD_PENDING.push({
@@ -3724,9 +3770,11 @@ async function main() {
       otherLoad: Math.max(0, Math.round((inverterData.loadPower - socketSum) * 10) / 10),
     });
   }, 60000);
+  activeIntervals.push(iv2);
 
   // Flush RRD to SD every 5 min
-  setInterval(rrdFlush, RRD_FLUSH_MS);
+  const iv3 = setInterval(rrdFlush, RRD_FLUSH_MS);
+  activeIntervals.push(iv3);
 
   // Initialize Tuya
   await initTuya();
@@ -3738,7 +3786,7 @@ async function main() {
   if (Object.keys(devs).length > 0) RRD_SOCKET_PENDING.push({ ts: Date.now(), devices: devs });
 
   // Periodic Tuya status polling + socket data collection
-  setInterval(async () => {
+  const iv4 = setInterval(async () => {
     await fetchDeviceStatuses();
     const devs2 = {};
     for (const dev of tuyaDevices) {
@@ -3746,13 +3794,15 @@ async function main() {
     }
     if (Object.keys(devs2).length > 0) RRD_SOCKET_PENDING.push({ ts: Date.now(), devices: devs2 });
   }, 60000);
+  activeIntervals.push(iv4);
 
   // Scene check loop
-  setInterval(checkScenes, 10000);
+  const iv5 = setInterval(checkScenes, 10000);
+  activeIntervals.push(iv5);
 
   // Notification triggers (check every 2 min)
   let _notifiedLowSoc = false;
-  setInterval(async () => {
+  const iv6 = setInterval(async () => {
     try {
       const cfg = await loadConfig();
       const n = cfg.notifications || {};
@@ -3769,15 +3819,17 @@ async function main() {
       }
     } catch {}
   }, 120000);
+  activeIntervals.push(iv6);
 
   // Session cleanup
-  setInterval(() => {
+  const iv7 = setInterval(() => {
     const now = Date.now();
     for (const token of Object.keys(sessions)) {
       if (sessions[token].exp < now) delete sessions[token];
     }
     saveSessions();
   }, 60 * 60 * 1000);
+  activeIntervals.push(iv7);
 
   log.info('Energy Controller started');
 }
@@ -3792,6 +3844,13 @@ let httpServer, httpsServer;
 
 const shutdown = async (signal) => {
   log.info(signal + ' received, shutting down...');
+  
+  // Clear all active intervals
+  for (const iv of activeIntervals) {
+    clearInterval(iv);
+  }
+  activeIntervals.length = 0;
+  
   if (httpServer) httpServer.close();
   if (httpsServer) httpsServer.close();
   server.close();
