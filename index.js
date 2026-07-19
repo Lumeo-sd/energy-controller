@@ -1990,47 +1990,91 @@ route('POST', '/api/update-check', async (req, res) => {
   try {
     const isGit = (await new Promise(r => exec('git rev-parse --is-inside-work-tree', { cwd: __dirname }, (e, o) => r(!e && o.trim() === 'true'))));
     if (!isGit) return sendJson(res, 200, { success: true, isGit: false, message: 'Not a git repository' });
-    try { await new Promise((resolve, reject) => { exec('git fetch --tags --force 2>/dev/null', { cwd: __dirname }, (e) => resolve()); }); } catch {}
-    const tags = (await new Promise(r => exec('git tag --sort=-v:refname', { cwd: __dirname }, (e, o) => r(o || '')))).trim().split('\n').filter(Boolean);
-    const currentTag = (await new Promise(r => exec('git describe --tags --exact-match 2>/dev/null || true', { cwd: __dirname }, (e, o) => r(o || '')))).trim();
-    const local = (await new Promise(r => exec('git rev-parse HEAD', { cwd: __dirname }, (e, o) => r(o.trim())))).trim();
-    sendJson(res, 200, { success: true, isGit: true, tags, currentTag, local: local.slice(0, 7) });
+    
+    // Fetch latest refs from remote
+    try { await new Promise((resolve) => { exec('git fetch --all 2>/dev/null', { cwd: __dirname }, () => resolve()); }); } catch {}
+    
+    // Get all branches (local and remote)
+    const branchesOutput = (await new Promise(r => exec('git branch -a --sort=-committerdate', { cwd: __dirname }, (e, o) => r(o || '')))).trim();
+    const allBranches = branchesOutput.split('\n')
+      .filter(b => b.trim())
+      .map(b => b.replace('* ', '').replace('remotes/origin/', '').trim())
+      .filter(b => b && !b.startsWith('HEAD'))
+      .filter((v, i, a) => a.indexOf(v) === i); // deduplicate
+    
+    // Get all tags sorted by version
+    const tagsOutput = (await new Promise(r => exec('git tag --sort=-v:refname', { cwd: __dirname }, (e, o) => r(o || '')))).trim();
+    const tags = tagsOutput.split('\n').filter(Boolean);
+    
+    // Get current branch and tag
+    const currentBranch = (await new Promise(r => exec('git rev-parse --abbrev-ref HEAD', { cwd: __dirname }, (e, o) => r(o.trim())))).trim();
+    const currentTag = (await new Promise(r => exec('git describe --tags --exact-match 2>/dev/null || true', { cwd: __dirname }, (e, o) => r(o.trim())))).trim();
+    const localCommit = (await new Promise(r => exec('git rev-parse HEAD', { cwd: __dirname }, (e, o) => r(o.trim())))).trim();
+    const shortCommit = localCommit.slice(0, 7);
+    
+    // Get latest commit info for each branch
+    const branchInfo = {};
+    for (const branch of allBranches) {
+      try {
+        const commitHash = (await new Promise(r => exec(`git rev-parse origin/${branch} 2>/dev/null || git rev-parse ${branch} 2>/dev/null`, { cwd: __dirname }, (e, o) => r(o.trim())))).trim();
+        const commitDate = (await new Promise(r => exec(`git log -1 --format=%ci ${commitHash}`, { cwd: __dirname }, (e, o) => r(o.trim())))).trim();
+        branchInfo[branch] = { hash: commitHash.slice(0, 7), date: commitDate };
+      } catch {
+        branchInfo[branch] = { hash: 'unknown', date: 'unknown' };
+      }
+    }
+    
+    sendJson(res, 200, { 
+      success: true, 
+      isGit: true, 
+      branches: allBranches,
+      branchInfo,
+      tags, 
+      currentBranch,
+      currentTag, 
+      local: shortCommit 
+    });
   } catch (err) {
     sendJson(res, 200, { success: false, message: err.message });
   }
 });
 
-// Update from git tag & restart
+// Update from git tag or branch & restart
 route('POST', '/api/update-apply', (req, res) => {
-  const tag = req.body && req.body.tag;
-  if (!tag) return sendJson(res, 400, { success: false, message: 'Tag required' });
-  execFile('git', ['tag', '--list'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err, stdout) => {
-    if (err) return sendJson(res, 500, { success: false, message: 'Failed to list tags' });
-    const validTags = (stdout || '').trim().split('\n').filter(Boolean);
-    if (!validTags.includes(tag)) return sendJson(res, 400, { success: false, message: 'Unknown tag: ' + tag });
-    if (tag.includes('\n')) return sendJson(res, 400, { success: false, message: 'Invalid tag' });
-    // Verify tag signature
-    execFile('git', ['verify-tag', tag], { cwd: __dirname }, (verr, vout) => {
-      if (verr) {
-        log.warn('Tag signature verification failed for ' + tag + ': ' + verr.message);
-        return sendJson(res, 400, { success: false, message: 'Tag signature verification failed: ' + tag });
-      }
-      sendJson(res, 200, { success: true, message: 'Updating to ' + tag + '...' });
-      setTimeout(() => {
-        execFile('git', ['stash', '--include-untracked'], { cwd: __dirname }, () => {
-          execFile('git', ['fetch', '--tags', '--force'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, () => {
-            execFile('git', ['checkout', tag], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err2, stdout2) => {
-              log.info('Git checkout: ' + (err2 ? err2.message : (stdout2 || '').trim()));
-              execFile('git', ['log', '-1', '--oneline'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err3, stdout3) => {
-                if (!err3) log.info('Checked out: ' + (stdout3 || '').trim());
-                setTimeout(() => { exec('sudo systemctl restart energy-controller', () => {}); }, 1000);
-              });
-            });
+  const { tag, branch } = req.body || {};
+  
+  if (!tag && !branch) {
+    return sendJson(res, 400, { success: false, message: 'Tag or branch required' });
+  }
+  
+  if (tag && branch) {
+    return sendJson(res, 400, { success: false, message: 'Specify either tag or branch, not both' });
+  }
+  
+  const target = tag || branch;
+  const isBranch = !!branch;
+  
+  // Validate target name (prevent command injection)
+  if (!/^[a-zA-Z0-9._/-]+$/.test(target)) {
+    return sendJson(res, 400, { success: false, message: 'Invalid tag/branch name' });
+  }
+  
+  sendJson(res, 200, { success: true, message: `Updating to ${target}...` });
+  
+  setTimeout(() => {
+    execFile('git', ['stash', '--include-untracked'], { cwd: __dirname }, () => {
+      execFile('git', ['fetch', '--all'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, () => {
+        const checkoutArgs = isBranch ? ['checkout', '-B', target, `origin/${target}`] : ['checkout', target];
+        execFile('git', checkoutArgs, { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err2, stdout2) => {
+          log.info('Git checkout: ' + (err2 ? err2.message : (stdout2 || '').trim()));
+          execFile('git', ['log', '-1', '--oneline'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err3, stdout3) => {
+            if (!err3) log.info('Checked out: ' + (stdout3 || '').trim());
+            setTimeout(() => { exec('sudo systemctl restart energy-controller', () => {}); }, 1000);
           });
         });
-      }, 500);
+      });
     });
-  });
+  }, 500);
 });
 
 // Backup — package selected data into downloadable JSON
@@ -2857,6 +2901,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" id="btn-check-update" onclick="event.stopPropagation();checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check</button></span></div>
 <div class="hb-card-body">
 <div id="update-info" style="font-size:.85rem;color:var(--text-secondary);margin-bottom:.75rem">Loading...</div>
+<div id="update-branches" style="display:none;margin-bottom:.75rem"></div>
 <div id="update-tags" style="display:none;margin-bottom:.75rem"></div>
 <button class="btn-hb btn-hb-outline btn-hb-sm" id="btn-apply-update" onclick="applyUpdate()" style="display:none;width:100%"><i class="bi bi-download"></i> Update & Restart</button>
 <div id="update-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
