@@ -1166,7 +1166,7 @@ async function loadConfig() {
     inverter: { ip: '', serial: '', port: 8899 },
     tuya: { accessId: '', accessKey: '', countryCode: 48, username: '', password: '', appSchema: 'tuyaSmart' },
     webPort: 8583,
-    notifications: { ntfyTopic: '', telegramToken: '', telegramChatId: '', lowSocAlert: 20, connTimeout: 10 },
+    notifications: { ntfyTopic: '', telegramToken: '', telegramChatId: '', lowSocAlert: 20, connTimeout: 10, gridOutageReport: true },
     metricsToken: '',
     tariff: { currency: 'UAH', type: 'daynight', flatRate: 0, dayRate: 0, nightRate: 0, dayStart: '07:00', nightStart: '23:00' },
   };
@@ -1786,6 +1786,7 @@ route('POST', '/api/plugin-config', async (req, res) => {
       if (newCfg.notifications.criticalEnabled !== undefined) merged.notifications.criticalEnabled = !!newCfg.notifications.criticalEnabled;
       if (newCfg.notifications.lowSocAlert !== undefined) merged.notifications.lowSocAlert = parseInt(newCfg.notifications.lowSocAlert) || 20;
       if (newCfg.notifications.connTimeout !== undefined) merged.notifications.connTimeout = parseInt(newCfg.notifications.connTimeout) || 10;
+      if (newCfg.notifications.gridOutageReport !== undefined) merged.notifications.gridOutageReport = newCfg.notifications.gridOutageReport;
     }
     if (newCfg.tariff) {
       merged.tariff = merged.tariff || {};
@@ -2933,6 +2934,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div id="critical-fields">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Low SOC alert (%)</label><input type="number" id="cfg-soc-alert" class="form-hb" min="0" max="100" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Connection timeout (min)</label><input type="number" id="cfg-conn-timeout" class="form-hb" min="0" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Grid outage report</label><label class="sw"><input type="checkbox" id="cfg-notif-grid-outage" checked><span class="sw-slider"></span></label></div>
 </div>
 </div>
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="testNotification()" style="width:100%"><i class="bi bi-send"></i> Send Test</button>
@@ -3531,6 +3533,7 @@ document.getElementById('cfg-tuya-appSchema').value=(c.tuya&&c.tuya.appSchema)||
  document.getElementById('cfg-soc-alert').value=(c.notifications&&c.notifications.lowSocAlert)||20;
  document.getElementById('cfg-conn-timeout').value=(c.notifications&&c.notifications.connTimeout)||10;
  document.getElementById('critical-fields').style.display=(c.notifications&&c.notifications.criticalEnabled!==false)?'block':'none';
+ document.getElementById('cfg-notif-grid-outage').checked=(c.notifications&&c.notifications.gridOutageReport!==false);
  document.getElementById('ntfy-fields').style.display=(c.notifications&&c.notifications.ntfyEnabled!==false)?'block':'none';
  document.getElementById('tg-fields').style.display=(c.notifications&&c.notifications.telegramEnabled!==false)?'block':'none';
  const tf=c.tariff||{};
@@ -3560,7 +3563,7 @@ if(r.success){document.getElementById('restartModal').classList.add('show');}els
 }
 async function saveNotifConfig(){
 const cfg={
-notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),criticalEnabled:document.getElementById('cfg-notif-critical-enabled').checked,lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
+notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),criticalEnabled:document.getElementById('cfg-notif-critical-enabled').checked,gridOutageReport:document.getElementById('cfg-notif-grid-outage').checked,lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
 };
 const st=document.getElementById('notif-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';
 try{const r=await apiPost('/api/plugin-config',{config:cfg});if(r.success){st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Saved.';setTimeout(()=>st.style.display='none',3000);}else st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+(r.message||'Error');}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}
@@ -3928,20 +3931,66 @@ async function main() {
 
   // Notification triggers (check every 2 min)
   let _notifiedLowSoc = false;
+let _gridWasOn=null; let _gridOffSince=null; let _gridOffSoc=null; let _gridOffLoadAccum=0; let _gridOffLastTs=0;
   setInterval(async () => {
     try {
       const cfg = await loadConfig();
       const n = cfg.notifications || {};
-      if (!n.ntfyTopic && !n.telegramToken) return;
       const soc = inverterData.batterySOC;
-      if (soc > 0 && soc <= (n.lowSocAlert || 20) && !_notifiedLowSoc) {
+
+      // Low SOC alert
+      if (soc > 0 && soc <= (n.lowSocAlert || 20) && !_notifiedLowSoc && (n.ntfyTopic || n.telegramToken)) {
         _notifiedLowSoc = true;
         sendNotification('Low Battery', 'SOC: ' + soc + '% — below ' + (n.lowSocAlert || 20) + '% threshold', true);
       } else if (soc > (n.lowSocAlert || 20) + 5) {
-        _notifiedLowSoc = false; // reset when back above threshold + hysteresis
+        _notifiedLowSoc = false;
       }
-      if (_inverterConsecutiveFails >= 5 && n.connTimeout) {
+
+      // Inverter offline alert
+      if (_inverterConsecutiveFails >= 5 && n.connTimeout && (n.ntfyTopic || n.telegramToken)) {
         sendNotification('Inverter Offline', _inverterConsecutiveFails + ' consecutive poll failures. Check connection.', true);
+      }
+
+      // Grid outage report
+      if (n.gridOutageReport !== false) {
+        const now = Date.now();
+        const gridOn = inverterData.gridPower;
+        if (gridOn === false) {
+          if (_gridOffSince === null) {
+            _gridOffSince = new Date();
+            _gridOffSoc = inverterData.batterySOC;
+            _gridOffLoadAccum = 0;
+            _gridOffLastTs = now;
+            log.info('Grid outage started at ' + _gridOffSince.toLocaleTimeString() + ' (SOC: ' + _gridOffSoc + '%)');
+          } else {
+            const elapsedH = (now - _gridOffLastTs) / 3600000;
+            if (elapsedH > 0) _gridOffLoadAccum += (inverterData.loadPower || 0) * elapsedH / 1000;
+            _gridOffLastTs = now;
+          }
+        } else if (_gridOffSince !== null) {
+          const offMs = now - _gridOffSince.getTime();
+          const offMin = Math.round(offMs / 60000);
+          const hours = Math.floor(offMin / 60);
+          const mins = offMin % 60;
+          const socNow = inverterData.batterySOC;
+          const socUsed = Math.max(0, Math.round((_gridOffSoc - socNow) * 10) / 10);
+          const loadUsed = Math.round(_gridOffLoadAccum * 100) / 100;
+
+          const report = [
+            'Grid went down: ' + _gridOffSince.toLocaleTimeString(),
+            'Restored: ' + new Date().toLocaleTimeString(),
+            'Duration: ' + hours + 'h ' + mins + 'm',
+            'Battery: ' + _gridOffSoc + '% → ' + socNow + '%' + (socUsed > 0 ? ' (used ' + socUsed + '%)' : ''),
+            'Load energy: ~' + loadUsed + ' kWh',
+          ].join('\n');
+
+          if (n.ntfyTopic || n.telegramToken) sendNotification('Grid Restored', report, false);
+          log.info('Grid outage ended: ' + hours + 'h' + mins + 'm, SOC ' + _gridOffSoc + '%→' + socNow + '%');
+
+          _gridOffSince = null;
+          _gridOffSoc = null;
+          _gridOffLoadAccum = 0;
+        }
       }
     } catch {}
   }, 120000);
