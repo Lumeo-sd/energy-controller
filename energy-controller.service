@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=hb-service
-ExecStart=/opt/node22/bin/node /opt/energy-controller/index.js
+ExecStart=/opt/node22/bin/node --dns-result-order=ipv4first /opt/energy-controller/index.js
 ExecStartPre=/bin/sleep 10
 Restart=always
 RestartSec=5

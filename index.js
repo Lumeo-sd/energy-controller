@@ -12,6 +12,8 @@ import http from 'node:http';
 import https from 'node:https';
 import os from 'node:os';
 import { exec, execFile } from 'node:child_process';
+import dns from 'node:dns';
+dns.setDefaultResultOrder('ipv4first');
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1813,31 +1815,43 @@ async function sendNotification(title, message, critical) {
     if (n.criticalEnabled === false && critical) return [];
     const results = [];
     if (n.ntfyTopic && n.ntfyEnabled !== false) {
-      try {
-        const body = JSON.stringify({ topic: n.ntfyTopic, title, message, priority: 4 });
-        await new Promise((resolve, reject) => {
-          const req2 = https.request({ hostname: 'ntfy.sh', port: 443, path: '/', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, timeout: 10000 }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
-          req2.on('error', e => reject(new Error('ntfy: ' + (e.code || e.message || typeof e))));
-          req2.on('timeout', () => { req2.destroy(); reject(new Error('ntfy timeout')); });
-          req2.write(body);
-          req2.end();
-        });
-        results.push('ntfy: OK');
-      } catch (e) { results.push('ntfy: ' + e.message); }
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const body = JSON.stringify({ topic: n.ntfyTopic, title, message, priority: 4 });
+          await new Promise((resolve, reject) => {
+            const req2 = https.request({ hostname: 'ntfy.sh', port: 443, path: '/', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, timeout: 25000 }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
+            req2.on('error', e => reject(new Error('ntfy: ' + (e.code || e.message || typeof e))));
+            req2.on('timeout', () => { req2.destroy(); reject(new Error('ntfy timeout')); });
+            req2.write(body);
+            req2.end();
+          });
+          results.push('ntfy: OK');
+          break;
+        } catch (e) {
+          if (attempt < 2) { await new Promise(r => setTimeout(r, 2000)); continue; }
+          results.push('ntfy: ' + e.message);
+        }
+      }
     }
     if (n.telegramToken && n.telegramChatId && n.telegramEnabled !== false) {
-      try {
-        const body = JSON.stringify({ chat_id: n.telegramChatId, text: '*' + title + '*\n' + message, parse_mode: 'Markdown' });
-        await new Promise((resolve, reject) => {
-          const url = new URL('https://api.telegram.org/bot' + n.telegramToken + '/sendMessage');
-          const req2 = https.request({ hostname: url.hostname, port: 443, path: url.pathname + url.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, timeout: 10000 }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
-          req2.on('error', e => reject(new Error('tg: ' + (e.code || e.message || typeof e))));
-          req2.on('timeout', () => { req2.destroy(); reject(new Error('telegram timeout')); });
-          req2.write(body);
-          req2.end();
-        });
-        results.push('telegram: OK');
-      } catch (e) { results.push('telegram: ' + e.message); }
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const body = JSON.stringify({ chat_id: n.telegramChatId, text: '*' + title + '*\n' + message, parse_mode: 'Markdown' });
+          await new Promise((resolve, reject) => {
+            const url = new URL('https://api.telegram.org/bot' + n.telegramToken + '/sendMessage');
+            const req2 = https.request({ hostname: url.hostname, port: 443, path: url.pathname + url.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, timeout: 25000 }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
+            req2.on('error', e => reject(new Error('tg: ' + (e.code || e.message || typeof e))));
+            req2.on('timeout', () => { req2.destroy(); reject(new Error('telegram timeout')); });
+            req2.write(body);
+            req2.end();
+          });
+          results.push('telegram: OK');
+          break;
+        } catch (e) {
+          if (attempt < 2) { await new Promise(r => setTimeout(r, 2000)); continue; }
+          results.push('telegram: ' + e.message);
+        }
+      }
     }
     if (results.length) log.info('Notification (' + title + '): ' + results.join(', '));
     return results;
