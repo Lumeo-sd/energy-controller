@@ -513,6 +513,7 @@ async function connectToInverter() {
 
 let costState = { dateKey: '', dayKwh: 0, nightKwh: 0, lastImport: 0 };
 let dailyRecords = [];
+let demoGridImport = 2.0;
 
 async function loadDailyRecords() {
   try { dailyRecords = JSON.parse(await fs.promises.readFile(DAILY_FILE, 'utf8')); } catch { dailyRecords = []; }
@@ -597,7 +598,8 @@ function injectDemoData() {
   inverterData.batteryTemp = 22 + Math.random() * 3;
   inverterData.envTemp = 18 + Math.random() * 5;
   inverterData.dayPV = pv > 0 ? 2.4 + Math.random() * 1.2 : 0;
-  inverterData.dayGridImport = inverterData.gridPower ? 0.3 + Math.random() * 0.5 : 0;
+  demoGridImport += 0.05 + Math.random() * 0.1;
+  inverterData.dayGridImport = Math.round(demoGridImport * 10) / 10;
   inverterData.dayGridExport = !inverterData.gridPower && pv > load ? 0.2 + Math.random() * 0.3 : 0;
   inverterData.dayBatCharge = bp < 0 ? 0.8 + Math.random() * 0.4 : 0;
   inverterData.dayBatDischarge = bp > 0 ? 0.6 + Math.random() * 0.3 : 0;
