@@ -23,6 +23,7 @@ const SCENES_FILE = path.join(DATA_DIR, 'scenes.json');
 const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
 const SOCKETS_FILE = path.join(DATA_DIR, 'sockets.json');
 const DAILY_FILE = path.join(DATA_DIR, 'daily.json');
+const DEVICES_FILE = path.join(DATA_DIR, 'devices.json');
 const CERT_FILE = path.join(DATA_DIR, 'cert.pem');
 const KEY_FILE = path.join(DATA_DIR, 'key.pem');
 const SECRET_FILE = path.join(DATA_DIR, 'secret.key');
@@ -983,6 +984,27 @@ let tuyaToken = null;
 let tuyaTokenExpire = 0;
 let tuyaUid = null;
 
+function saveDevices() {
+  try {
+    const clean = tuyaDevices.map(d => ({ id: d.id, name: d.name, ip: d.ip || '', online: d.online || false, switch: d.switch, power: d.power || 0, voltage: d.voltage || 0, current: d.current || 0 }));
+    fs.writeFileSync(DEVICES_FILE, JSON.stringify(clean, null, 2), { mode: 0o600 });
+  } catch (err) { log.error('Failed to save devices: ' + err.message); }
+}
+
+function loadDevicesFromDisk() {
+  try {
+    if (fs.existsSync(DEVICES_FILE)) {
+      const data = JSON.parse(fs.readFileSync(DEVICES_FILE, 'utf8'));
+      if (Array.isArray(data) && data.length) {
+        tuyaDevices = data;
+        log.info('Loaded ' + data.length + ' devices from disk');
+        return true;
+      }
+    }
+  } catch (err) { log.error('Failed to load devices from disk: ' + err.message); }
+  return false;
+}
+
 async function getTuyaToken() {
   const cfg = await loadConfig();
   const tc = cfg.tuya || {};
@@ -1050,6 +1072,7 @@ async function syncDeviceNamesFromCloud() {
       }
       if (addedCount > 0) log.info('Added ' + addedCount + ' new device(s) from Tuya cloud');
       log.info('Synced ' + cloudDevices.length + ' device names from cloud');
+      saveDevices();
     }
   } catch (err) {
     log.error('Failed to sync device names: ' + err.message);
@@ -1081,6 +1104,7 @@ async function fetchDeviceStatuses() {
       }
     }
     log.info('Device statuses fetched');
+    saveDevices();
   } catch (err) {
     log.error('fetchDeviceStatuses error: ' + err.message);
   }
@@ -1098,6 +1122,7 @@ async function controlDevice(deviceId, value) {
   const result = await tuyaRequest('POST', '/v1.0/devices/' + deviceId + '/commands', body, token, tc);
   if (result.success) {
     device.switch = value;
+    saveDevices();
     log.info(device.name + ' set to ' + (value ? 'ON' : 'OFF'));
   } else {
     throw new Error(result.msg || 'Tuya control failed');
@@ -1105,7 +1130,11 @@ async function controlDevice(deviceId, value) {
 }
 
 async function initTuya() {
+  const hadCloud = tuyaDevices.length > 0;
   await syncDeviceNamesFromCloud();
+  if (!hadCloud && !tuyaDevices.length) {
+    loadDevicesFromDisk();
+  }
   await fetchDeviceStatuses();
 }
 
@@ -1697,6 +1726,7 @@ route('POST', '/api/tuya-control', async (req, res) => {
 route('POST', '/api/sync-tuya', async (req, res) => {
   try {
     await initTuya();
+    saveDevices();
     sendJson(res, 200, { success: true, count: tuyaDevices.length });
   } catch (err) {
     sendJson(res, 200, { success: false, message: err.message });
@@ -2100,6 +2130,9 @@ route('POST', '/api/backup', async (req, res) => {
       if (s === 'history') {
         try { data.history = {}; for (const l of ['1m','15m','1h']) data.history[l] = JSON.parse(await fs.promises.readFile(DATA_DIR + '/history_' + l + '.json', 'utf8')); } catch { data.history = {}; }
       }
+      if (s === 'devices') {
+        try { data.devices = JSON.parse(await fs.promises.readFile(DEVICES_FILE, 'utf8')); } catch { data.devices = []; }
+      }
     }
     const pkg = await new Promise(r => exec('git rev-parse --short HEAD', { cwd: __dirname }, (e, o) => r(e ? 'unknown' : o.trim())));
     sendJson(res, 200, { success: true, backup: { version: '1.0', createdAt: new Date().toISOString(), gitHash: pkg, data } });
@@ -2141,6 +2174,10 @@ route('POST', '/api/backup/restore', async (req, res) => {
         for (const l of ['1m','15m','1h']) {
           if (data.history[l]) await fs.promises.writeFile(DATA_DIR + '/history_' + l + '.json', JSON.stringify(data.history[l], null, 2), { mode: 0o600 });
         }
+      }
+      if (f === 'devices' && data.devices) {
+        await fs.promises.writeFile(DEVICES_FILE, JSON.stringify(data.devices, null, 2), { mode: 0o600 });
+        try { tuyaDevices = JSON.parse(JSON.stringify(data.devices)); } catch {}
       }
     }
     // Reload in-memory state after restore
