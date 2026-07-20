@@ -735,6 +735,8 @@ async function pollInverter() {
     dk.totalGridImport = Math.round(u32(r(0x004E), r(0x0050)) * 0.1 * 10) / 10;
 
     inverterData.debug = dk;
+    inverterData.totalGridImport = dk.totalGridImport;
+    inverterData.totalLoadEnergy = dk.totalLoadEnergy;
     _inverterConsecutiveFails = 0;
 
     log.info('grid=' + inverterData.gridPower + ' soc=' + inverterData.batterySOC +
@@ -1628,6 +1630,8 @@ route('GET', '/api/status', async (req, res) => {
     envTemp: inverterData.envTemp,
     dayPV: inverterData.dayPV,
     dayGridImport: inverterData.dayGridImport,
+    totalGridImport: inverterData.totalGridImport || 0,
+    totalLoadEnergy: inverterData.totalLoadEnergy || 0,
     dayGridExport: inverterData.dayGridExport,
     dayBatCharge: inverterData.dayBatCharge,
     dayBatDischarge: inverterData.dayBatDischarge,
@@ -3642,15 +3646,18 @@ const scEl=document.getElementById('flowMetrics');
 if(scEl){
 const tariff=d.tariff||{};
 const costToday=d.costToday||{day:0,night:0};
-const records=d.dailyRecords||[];
 function gCost(dk,nk){if(tariff.type==='flat')return(dk+nk)*(tariff.flatRate||0);return dk*(tariff.dayRate||0)+nk*(tariff.nightRate||0);}
 const todayC=gCost(costToday.day,costToday.night);
-let weekC=0,monthC=0;
-for(let i=0;i<Math.min(records.length,30);i++){const r=records[records.length-1-i];const c=gCost(r.dayKwh,r.nightKwh);if(i<7)weekC+=c;monthC+=c;}
 const cur=tariff.currency||'';
+const tgi=d.totalGridImport||0;
+const tle=d.totalLoadEnergy||0;
+const allTimeC=gCost(tgi,0);
+const standbyLoss=Math.max(0,tgi-tle);
+const standbyC=gCost(standbyLoss,0);
+const efficiency=tgi>0?((tle/tgi)*100).toFixed(1):'—';
 scEl.innerHTML='<div class="metric-card"><span class="metric-lbl">Cost Today</span><span class="metric-val">'+todayC.toFixed(2)+' '+cur+'</span><span class="metric-sub">'+costToday.day.toFixed(1)+' day + '+costToday.night.toFixed(1)+' night kWh</span></div>'
-+'<div class="metric-card"><span class="metric-lbl">Cost This Week</span><span class="metric-val">'+weekC.toFixed(2)+' '+cur+'</span><span class="metric-sub">last 7 days</span></div>'
-+'<div class="metric-card"><span class="metric-lbl">Cost This Month</span><span class="metric-val">'+monthC.toFixed(2)+' '+cur+'</span><span class="metric-sub">last 30 days</span></div>';}
++'<div class="metric-card"><span class="metric-lbl">All-Time Cost</span><span class="metric-val">'+allTimeC.toFixed(2)+' '+cur+'</span><span class="metric-sub">'+tgi.toFixed(1)+' kWh total import</span></div>'
++'<div class="metric-card"><span class="metric-lbl">Standby Loss</span><span class="metric-val">'+standbyC.toFixed(2)+' '+cur+'</span><span class="metric-sub">'+standbyLoss.toFixed(1)+' kWh lost · efficiency '+efficiency+'%</span></div>';}
 svg.innerHTML=html;
 }
 let _tileDetailChart=null;
