@@ -17,7 +17,7 @@ Standalone energy conservation controller for Raspberry Pi. Zero npm dependencie
 ## Install from Git
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/energy-controller.git
+git clone https://github.com/Lumeo-sd/energy-controller.git
 cd energy-controller
 sudo ./install.sh
 ```
