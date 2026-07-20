@@ -1783,6 +1783,7 @@ route('POST', '/api/plugin-config', async (req, res) => {
       }
       if (newCfg.notifications.ntfyEnabled !== undefined) merged.notifications.ntfyEnabled = !!newCfg.notifications.ntfyEnabled;
       if (newCfg.notifications.telegramEnabled !== undefined) merged.notifications.telegramEnabled = !!newCfg.notifications.telegramEnabled;
+      if (newCfg.notifications.criticalOnly !== undefined) merged.notifications.criticalOnly = !!newCfg.notifications.criticalOnly;
       if (newCfg.notifications.lowSocAlert !== undefined) merged.notifications.lowSocAlert = parseInt(newCfg.notifications.lowSocAlert) || 20;
       if (newCfg.notifications.connTimeout !== undefined) merged.notifications.connTimeout = parseInt(newCfg.notifications.connTimeout) || 10;
     }
@@ -1804,10 +1805,11 @@ route('POST', '/api/plugin-config', async (req, res) => {
 });
 
 // Notifications — send via ntfy.sh and/or Telegram
-async function sendNotification(title, message) {
+async function sendNotification(title, message, critical) {
   try {
     const cfg = await loadConfig();
     const n = cfg.notifications || {};
+    if (n.criticalOnly && !critical) return [];
     const results = [];
     if (n.ntfyTopic && n.ntfyEnabled !== false) {
       try {
@@ -2927,6 +2929,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Chat ID</label><input type="text" id="cfg-tg-chat" class="form-hb" placeholder="-1001234567890" /></div>
 </div>
 <div style="border-top:1px solid var(--border);margin:.6rem 0;padding-top:.6rem">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-exclamation-triangle" style="margin-right:.4rem"></i>Critical only</span><label class="sw"><input type="checkbox" id="cfg-notif-critical-only"><span class="sw-slider"></span></label></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Low SOC alert (%)</label><input type="number" id="cfg-soc-alert" class="form-hb" min="0" max="100" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Connection timeout (min)</label><input type="number" id="cfg-conn-timeout" class="form-hb" min="0" /></div>
 </div>
@@ -3522,6 +3525,7 @@ document.getElementById('cfg-tuya-appSchema').value=(c.tuya&&c.tuya.appSchema)||
  document.getElementById('cfg-tg-token').value=(c.notifications&&c.notifications.telegramToken)||'';
  document.getElementById('cfg-tg-chat').value=(c.notifications&&c.notifications.telegramChatId)||'';
  document.getElementById('cfg-tg-enabled').checked=(c.notifications&&c.notifications.telegramEnabled!==false);
+ document.getElementById('cfg-notif-critical-only').checked=!!(c.notifications&&c.notifications.criticalOnly);
  document.getElementById('cfg-soc-alert').value=(c.notifications&&c.notifications.lowSocAlert)||20;
  document.getElementById('cfg-conn-timeout').value=(c.notifications&&c.notifications.connTimeout)||10;
  document.getElementById('ntfy-fields').style.display=(c.notifications&&c.notifications.ntfyEnabled!==false)?'block':'none';
@@ -3553,7 +3557,7 @@ if(r.success){document.getElementById('restartModal').classList.add('show');}els
 }
 async function saveNotifConfig(){
 const cfg={
-notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
+notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),criticalOnly:document.getElementById('cfg-notif-critical-only').checked,lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
 };
 const st=document.getElementById('notif-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';
 try{const r=await apiPost('/api/plugin-config',{config:cfg});if(r.success){st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Saved.';setTimeout(()=>st.style.display='none',3000);}else st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+(r.message||'Error');}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}
@@ -3929,12 +3933,12 @@ async function main() {
       const soc = inverterData.batterySOC;
       if (soc > 0 && soc <= (n.lowSocAlert || 20) && !_notifiedLowSoc) {
         _notifiedLowSoc = true;
-        sendNotification('Low Battery', 'SOC: ' + soc + '% — below ' + (n.lowSocAlert || 20) + '% threshold');
+        sendNotification('Low Battery', 'SOC: ' + soc + '% — below ' + (n.lowSocAlert || 20) + '% threshold', true);
       } else if (soc > (n.lowSocAlert || 20) + 5) {
         _notifiedLowSoc = false; // reset when back above threshold + hysteresis
       }
       if (_inverterConsecutiveFails >= 5 && n.connTimeout) {
-        sendNotification('Inverter Offline', _inverterConsecutiveFails + ' consecutive poll failures. Check connection.');
+        sendNotification('Inverter Offline', _inverterConsecutiveFails + ' consecutive poll failures. Check connection.', true);
       }
     } catch {}
   }, 120000);
