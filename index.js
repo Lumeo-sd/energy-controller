@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #!/usr/bin/env node
 // ============================================================
 // Energy Controller — Standalone Web App
@@ -3840,6 +3839,3 @@ const shutdown = async (signal) => {
 };
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
-=======
-__USE_LOCAL_FILE__
->>>>>>> 587ac847e0e0b890f1055227ae01a8e24176f58b
