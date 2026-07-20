@@ -1009,24 +1009,32 @@ async function getTuyaToken() {
   const cfg = await loadConfig();
   const tc = cfg.tuya || {};
   const decryptedPassword = decryptSecret(tc.password || '');
-  try {
-    const body = {
-      country_code: tc.countryCode || 48,
-      username: tc.username,
-      password: crypto.createHash('md5').update(decryptedPassword || '').digest('hex'),
-      schema: tc.appSchema || 'tuyaSmart',
-    };
-    const result = await tuyaRequest('POST', '/v1.0/iot-01/associated-users/actions/authorized-login', body, null, tc);
-    if (result.success) {
-      tuyaToken = result.result.access_token;
-      tuyaTokenExpire = Date.now() + (result.result.expire_time - 60) * 1000;
-      tuyaUid = result.result.uid;
-      log.info('Tuya token obtained');
-    } else {
-      log.error('getTuyaToken failed: ' + result.msg + ' (code: ' + result.code + ')');
+  const endpoints = [
+    { path: '/v1.0/iot-03/users/login', body: { username: tc.username, password: crypto.createHash('sha256').update(decryptedPassword || '').digest('hex') } },
+    { path: '/v1.0/iot-01/associated-users/actions/authorized-login', body: { country_code: tc.countryCode || 48, username: tc.username, password: crypto.createHash('md5').update(decryptedPassword || '').digest('hex'), schema: tc.appSchema || 'tuyaSmart' } },
+  ];
+  for (const ep of endpoints) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * attempt));
+        const result = await tuyaRequest('POST', ep.path, ep.body, null, tc);
+        if (result.success) {
+          tuyaToken = result.result.access_token;
+          tuyaTokenExpire = Date.now() + (result.result.expire_time - 60) * 1000;
+          tuyaUid = result.result.uid;
+          log.info('Tuya token obtained via ' + ep.path);
+          return;
+        }
+        if (result.code !== 501) {
+          log.error('getTuyaToken failed: ' + result.msg + ' (code: ' + result.code + ')');
+          break;
+        }
+        log.warn('Tuya 501 on ' + ep.path + ', retry ' + (attempt + 1));
+      } catch (err) {
+        log.error('getTuyaToken error: ' + err.message);
+        break;
+      }
     }
-  } catch (err) {
-    log.error('getTuyaToken error: ' + err.message);
   }
 }
 
