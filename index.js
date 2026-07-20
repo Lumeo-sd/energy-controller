@@ -1400,7 +1400,16 @@ async function checkScenes() {
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
-    req.on('data', (chunk) => { body += chunk; });
+    let size = 0;
+    const MAX = 1024 * 1024;
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > MAX) {
+        req.destroy();
+        return reject(new Error('Request body too large'));
+      }
+      body += chunk;
+    });
     req.on('end', () => {
       if (!body) return resolve({});
       try { resolve(JSON.parse(body)); } catch { resolve({}); }
@@ -1441,7 +1450,7 @@ function setCookie(res, name, value, maxAge, req) {
   const existing = res.getHeader('Set-Cookie') || [];
   const cookies = Array.isArray(existing) ? existing : [existing];
   const secure = req && (req.socket?.encrypted || req.headers['x-forwarded-proto'] === 'https');
-  cookies.push(`${name}=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}${secure ? '; Secure' : ''}`);
+  cookies.push(`${name}=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}${secure ? '; Secure' : ''}`);
   res.setHeader('Set-Cookie', cookies);
 }
 
