@@ -1983,7 +1983,7 @@ route('POST', '/api/update-apply', (req, res) => {
   if (typeof target !== 'string' || target.length > 100 || /[^a-zA-Z0-9._\/-]/.test(target)) {
     return sendJson(res, 400, { success: false, message: 'Invalid target name' });
   }
-  // Always fetch latest tags and branches before validating
+  // Always fetch latest before validating
   execFile('git', ['fetch', '--all', '--tags', '--force'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, () => {
     if (tag) {
       execFile('git', ['tag', '--list'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err, stdout) => {
@@ -1992,34 +1992,39 @@ route('POST', '/api/update-apply', (req, res) => {
         if (!validTags.includes(tag)) return sendJson(res, 400, { success: false, message: 'Unknown tag: ' + tag + '. Available: ' + validTags.join(', ') });
         execFile('git', ['verify-tag', tag], { cwd: __dirname }, (verr) => {
           if (verr) log.warn('Tag signature verification failed for ' + tag + ': ' + verr.message + ' (continuing)');
-          doUpdate('checkout', [tag], 'tag ' + tag, res);
+          // Tags are detached HEAD — checkout directly, no reset needed
+          sendJson(res, 200, { success: true, message: 'Updating to tag ' + tag + '...' });
+          setTimeout(() => {
+            execFile('git', ['checkout', tag], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (e2, o2) => {
+              log.info('Git checkout ' + tag + ': ' + (e2 ? e2.message : (o2 || '').trim()));
+              execFile('git', ['log', '-1', '--oneline'], { cwd: __dirname }, (e3, o3) => {
+                if (!e3) log.info('Checked out: ' + (o3 || '').trim());
+                setTimeout(() => { exec('sudo systemctl restart energy-controller', () => {}); }, 1000);
+              });
+            });
+          }, 500);
         });
       });
     } else {
       execFile('git', ['branch', '-r', '--list', 'origin/' + branch], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err, stdout) => {
         if (err || !(stdout || '').trim()) return sendJson(res, 400, { success: false, message: 'Unknown remote branch: ' + branch });
-        doUpdate('checkout', ['-B', branch, 'origin/' + branch], 'branch ' + branch, res);
+        // Branches: fetch + reset --hard avoids merge/push issues
+        sendJson(res, 200, { success: true, message: 'Updating to branch ' + branch + '...' });
+        setTimeout(() => {
+          execFile('git', ['stash', '--include-untracked'], { cwd: __dirname }, () => {
+            execFile('git', ['reset', '--hard', 'origin/' + branch], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (e2, o2) => {
+              log.info('Git reset --hard origin/' + branch + ': ' + (e2 ? e2.message : (o2 || '').trim()));
+              execFile('git', ['log', '-1', '--oneline'], { cwd: __dirname }, (e3, o3) => {
+                if (!e3) log.info('Checked out: ' + (o3 || '').trim());
+                setTimeout(() => { exec('sudo systemctl restart energy-controller', () => {}); }, 1000);
+              });
+            });
+          });
+        }, 500);
       });
     }
   });
 });
-function doUpdate(gitCmd, gitArgs, label, res) {
-  sendJson(res, 200, { success: true, message: 'Updating to ' + label + '...' });
-  setTimeout(() => {
-    execFile('git', ['stash', '--include-untracked'], { cwd: __dirname }, () => {
-      execFile('git', ['fetch', '--all', '--tags', '--force'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, () => {
-        execFile('git', [gitCmd, ...gitArgs], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err2, stdout2) => {
-          log.info('Git ' + gitCmd + ': ' + (err2 ? err2.message : (stdout2 || '').trim()));
-          execFile('git', ['log', '-1', '--oneline'], { cwd: __dirname, maxBuffer: 1024 * 1024 }, (err3, stdout3) => {
-            if (!err3) log.info('Checked out: ' + (stdout3 || '').trim());
-            setTimeout(() => { exec('sudo systemctl restart energy-controller', () => {}); }, 1000);
-          });
-        });
-      });
-    });
-  }, 500);
-}
-
 // Backup — package selected data into downloadable JSON
 route('POST', '/api/backup', async (req, res) => {
   try {
