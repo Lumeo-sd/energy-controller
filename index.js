@@ -511,7 +511,7 @@ async function connectToInverter() {
   }
 }
 
-let costState = { dateKey: '', dayKwh: 0, nightKwh: 0, lastImport: 0 };
+let costState = { dateKey: '', dayKwh: 0, nightKwh: 0, lastImport: 0, lastTs: 0 };
 let dailyRecords = [];
 let demoGridImport = 2.0;
 
@@ -561,12 +561,27 @@ async function updateCostTracking() {
     const tariff = cfg.tariff || {};
     const todayKey = new Date().toISOString().slice(0, 10);
     const imported = inverterData.dayGridImport || 0;
-    if (costState.dateKey !== todayKey || imported < costState.lastImport) {
+    const now = Date.now();
+    if (costState.dateKey !== todayKey) {
       finalizeDay();
-      costState = { dateKey: todayKey, dayKwh: 0, nightKwh: 0, lastImport: imported };
+      costState = { dateKey: todayKey, dayKwh: 0, nightKwh: 0, lastImport: imported, lastTs: now };
       return;
     }
-    const delta = imported - costState.lastImport;
+    if (imported > 0 && imported < costState.lastImport) {
+      finalizeDay();
+      costState = { dateKey: todayKey, dayKwh: 0, nightKwh: 0, lastImport: imported, lastTs: now };
+      return;
+    }
+    let delta = 0;
+    if (imported > 0 && imported !== costState.lastImport) {
+      delta = imported - costState.lastImport;
+    } else if (costState.lastTs > 0 && inverterData.gridPower) {
+      const elapsedH = (now - costState.lastTs) / 3600000;
+      const gridW = Math.abs(inverterData.gridPowerW || 0);
+      if (gridW > 0 && elapsedH > 0 && elapsedH < 0.1) {
+        delta = Math.round(gridW * elapsedH * 1000) / 1000;
+      }
+    }
     if (delta > 0) {
       if (tariff.type === 'flat') {
         costState.dayKwh += delta;
@@ -576,6 +591,7 @@ async function updateCostTracking() {
       }
     }
     costState.lastImport = imported;
+    costState.lastTs = now;
   } catch (err) {
     log.error('Cost tracking update failed: ' + err.message);
   }
@@ -689,6 +705,7 @@ async function pollInverter() {
     dk.gridL1Power = i16(r(0x00A7));
     dk.gridPower = i16(r(0x00A9));
     dk.gridCTPower = i16(r(0x00AC));
+    inverterData.gridPowerW = dk.gridPower;
     dk.inverterPower = i16(r(0x00AF));
     dk.loadPower = u16(r(0x00B2));
     dk.offGridMode = u16(r(0x00B3));
