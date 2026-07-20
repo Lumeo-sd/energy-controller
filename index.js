@@ -22,6 +22,7 @@ const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 const SCENES_FILE = path.join(DATA_DIR, 'scenes.json');
 const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
 const SOCKETS_FILE = path.join(DATA_DIR, 'sockets.json');
+const DAILY_FILE = path.join(DATA_DIR, 'daily.json');
 const CERT_FILE = path.join(DATA_DIR, 'cert.pem');
 const KEY_FILE = path.join(DATA_DIR, 'key.pem');
 const SECRET_FILE = path.join(DATA_DIR, 'secret.key');
@@ -511,6 +512,30 @@ async function connectToInverter() {
 }
 
 let costState = { dateKey: '', dayKwh: 0, nightKwh: 0, lastImport: 0 };
+let dailyRecords = [];
+
+async function loadDailyRecords() {
+  try { dailyRecords = JSON.parse(await fs.promises.readFile(DAILY_FILE, 'utf8')); } catch { dailyRecords = []; }
+}
+
+async function saveDailyRecords() {
+  try {
+    if (dailyRecords.length > 365) dailyRecords = dailyRecords.slice(-365);
+    await fs.promises.writeFile(DAILY_FILE, JSON.stringify(dailyRecords, null, 2), { mode: 0o600 });
+  } catch {}
+}
+
+function finalizeDay() {
+  if (costState.dayKwh === 0 && costState.nightKwh === 0) return;
+  dailyRecords.push({
+    date: costState.dateKey,
+    dayKwh: Math.round(costState.dayKwh * 100) / 100,
+    nightKwh: Math.round(costState.nightKwh * 100) / 100
+  });
+  saveDailyRecords();
+  costState.dayKwh = 0;
+  costState.nightKwh = 0;
+}
 
 function minutesOfDay(str, fallback) {
   if (!str) return fallback;
@@ -536,13 +561,18 @@ async function updateCostTracking() {
     const todayKey = new Date().toISOString().slice(0, 10);
     const imported = inverterData.dayGridImport || 0;
     if (costState.dateKey !== todayKey || imported < costState.lastImport) {
+      finalizeDay();
       costState = { dateKey: todayKey, dayKwh: 0, nightKwh: 0, lastImport: imported };
       return;
     }
     const delta = imported - costState.lastImport;
     if (delta > 0) {
-      if (isDayTariff(tariff)) costState.dayKwh += delta;
-      else costState.nightKwh += delta;
+      if (tariff.type === 'flat') {
+        costState.dayKwh += delta;
+      } else {
+        if (isDayTariff(tariff)) costState.dayKwh += delta;
+        else costState.nightKwh += delta;
+      }
     }
     costState.lastImport = imported;
   } catch (err) {
@@ -1091,7 +1121,7 @@ async function loadConfig() {
     webPort: 8583,
     notifications: { ntfyTopic: '', telegramToken: '', telegramChatId: '', lowSocAlert: 20, connTimeout: 10 },
     metricsToken: '',
-    tariff: { currency: 'UAH', dayRate: 0, nightRate: 0, dayStart: '07:00', nightStart: '23:00' },
+    tariff: { currency: 'UAH', type: 'daynight', flatRate: 0, dayRate: 0, nightRate: 0, dayStart: '07:00', nightStart: '23:00' },
   };
 }
 
@@ -1576,7 +1606,8 @@ route('GET', '/api/status', async (req, res) => {
   const cfg = await loadConfig();
   sendJson(res, 200, { csrfToken,
     costToday: { day: Math.round(costState.dayKwh * 100) / 100, night: Math.round(costState.nightKwh * 100) / 100 },
-    tariff: cfg.tariff || { currency: 'UAH', dayRate: 0, nightRate: 0 },
+    tariff: cfg.tariff || { currency: 'UAH', type: 'daynight', flatRate: 0, dayRate: 0, nightRate: 0 },
+    dailyRecords: dailyRecords.slice(-30),
     gridPower: inverterData.gridPower,
     gridRaw: inverterData.gridRaw,
     gridVoltage: inverterData.gridVoltage,
@@ -1706,6 +1737,8 @@ route('POST', '/api/plugin-config', async (req, res) => {
     if (newCfg.tariff) {
       merged.tariff = merged.tariff || {};
       if (newCfg.tariff.currency !== undefined) merged.tariff.currency = String(newCfg.tariff.currency || 'UAH').slice(0, 8);
+      if (newCfg.tariff.type !== undefined) merged.tariff.type = (newCfg.tariff.type === 'flat') ? 'flat' : 'daynight';
+      if (newCfg.tariff.flatRate !== undefined) merged.tariff.flatRate = parseFloat(newCfg.tariff.flatRate) || 0;
       if (newCfg.tariff.dayRate !== undefined) merged.tariff.dayRate = parseFloat(newCfg.tariff.dayRate) || 0;
       if (newCfg.tariff.nightRate !== undefined) merged.tariff.nightRate = parseFloat(newCfg.tariff.nightRate) || 0;
       if (newCfg.tariff.dayStart !== undefined) merged.tariff.dayStart = newCfg.tariff.dayStart || '07:00';
@@ -2832,11 +2865,15 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cash-coin" style="margin-right:.5rem"></i>Tariff & Cost</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveTariffConfig()"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Currency</label><input type="text" id="cfg-tariff-currency" class="form-hb" placeholder="UAH" maxlength="8" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Tariff type</label><select id="cfg-tariff-type" class="form-hb" onchange="toggleTariffFields()"><option value="flat">Flat rate</option><option value="daynight">Day / Night</option></select></div>
+<div id="tariff-flat-fields"><div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Rate (per kWh)</label><input type="number" step="0.01" min="0" id="cfg-tariff-flat-rate" class="form-hb" placeholder="0" /></div></div>
+<div id="tariff-daynight-fields">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Day rate (per kWh)</label><input type="number" step="0.01" min="0" id="cfg-tariff-day-rate" class="form-hb" placeholder="0" /></div>
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Night rate (per kWh, leave 0 for flat rate)</label><input type="number" step="0.01" min="0" id="cfg-tariff-night-rate" class="form-hb" placeholder="0" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Night rate (per kWh)</label><input type="number" step="0.01" min="0" id="cfg-tariff-night-rate" class="form-hb" placeholder="0" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Day tariff starts</label><input type="time" id="cfg-tariff-day-start" class="form-hb" value="07:00" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Night tariff starts</label><input type="time" id="cfg-tariff-night-start" class="form-hb" value="23:00" /></div>
-<p class="text-muted-hb" style="font-size:.72rem;margin-top:-.4rem">Estimate only, based on the inverter's daily import counter split by time of day. Not billing-grade.</p>
+</div>
+<p class="text-muted-hb" style="font-size:.72rem;margin-top:-.4rem">Estimate only, based on the inverter's daily import counter. Not billing-grade.</p>
 <div id="tariff-status" style="margin-top:.4rem;font-size:.8rem;display:none"></div>
 </div>
 </div>
@@ -3414,10 +3451,13 @@ document.getElementById('cfg-tuya-appSchema').value=(c.tuya&&c.tuya.appSchema)||
  document.getElementById('cfg-conn-timeout').value=(c.notifications&&c.notifications.connTimeout)||10;
  const tf=c.tariff||{};
  document.getElementById('cfg-tariff-currency').value=tf.currency||'UAH';
+ document.getElementById('cfg-tariff-type').value=tf.type||'daynight';
+ document.getElementById('cfg-tariff-flat-rate').value=tf.flatRate||0;
  document.getElementById('cfg-tariff-day-rate').value=tf.dayRate||0;
  document.getElementById('cfg-tariff-night-rate').value=tf.nightRate||0;
  document.getElementById('cfg-tariff-day-start').value=tf.dayStart||'07:00';
  document.getElementById('cfg-tariff-night-start').value=tf.nightStart||'23:00';
+ toggleTariffFields();
  const mu=document.getElementById('cfg-metrics-url');
  if(mu&&c.metricsToken)mu.value=window.location.origin+'/api/metrics?token='+c.metricsToken;
 }catch(e){}
@@ -3445,9 +3485,12 @@ async function testNotification(){
 const st=document.getElementById('notif-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Sending...';
 try{const r=await apiPost('/api/test-notification',{});st.innerHTML=r.results&&r.results.length?'<span style="color:var(--text)">'+r.results.join('<br>')+'</span>':'<span style="color:#22c55e">Sent</span>';}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}
 }
+function toggleTariffFields(){const t=document.getElementById('cfg-tariff-type').value;document.getElementById('tariff-flat-fields').style.display=t==='flat'?'block':'none';document.getElementById('tariff-daynight-fields').style.display=t==='daynight'?'block':'none';}
 async function saveTariffConfig(){
 const cfg={tariff:{
 currency:document.getElementById('cfg-tariff-currency').value.trim()||'UAH',
+type:document.getElementById('cfg-tariff-type').value||'daynight',
+flatRate:parseFloat(document.getElementById('cfg-tariff-flat-rate').value)||0,
 dayRate:parseFloat(document.getElementById('cfg-tariff-day-rate').value)||0,
 nightRate:parseFloat(document.getElementById('cfg-tariff-night-rate').value)||0,
 dayStart:document.getElementById('cfg-tariff-day-start').value||'07:00',
@@ -3591,12 +3634,15 @@ const scEl=document.getElementById('flowMetrics');
 if(scEl){
 const tariff=d.tariff||{};
 const costToday=d.costToday||{day:0,night:0};
-const totalCost=costToday.day*(tariff.dayRate||0)+costToday.night*(tariff.nightRate||0);
-const hasTariff=(tariff.dayRate||0)>0||(tariff.nightRate||0)>0;
-scEl.innerHTML='<div class="metric-card"><span class="metric-lbl">Self-Consumption</span><span class="metric-val">'+sc.toFixed(1)+'%</span><span class="metric-sub">of solar used locally</span></div>'
-+'<div class="metric-card"><span class="metric-lbl">Autonomy</span><span class="metric-val">'+aut.toFixed(1)+'%</span><span class="metric-sub">of load from non-grid</span></div>'
-+'<div class="metric-card"><span class="metric-lbl">Solar Today</span><span class="metric-val">'+dayPV.toFixed(1)+' kWh</span><span class="metric-sub">generated</span></div>'
-+(hasTariff?'<div class="metric-card"><span class="metric-lbl">Grid Cost Today</span><span class="metric-val">'+totalCost.toFixed(2)+' '+(tariff.currency||'')+'</span><span class="metric-sub">'+costToday.day.toFixed(1)+' kWh day + '+costToday.night.toFixed(1)+' kWh night</span></div>':'');}
+const records=d.dailyRecords||[];
+function gCost(dk,nk){if(tariff.type==='flat')return(dk+nk)*(tariff.flatRate||0);return dk*(tariff.dayRate||0)+nk*(tariff.nightRate||0);}
+const todayC=gCost(costToday.day,costToday.night);
+let weekC=0,monthC=0;
+for(let i=0;i<Math.min(records.length,30);i++){const r=records[records.length-1-i];const c=gCost(r.dayKwh,r.nightKwh);if(i<7)weekC+=c;monthC+=c;}
+const cur=tariff.currency||'';
+scEl.innerHTML='<div class="metric-card"><span class="metric-lbl">Cost Today</span><span class="metric-val">'+todayC.toFixed(2)+' '+cur+'</span><span class="metric-sub">'+costToday.day.toFixed(1)+' day + '+costToday.night.toFixed(1)+' night kWh</span></div>'
++'<div class="metric-card"><span class="metric-lbl">Cost This Week</span><span class="metric-val">'+weekC.toFixed(2)+' '+cur+'</span><span class="metric-sub">last 7 days</span></div>'
++'<div class="metric-card"><span class="metric-lbl">Cost This Month</span><span class="metric-val">'+monthC.toFixed(2)+' '+cur+'</span><span class="metric-sub">last 30 days</span></div>';}
 svg.innerHTML=html;
 }
 let _tileDetailChart=null;
@@ -3704,6 +3750,7 @@ async function main() {
   await ensureAuth();
   await ensureMetricsToken();
   await loadSessions();
+  await loadDailyRecords();
   await rrdInit();
   await loadScenes();
   const cfg = await loadConfig();
