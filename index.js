@@ -801,6 +801,14 @@ async function rrdInit() {
       await fs.promises.writeFile(DATA_DIR + '/sockets_' + level + '.json', JSON.stringify(RRD_SOCKET[level]), { mode: 0o600 });
     }
   }
+  // One-time socket aggregation if 15m/1h are empty but 1m has data
+  if (RRD_SOCKET['1m'].length > 0 && RRD_SOCKET['15m'].length === 0) {
+    rrdSocketMergeM15();
+    rrdSocketMergeM1h();
+    for (const level of ['15m', '1h']) {
+      await fs.promises.writeFile(DATA_DIR + '/sockets_' + level + '.json', JSON.stringify(RRD_SOCKET[level]), { mode: 0o600 });
+    }
+  }
 }
 
 function rrdAvg(arr) {
@@ -914,6 +922,56 @@ function rrdMergeM1h() {
   }
 }
 
+function rrdSocketMergeM15() {
+  const m1 = RRD_SOCKET['1m'];
+  const m15 = RRD_SOCKET['15m'];
+  const newestM15 = m15.length ? m15[m15.length - 1].ts : 0;
+  const buckets = new Map();
+  for (const p of m1) {
+    if (p.ts <= newestM15) continue;
+    const key = Math.floor(p.ts / 900000) * 900000;
+    if (!buckets.has(key)) buckets.set(key, { ts: key, devices: {}, count: 0 });
+    const b = buckets.get(key);
+    for (const [id, val] of Object.entries(p.devices || {})) {
+      if (!b.devices[id]) b.devices[id] = [];
+      b.devices[id].push(val);
+    }
+    b.count++;
+  }
+  for (const b of buckets.values()) {
+    const entry = { ts: b.ts, devices: {} };
+    for (const [id, arr] of Object.entries(b.devices)) {
+      entry.devices[id] = rrdAvg(arr);
+    }
+    rrdPush(m15, entry, RRD_SIZE['15m']);
+  }
+}
+
+function rrdSocketMergeM1h() {
+  const m15 = RRD_SOCKET['15m'];
+  const m1h = RRD_SOCKET['1h'];
+  const newestM1h = m1h.length ? m1h[m1h.length - 1].ts : 0;
+  const buckets = new Map();
+  for (const p of m15) {
+    if (p.ts <= newestM1h) continue;
+    const key = Math.floor(p.ts / 3600000) * 3600000;
+    if (!buckets.has(key)) buckets.set(key, { ts: key, devices: {}, count: 0 });
+    const b = buckets.get(key);
+    for (const [id, val] of Object.entries(p.devices || {})) {
+      if (!b.devices[id]) b.devices[id] = [];
+      b.devices[id].push(val);
+    }
+    b.count++;
+  }
+  for (const b of buckets.values()) {
+    const entry = { ts: b.ts, devices: {} };
+    for (const [id, arr] of Object.entries(b.devices)) {
+      entry.devices[id] = rrdAvg(arr);
+    }
+    rrdPush(m1h, entry, RRD_SIZE['1h']);
+  }
+}
+
 async function rrdFlush() {
   const now = Date.now();
   if (now - lastRrdFlush < RRD_FLUSH_MS) return;
@@ -950,7 +1008,13 @@ async function rrdFlush() {
     // 4. Aggregate 15m → 1h
     rrdMergeM1h();
 
-    // 5. Write all 6 files to disk
+    // 5. Aggregate socket 1m → 15m
+    rrdSocketMergeM15();
+
+    // 6. Aggregate socket 15m → 1h
+    rrdSocketMergeM1h();
+
+    // 7. Write all 6 files to disk
     for (const level of ['1m', '15m', '1h']) {
       await fs.promises.writeFile(DATA_DIR + '/history_' + level + '.json', JSON.stringify(RRD_POWER[level]), { mode: 0o600 });
       await fs.promises.writeFile(DATA_DIR + '/sockets_' + level + '.json', JSON.stringify(RRD_SOCKET[level]), { mode: 0o600 });
@@ -1168,7 +1232,7 @@ async function loadConfig() {
     inverter: { ip: '', serial: '', port: 8899 },
     tuya: { accessId: '', accessKey: '', countryCode: 48, username: '', password: '', appSchema: 'tuyaSmart' },
     webPort: 8583,
-    notifications: { ntfyTopic: '', telegramToken: '', telegramChatId: '', lowSocAlert: 20, connTimeout: 10, gridOutageReport: true },
+    notifications: { notifEnabled: true, ntfyEnabled: true, ntfyNotifEnabled: true, ntfyTopic: '', telegramEnabled: true, telegramNotifEnabled: true, telegramToken: '', telegramChatId: '', lowSocAlert: 20, connTimeout: 10, gridOutageReport: true },
     metricsToken: '',
     tariff: { currency: 'UAH', type: 'daynight', flatRate: 0, dayRate: 0, nightRate: 0, dayStart: '07:00', nightStart: '23:00' },
   };
@@ -1399,6 +1463,9 @@ async function checkScenes() {
         } else if (cond.type === 'weekday') {
           const days = cond.days || [];
           met = days.includes(new Date().getDay());
+        } else if (cond.type === 'device_online') {
+          const dev = tuyaDevices.find(d => d.id === cond.value);
+          met = dev ? dev.online === cond.expectedStatus : false;
         }
         condResults.push(met);
       }
@@ -1813,8 +1880,9 @@ async function sendNotification(title, message, critical) {
     const cfg = await loadConfig();
     const n = cfg.notifications || {};
     if (n.criticalEnabled === false && critical) return [];
+    if (n.notifEnabled === false) return [];
     const results = [];
-    if (n.ntfyTopic && n.ntfyEnabled !== false) {
+    if (n.ntfyTopic && n.ntfyEnabled !== false && n.ntfyNotifEnabled !== false) {
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
           const body = JSON.stringify({ topic: n.ntfyTopic, title, message, priority: 4 });
@@ -1833,7 +1901,7 @@ async function sendNotification(title, message, critical) {
         }
       }
     }
-    if (n.telegramToken && n.telegramChatId && n.telegramEnabled !== false) {
+    if (n.telegramToken && n.telegramChatId && n.telegramEnabled !== false && n.telegramNotifEnabled !== false) {
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
           const body = JSON.stringify({ chat_id: n.telegramChatId, text: '*' + title + '*\n' + message, parse_mode: 'Markdown' });
@@ -2013,12 +2081,44 @@ route('POST', '/api/restart', (req, res) => {
 });
 
 // System info
-route('GET', '/api/system-info', (req, res) => {
+route('GET', '/api/system-info', async (req, res) => {
+  let cpuTemp = null, cpuFreq = null;
+  try {
+    const tempRaw = await fs.promises.readFile('/sys/class/thermal/thermal_zone0/temp', 'utf8');
+    cpuTemp = (parseInt(tempRaw) / 1000).toFixed(1);
+  } catch (_) {}
+  try {
+    const freqRaw = await fs.promises.readFile('/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq', 'utf8');
+    cpuFreq = (parseInt(freqRaw) / 1000).toFixed(0);
+  } catch (_) {}
+  const cpus = os.cpus();
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  let diskInfo = {};
+  try {
+    const { exec } = require('child_process');
+    const df = await new Promise((resolve, reject) => {
+      exec('df -k / | tail -1', (err, stdout) => err ? reject(err) : resolve(stdout.trim()));
+    });
+    const parts = df.split(/\s+/);
+    if (parts.length >= 5) {
+      diskInfo = { total: parseInt(parts[1]) * 1024, used: parseInt(parts[2]) * 1024, available: parseInt(parts[3]) * 1024 };
+    }
+  } catch (_) {}
   sendJson(res, 200, {
     hostname: os.hostname(),
     platform: os.platform(),
     uptime: os.uptime(),
     nodeVersion: process.version,
+    cpuModel: cpus[0]?.model || '',
+    cpuCores: cpus.length,
+    cpuLoad: os.loadavg(),
+    cpuTemp,
+    cpuFreq,
+    totalMem,
+    freeMem,
+    usedMem: totalMem - freeMem,
+    diskInfo,
   });
 });
 
@@ -2157,6 +2257,7 @@ route('POST', '/api/backup', async (req, res) => {
       }
       if (s === 'history') {
         try { data.history = {}; for (const l of ['1m','15m','1h']) data.history[l] = JSON.parse(await fs.promises.readFile(DATA_DIR + '/history_' + l + '.json', 'utf8')); } catch { data.history = {}; }
+        try { data.socketHistory = {}; for (const l of ['1m','15m','1h']) data.socketHistory[l] = JSON.parse(await fs.promises.readFile(DATA_DIR + '/sockets_' + l + '.json', 'utf8')); } catch { data.socketHistory = {}; }
       }
       if (s === 'devices') {
         try { data.devices = JSON.parse(await fs.promises.readFile(DEVICES_FILE, 'utf8')); } catch { data.devices = []; }
@@ -2203,6 +2304,11 @@ route('POST', '/api/backup/restore', async (req, res) => {
           if (data.history[l]) await fs.promises.writeFile(DATA_DIR + '/history_' + l + '.json', JSON.stringify(data.history[l], null, 2), { mode: 0o600 });
         }
       }
+      if (f === 'history' && data.socketHistory) {
+        for (const l of ['1m','15m','1h']) {
+          if (data.socketHistory[l]) await fs.promises.writeFile(DATA_DIR + '/sockets_' + l + '.json', JSON.stringify(data.socketHistory[l], null, 2), { mode: 0o600 });
+        }
+      }
       if (f === 'devices' && data.devices) {
         await fs.promises.writeFile(DEVICES_FILE, JSON.stringify(data.devices, null, 2), { mode: 0o600 });
         try { tuyaDevices = JSON.parse(JSON.stringify(data.devices)); } catch {}
@@ -2244,7 +2350,7 @@ route('GET', '/manifest.json', (req, res) => {
 route('GET', '/sw.js', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/javascript', 'Cache-Control': 'no-cache, no-store, must-revalidate' });
   res.end(`
-const CACHE = 'ecm-v4';
+const CACHE = 'ecm-v5';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(k => Promise.all(k.map(x => caches.delete(x))))); self.clients.claim(); });
 self.addEventListener('fetch', e => {
@@ -2828,6 +2934,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <li class="menu-item active" data-tab="status"><i class="bi bi-speedometer2"></i><span>Status</span></li>
 <li class="menu-item" data-tab="devices"><i class="bi bi-cpu"></i><span>Devices</span><span class="badge-hb purple" id="sidebar-device-count">0</span></li>
 <li class="menu-item" data-tab="automations"><i class="bi bi-diagram-3"></i><span>Automations</span><span class="badge-hb purple" id="sidebar-scene-count">0</span></li>
+<li class="menu-item" data-tab="server"><i class="bi bi-server"></i><span>Server</span></li>
 <li class="menu-item" data-tab="settings"><i class="bi bi-gear"></i><span>Settings</span></li>
 </ul>
 <div class="sidebar-footer">
@@ -2893,6 +3000,15 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card-body" id="scenes-list"><div class="empty-state"><i class="bi bi-diagram-3"></i><p>No automations yet.</p></div></div>
 </div>
 </div>
+<div class="tab-pane" id="tab-server">
+<div class="page-header"><h1>Server</h1></div>
+<div class="hb-card">
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cpu"></i> System Resources</div></div>
+<div class="hb-card-body" id="server-info-body">
+<div style="text-align:center;padding:1rem"><i class="bi bi-hourglass-split"></i> Loading...</div>
+</div>
+</div>
+</div>
 <div class="tab-pane" id="tab-settings">
 <div class="page-header"><h1>Settings</h1></div>
 <div class="hb-card collapsed">
@@ -2937,25 +3053,21 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card collapsed" style="margin-top:1rem">
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveNotifConfig()"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-bell" style="margin-right:.4rem"></i>ntfy.sh</span><label class="sw"><input type="checkbox" id="cfg-ntfy-enabled" checked onchange="document.getElementById('ntfy-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
-<div id="ntfy-fields">
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Topic</label><input type="text" id="cfg-ntfy-topic" class="form-hb" placeholder="my-topic" /></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-bell" style="margin-right:.4rem"></i>Enable notifications</span><label class="sw"><input type="checkbox" id="cfg-notif-enabled" checked onchange="document.getElementById('notif-body-rest').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="notif-body-rest">
+<div id="notif-integrations">
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)" id="notif-ntfy-row"><span style="font-size:.85rem"><i class="bi bi-bell" style="margin-right:.4rem"></i>Via ntfy.sh</span><label class="sw"><input type="checkbox" id="cfg-ntfy-notif-enabled" checked><span class="sw-slider"></span></label></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)" id="notif-tg-row"><span style="font-size:.85rem"><i class="bi bi-telegram" style="margin-right:.4rem"></i>Via Telegram</span><label class="sw"><input type="checkbox" id="cfg-tg-notif-enabled" checked><span class="sw-slider"></span></label></div>
 </div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin:.8rem 0 .6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-telegram" style="margin-right:.4rem"></i>Telegram</span><label class="sw"><input type="checkbox" id="cfg-tg-enabled" checked onchange="document.getElementById('tg-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
-<div id="tg-fields">
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Bot Token</label><input type="password" id="cfg-tg-token" class="form-hb" placeholder="123456:ABC-DEF1234..." /></div>
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Chat ID</label><input type="text" id="cfg-tg-chat" class="form-hb" placeholder="-1001234567890" /></div>
-</div>
-<div style="border-top:1px solid var(--border);margin:.6rem 0;padding-top:.6rem">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-exclamation-triangle" style="margin-right:.4rem"></i>Critical alerts</span><label class="sw"><input type="checkbox" id="cfg-notif-critical-enabled" checked onchange="document.getElementById('critical-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.6rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-exclamation-triangle" style="margin-right:.4rem"></i>Critical alerts</span><label class="sw"><input type="checkbox" id="cfg-notif-critical-enabled" checked onchange="document.getElementById('critical-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
 <div id="critical-fields">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Low SOC alert (%)</label><input type="number" id="cfg-soc-alert" class="form-hb" min="0" max="100" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Connection timeout (min)</label><input type="number" id="cfg-conn-timeout" class="form-hb" min="0" /></div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin:.6rem 0 .2rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-lightning" style="margin-right:.4rem"></i>Grid outage report</span><label class="sw"><input type="checkbox" id="cfg-notif-grid-outage" checked><span class="sw-slider"></span></label></div>
 </div>
-</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.6rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-lightning" style="margin-right:.4rem"></i>Grid outage report</span><label class="sw"><input type="checkbox" id="cfg-notif-grid-outage" checked><span class="sw-slider"></span></label></div>
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="testNotification()" style="width:100%"><i class="bi bi-send"></i> Send Test</button>
 <div id="notif-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
+</div>
 </div>
 </div>
 <div class="hb-card collapsed" style="margin-top:1rem">
@@ -2975,12 +3087,17 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 </div>
 <div class="hb-card collapsed" style="margin-top:1rem">
-<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-hdd-network" style="margin-right:.5rem"></i>Integrations</div></div>
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-hdd-network" style="margin-right:.5rem"></i>Integrations</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
-<p class="text-muted-hb" style="font-size:.8rem">Read-only data feed for Prometheus/Grafana or Home Assistant, so you can build dashboards elsewhere without loading this Pi.</p>
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Metrics URL (Prometheus text format)</label><input type="text" id="cfg-metrics-url" class="form-hb" readonly onclick="this.select()" /></div>
-<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="copyMetricsUrl()" style="width:100%"><i class="bi bi-clipboard"></i> Copy URL</button>
-<p class="text-muted-hb" style="font-size:.72rem;margin-top:.6rem">Home Assistant: add a <code>sensor: - platform: rest</code> pointing at <code>/api/status</code> (no token needed on your LAN, uses the same session-less JSON). See README for a ready-made example.</p>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-bell" style="margin-right:.4rem"></i>ntfy.sh</span><label class="sw"><input type="checkbox" id="cfg-ntfy-enabled" checked onchange="document.getElementById('ntfy-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="ntfy-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Topic</label><input type="text" id="cfg-ntfy-topic" class="form-hb" placeholder="my-topic" /></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.8rem 0 .6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-telegram" style="margin-right:.4rem"></i>Telegram</span><label class="sw"><input type="checkbox" id="cfg-tg-enabled" checked onchange="document.getElementById('tg-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="tg-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Bot Token</label><input type="password" id="cfg-tg-token" class="form-hb" placeholder="123456:ABC-DEF1234..." /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Chat ID</label><input type="text" id="cfg-tg-chat" class="form-hb" placeholder="-1001234567890" /></div>
+</div>
 </div>
 </div>
 <div class="hb-card collapsed" style="margin-top:1rem">
@@ -2996,13 +3113,6 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card collapsed" style="margin-top:1rem">
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-archive" style="margin-right:.5rem"></i>Backup & Restore</div></div>
 <div class="hb-card-body">
-<div style="margin-bottom:.65rem"><label class="text-muted-hb" style="font-size:.78rem;margin-bottom:.35rem;display:block">Select data to include:</label>
-<label class="backup-opt"><input type="checkbox" id="bp-config" checked /> Config (Inverter, Tuya, Web UI)</label>
-<label class="backup-opt"><input type="checkbox" id="bp-scenes" checked /> Automations</label>
-<label class="backup-opt"><input type="checkbox" id="bp-tiles" checked /> Status Tiles layout</label>
-<label class="backup-opt"><input type="checkbox" id="bp-auth" /> Security (passwords)</label>
-<label class="backup-opt"><input type="checkbox" id="bp-history" /> History data (charts)</label>
-</div>
 <div style="display:flex;gap:.5rem;flex-wrap:wrap">
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="createBackup()"><i class="bi bi-download"></i> Backup</button>
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="document.getElementById('restoreInput').click()"><i class="bi bi-upload"></i> Restore</button>
@@ -3043,12 +3153,13 @@ this.classList.add('active');
 document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
 const pane=document.getElementById('tab-'+tab);
 if(pane)pane.classList.add('active');
-const titles={status:'Status',devices:'Devices',automations:'Automations',settings:'Settings'};
+const titles={status:'Status',devices:'Devices',automations:'Automations',server:'Server',settings:'Settings'};
 const h1=pane.querySelector('.page-header h1');
 if(h1)h1.textContent=titles[tab]||tab;
 if(tab==='status'){loadStatus();loadLogs();loadHistory();loadSocketHistory();loadOtherHistory();}
 if(tab==='devices')loadTuyaDevices();
 if(tab==='automations'){loadScenes();populateDeviceSelects();}
+if(tab==='server')loadServerInfo();
 if(tab==='settings'){loadPluginConfig();loadAppVersion();}
 });
 });
@@ -3193,6 +3304,7 @@ if(c.type==='grid')return 'Grid '+(c.value?'ON':'OFF');
 if(c.type==='battery')return 'Battery '+(c.operator||'=')+' '+c.value+'%';
 if(c.type==='time')return 'Time '+c.after+'-'+c.before;
 if(c.type==='weekday'&&c.days){const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];return c.days.map(d=>wd[d]).join('/');}
+if(c.type==='device_online'){const dev=tuyaDevices.find(d=>d.id===c.value);return (dev?dev.name:'Device')+' '+(c.expectedStatus?'Online':'Offline');}
 return '';
 }).join(lg):'\\u2014';
 const thenT=(s.then&&s.then.actions)?s.then.actions.map(a=>{
@@ -3273,7 +3385,7 @@ function addCondition(){
 expandNewAutomation();
 const c=document.getElementById('if-conditions');
 const r=document.createElement('div');r.className='rule-row';
-r.innerHTML='<select class="form-hb rule-field condition-type" onchange="updateConditionOptions(this)"><option value="">\\u2014 Source \\u2014</option><option value="grid">City Grid</option><option value="battery">Battery Level</option><option value="time">Time of Day</option><option value="weekday">Day of Week</option></select><div class="rule-field condition-operator-col" style="display:none"><select class="form-hb condition-operator"><option value="<">< Less</option><option value=">">> Greater</option><option value="=">= Equal</option></select></div><div class="rule-field condition-value-col" style="display:none"><input type="number" class="form-hb condition-value" placeholder="Value" /></div><div class="rule-remove"><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="this.closest(\\'.rule-row\\').remove()"><i class="bi bi-x"></i></button></div>';
+r.innerHTML='<select class="form-hb rule-field condition-type" onchange="updateConditionOptions(this)"><option value="">\\u2014 Source \\u2014</option><option value="grid">City Grid</option><option value="battery">Battery Level</option><option value="time">Time of Day</option><option value="weekday">Day of Week</option><option value="device_online">Device Online</option></select><div class="rule-field condition-operator-col" style="display:none"><select class="form-hb condition-operator"><option value="<">< Less</option><option value=">">> Greater</option><option value="=">= Equal</option></select></div><div class="rule-field condition-value-col" style="display:none"><input type="number" class="form-hb condition-value" placeholder="Value" /></div><div class="rule-remove"><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="this.closest(\\'.rule-row\\').remove()"><i class="bi bi-x"></i></button></div>';
 c.appendChild(r);
 }
 function updateConditionOptions(sel){
@@ -3285,6 +3397,7 @@ if(sel.value==='grid'){op.style.display='none';vc.style.display='block';vi.outer
 else if(sel.value==='battery'){op.style.display='block';vc.style.display='block';vi.outerHTML='<input type="number" class="form-hb condition-value" placeholder="%" min="0" max="100" />';}
 else if(sel.value==='time'){op.style.display='none';vc.style.display='block';vi.outerHTML='<span style="display:flex;gap:.4rem;align-items:center"><input type="time" class="form-hb condition-after" style="flex:1" value="00:00" /><span style="color:var(--muted);font-size:.75rem">to</span><input type="time" class="form-hb condition-before" style="flex:1" value="23:59" /></span>';}
 else if(sel.value==='weekday'){op.style.display='none';vc.style.display='block';vi.outerHTML='<span class="wdays">' + ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d,i) => '<label class="wday-lbl"><input type="checkbox" class="wday-cb" value="' + i + '"' + (i>0&&i<6?' checked':'') + ' />' + d + '</label>').join('') + '</span>';}
+else if(sel.value==='device_online'){op.style.display='none';vc.style.display='block';vi.outerHTML='<select class="form-hb condition-device"><option value="">\u2014 Select device \u2014</option>' + tuyaDevices.map(d => '<option value="' + d.id + '">' + d.name + '</option>').join('') + '</select> <select class="form-hb condition-device-status"><option value="true">Online</option><option value="false">Offline</option></select>';}
 else{op.style.display='none';vc.style.display='none';}
 }
 function addAction(){
@@ -3334,7 +3447,9 @@ c={type:'weekday',days};
 let val=v?v.value:'';
 if(t==='grid')val=val==='true';
 else if(t==='battery')val=parseInt(val)||0;
+else if(t==='device_online'){const dev=r.querySelector('.condition-device').value;const st=r.querySelector('.condition-device-status').value;val=dev;}
 c={type:t,value:val};
+if(t==='device_online')c.expectedStatus=r.querySelector('.condition-device-status').value==='true';
 if(o&&o.value)c.operator=o.value;
 }
 conds.push(c);
@@ -3546,6 +3661,11 @@ document.getElementById('cfg-tuya-appSchema').value=(c.tuya&&c.tuya.appSchema)||
  document.getElementById('cfg-tg-token').value=(c.notifications&&c.notifications.telegramToken)||'';
  document.getElementById('cfg-tg-chat').value=(c.notifications&&c.notifications.telegramChatId)||'';
  document.getElementById('cfg-tg-enabled').checked=(c.notifications&&c.notifications.telegramEnabled!==false);
+ document.getElementById('cfg-notif-enabled').checked=(c.notifications&&c.notifications.notifEnabled!==false);
+ document.getElementById('cfg-ntfy-notif-enabled').checked=(c.notifications&&c.notifications.ntfyNotifEnabled!==false);
+ document.getElementById('cfg-tg-notif-enabled').checked=(c.notifications&&c.notifications.telegramNotifEnabled!==false);
+ const ntfye=document.getElementById('notif-ntfy-row');if(ntfye)ntfye.style.display=(c.notifications&&c.notifications.ntfyEnabled!==false)?'flex':'none';
+ const tge=document.getElementById('notif-tg-row');if(tge)tge.style.display=(c.notifications&&c.notifications.telegramEnabled!==false)?'flex':'none';
  document.getElementById('cfg-notif-critical-enabled').checked=(c.notifications&&c.notifications.criticalEnabled!==false);
  document.getElementById('cfg-soc-alert').value=(c.notifications&&c.notifications.lowSocAlert)||20;
  document.getElementById('cfg-conn-timeout').value=(c.notifications&&c.notifications.connTimeout)||10;
@@ -3562,8 +3682,7 @@ document.getElementById('cfg-tuya-appSchema').value=(c.tuya&&c.tuya.appSchema)||
  document.getElementById('cfg-tariff-day-start').value=tf.dayStart||'07:00';
  document.getElementById('cfg-tariff-night-start').value=tf.nightStart||'23:00';
  toggleTariffFields();
- const mu=document.getElementById('cfg-metrics-url');
- if(mu&&c.metricsToken)mu.value=window.location.origin+'/api/metrics?token='+c.metricsToken;
+
 }catch(e){}
 }
 async function savePluginConfig(){
@@ -3572,7 +3691,7 @@ const cfg={
 inverter:{ip:document.getElementById('cfg-inverter-ip').value.trim(),serial:document.getElementById('cfg-inverter-serial').value.trim(),port:parseInt(document.getElementById('cfg-inverter-port').value)||8899},
 tuya:{accessId:document.getElementById('cfg-tuya-accessId').value.trim(),accessKey:document.getElementById('cfg-tuya-accessKey').value,countryCode:parseInt(document.getElementById('cfg-tuya-countryCode').value)||48,username:document.getElementById('cfg-tuya-username').value.trim(),password:document.getElementById('cfg-tuya-password').value,appSchema:document.getElementById('cfg-tuya-appSchema').value},
 webPort:parseInt(document.getElementById('cfg-webPort').value)||8583,
-notifications:{ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
+notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyNotifEnabled:document.getElementById('cfg-ntfy-notif-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramNotifEnabled:document.getElementById('cfg-tg-notif-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),criticalEnabled:document.getElementById('cfg-notif-critical-enabled').checked,lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10,gridOutageReport:document.getElementById('cfg-notif-grid-outage').checked}
 };
 const r=await apiPost('/api/plugin-config',{config:cfg});
 if(r.success){document.getElementById('restartModal').classList.add('show');}else showToast('Error',r.message||'Save failed',true);
@@ -3580,7 +3699,7 @@ if(r.success){document.getElementById('restartModal').classList.add('show');}els
 }
 async function saveNotifConfig(){
 const cfg={
-notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),criticalEnabled:document.getElementById('cfg-notif-critical-enabled').checked,gridOutageReport:document.getElementById('cfg-notif-grid-outage').checked,lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
+notifications:{notifEnabled:document.getElementById('cfg-notif-enabled').checked,ntfyNotifEnabled:document.getElementById('cfg-ntfy-notif-enabled').checked,telegramNotifEnabled:document.getElementById('cfg-tg-notif-enabled').checked,criticalEnabled:document.getElementById('cfg-notif-critical-enabled').checked,gridOutageReport:document.getElementById('cfg-notif-grid-outage').checked,lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
 };
 const st=document.getElementById('notif-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';
 try{const r=await apiPost('/api/plugin-config',{config:cfg});if(r.success){st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Saved.';setTimeout(()=>st.style.display='none',3000);}else st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+(r.message||'Error');}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}
@@ -3779,7 +3898,8 @@ document.getElementById('tileDetailModal').classList.remove('show');
 if(_tileDetailChart){_tileDetailChart.destroy();_tileDetailChart=null;}
 }
 async function loadAppVersion(){try{const r=await fetch('/api/app-version');const d=await r.json();if(d.success){const el=document.getElementById('update-info');if(el){el.innerHTML=d.isGit?'Version <strong>'+d.version+'</strong> ('+d.gitHash+') · Branch: '+d.gitBranch:'Version <strong>'+d.version+'</strong> (not a git repo)';if(!d.isGit)document.getElementById('btn-check-update').style.display='none';}const sv=document.getElementById('sidebar-version');if(sv)sv.textContent='v'+d.version;}}catch(e){}}
-async function createBackup(){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Creating backup...';try{const scope=[];if(document.getElementById('bp-config').checked)scope.push('config');if(document.getElementById('bp-scenes').checked)scope.push('scenes');if(document.getElementById('bp-auth').checked)scope.push('auth');if(document.getElementById('bp-history').checked)scope.push('history');const r=await apiPost('/api/backup',{scope});if(!r.success||!r.backup)throw new Error(r.message||'Backup failed');const bk=r.backup;if(document.getElementById('bp-tiles').checked){bk.data.tilePrefs=loadTilePrefs();bk.data.tileOrder=loadTileOrder();}const blob=new Blob([JSON.stringify(bk,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='energy-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Backup downloaded.';setTimeout(()=>st.style.display='none',4000);}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}}
+async function createBackup(){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Creating backup...';try{const r=await apiPost('/api/backup',{scope:['config','scenes','auth','history']});if(!r.success||!r.backup)throw new Error(r.message||'Backup failed');const bk=r.backup;bk.data.tilePrefs=loadTilePrefs();bk.data.tileOrder=loadTileOrder();const blob=new Blob([JSON.stringify(bk,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='energy-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Backup downloaded.';setTimeout(()=>st.style.display='none',4000);}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}}
+async function loadServerInfo(){const el=document.getElementById('server-info-body');el.innerHTML='<div style="text-align:center;padding:1rem"><i class="bi bi-hourglass-split"></i> Loading...</div>';try{const d=await apiGet('/api/system-info');let html='<table style="width:100%;font-size:.85rem;border-collapse:collapse">';const fmt=function(b){if(b>=1073741824)return (b/1073741824).toFixed(2)+' GB';if(b>=1048576)return (b/1048576).toFixed(1)+' MB';if(b>=1024)return (b/1024).toFixed(0)+' KB';return b+' B';};const dur=function(s){const d=Math.floor(s/86400);const h=Math.floor((s%86400)/3600);const m=Math.floor((s%3600)/60);return d+'d '+h+'h '+m+'m';};const row=function(l,v){return '<tr><td style="padding:.5rem .3rem;color:var(--text-secondary)">'+l+'</td><td style="padding:.5rem .3rem;text-align:right">'+v+'</td></tr>';};html+=row('Hostname',d.hostname);html+=row('Platform',d.platform);html+=row('Node.js',d.nodeVersion);html+=row('Uptime',dur(d.uptime));html+=row('CPU',d.cpuModel+' ('+d.cpuCores+' cores)');const bar=function(pct){const col=pct>0.7?'#ef4444':pct>0.4?'#eab308':'#22c55e';return '<div style="display:flex;align-items:center;gap:.5rem"><span style="width:3rem;text-align:right">'+pct.toFixed(2)+'</span><div style="flex:1;height:6px;background:var(--border);border-radius:4px;overflow:hidden"><div style="width:'+(pct*100)+'%;height:100%;background:'+col+';border-radius:4px;transition:width .5s"></div></div></div>';};html+=row('CPU Load (1m)',bar(d.cpuLoad[0]));html+=row('CPU Load (5m)',bar(d.cpuLoad[1]));html+=row('CPU Load (15m)',bar(d.cpuLoad[2]));if(d.cpuTemp)html+=row('CPU Temp','<span style="color:'+(parseFloat(d.cpuTemp)>70?'#ef4444':'#22c55e')+'">'+d.cpuTemp+'\u00b0C</span>');if(d.cpuFreq)html+=row('CPU Freq',d.cpuFreq+' MHz');const memPct=(d.usedMem/d.totalMem*100).toFixed(1);html+=row('Memory','<div style="display:flex;justify-content:space-between;gap:.5rem;margin-bottom:4px"><span>Used: '+fmt(d.usedMem)+' / '+fmt(d.totalMem)+'</span><span style="color:'+(parseFloat(memPct)>80?'#ef4444':'')+'">'+memPct+'%</span></div><div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden"><div style="width:'+memPct+'%;height:100%;background:'+(parseFloat(memPct)>80?'#ef4444':'var(--primary)')+';border-radius:4px;transition:width .5s"></div></div>');if(d.diskInfo&&d.diskInfo.total){const diskPct=(d.diskInfo.used/d.diskInfo.total*100).toFixed(1);html+=row('Disk','<div style="display:flex;justify-content:space-between;gap:.5rem;margin-bottom:4px"><span>Used: '+fmt(d.diskInfo.used)+' / '+fmt(d.diskInfo.total)+'</span><span style="color:'+(parseFloat(diskPct)>80?'#ef4444':'')+'">'+diskPct+'%</span></div><div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden"><div style="width:'+diskPct+'%;height:100%;background:'+(parseFloat(diskPct)>80?'#ef4444':'var(--primary)')+';border-radius:4px;transition:width .5s"></div></div>');}html+='</table>';el.innerHTML=html;}catch(e){el.innerHTML='<div style="color:#ef4444;padding:1rem;text-align:center"><i class="bi bi-exclamation-circle"></i> '+e.message+'</div>';}}
 async function restoreBackup(file){const st=document.getElementById('backup-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Restoring...';try{const text=await file.text();const bk=JSON.parse(text);if(!bk.data)throw new Error('Invalid backup file');const overwrite=[];if(bk.data.config)overwrite.push('config');if(bk.data.scenes)overwrite.push('scenes');if(bk.data.auth)overwrite.push('auth');if(bk.data.history)overwrite.push('history');
 let confirmPassword=null;
 if(overwrite.includes('auth')){
