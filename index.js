@@ -1743,6 +1743,8 @@ route('POST', '/api/plugin-config', async (req, res) => {
         if (newCfg.notifications[k] === '••••••••' || newCfg.notifications[k] === '') continue;
         if (newCfg.notifications[k] !== undefined) merged.notifications[k] = newCfg.notifications[k];
       }
+      if (newCfg.notifications.ntfyEnabled !== undefined) merged.notifications.ntfyEnabled = !!newCfg.notifications.ntfyEnabled;
+      if (newCfg.notifications.telegramEnabled !== undefined) merged.notifications.telegramEnabled = !!newCfg.notifications.telegramEnabled;
       if (newCfg.notifications.lowSocAlert !== undefined) merged.notifications.lowSocAlert = parseInt(newCfg.notifications.lowSocAlert) || 20;
       if (newCfg.notifications.connTimeout !== undefined) merged.notifications.connTimeout = parseInt(newCfg.notifications.connTimeout) || 10;
     }
@@ -1769,7 +1771,7 @@ async function sendNotification(title, message) {
     const cfg = await loadConfig();
     const n = cfg.notifications || {};
     const results = [];
-    if (n.ntfyTopic) {
+    if (n.ntfyTopic && n.ntfyEnabled !== false) {
       try {
         const body = JSON.stringify({ topic: n.ntfyTopic, title, message, priority: 4 });
         await new Promise((resolve, reject) => {
@@ -1781,7 +1783,7 @@ async function sendNotification(title, message) {
         results.push('ntfy: OK');
       } catch (e) { results.push('ntfy: ' + e.message); }
     }
-    if (n.telegramToken && n.telegramChatId) {
+    if (n.telegramToken && n.telegramChatId && n.telegramEnabled !== false) {
       try {
         const body = JSON.stringify({ chat_id: n.telegramChatId, text: '*' + title + '*\n' + message, parse_mode: 'Markdown' });
         await new Promise((resolve, reject) => {
@@ -2560,6 +2562,12 @@ a{color:inherit}
 select.form-hb{background-color:var(--card-solid);color-scheme:dark}
 select.form-hb option{background-color:var(--card-solid);color:var(--text)}
 select.form-hb option:checked,select.form-hb option:hover{background-color:var(--primary);color:#fff}
+.sw{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw-slider{position:absolute;inset:0;background:rgba(255,255,255,.12);border-radius:22px;cursor:pointer;transition:.25s}
+.sw-slider::before{content:'';position:absolute;width:18px;height:18px;left:2px;bottom:2px;background:#fff;border-radius:50%;transition:.25s}
+.sw input:checked+.sw-slider{background:var(--primary)}
+.sw input:checked+.sw-slider::before{transform:translateX(16px)}
 .empty-state{text-align:center;padding:2.25rem 1rem;color:var(--muted)}
 .empty-state i{font-size:2.5rem;display:block;margin-bottom:.6rem;color:var(--border)}
 .empty-state p{margin:0;font-size:.9rem}
@@ -2864,11 +2872,19 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="hb-card collapsed" style="margin-top:1rem">
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveNotifConfig()"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">ntfy.sh topic</label><input type="text" id="cfg-ntfy-topic" class="form-hb" placeholder="my-topic" /></div>
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Telegram Bot Token</label><input type="password" id="cfg-tg-token" class="form-hb" placeholder="123456:ABC-DEF1234..." /></div>
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Telegram Chat ID</label><input type="text" id="cfg-tg-chat" class="form-hb" placeholder="-1001234567890" /></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-bell" style="margin-right:.4rem"></i>ntfy.sh</span><label class="sw"><input type="checkbox" id="cfg-ntfy-enabled" checked onchange="document.getElementById('ntfy-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="ntfy-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Topic</label><input type="text" id="cfg-ntfy-topic" class="form-hb" placeholder="my-topic" /></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.8rem 0 .6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-telegram" style="margin-right:.4rem"></i>Telegram</span><label class="sw"><input type="checkbox" id="cfg-tg-enabled" checked onchange="document.getElementById('tg-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="tg-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Bot Token</label><input type="password" id="cfg-tg-token" class="form-hb" placeholder="123456:ABC-DEF1234..." /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Chat ID</label><input type="text" id="cfg-tg-chat" class="form-hb" placeholder="-1001234567890" /></div>
+</div>
+<div style="border-top:1px solid var(--border);margin:.6rem 0;padding-top:.6rem">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Low SOC alert (%)</label><input type="number" id="cfg-soc-alert" class="form-hb" min="0" max="100" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Connection timeout (min)</label><input type="number" id="cfg-conn-timeout" class="form-hb" min="0" /></div>
+</div>
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="testNotification()" style="width:100%"><i class="bi bi-send"></i> Send Test</button>
 <div id="notif-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
 </div>
@@ -3457,10 +3473,14 @@ document.getElementById('cfg-tuya-password').value=(c.tuya&&c.tuya.password)||''
 document.getElementById('cfg-tuya-appSchema').value=(c.tuya&&c.tuya.appSchema)||'tuyaSmart';
  document.getElementById('cfg-webPort').value=c.webPort||8583;
  document.getElementById('cfg-ntfy-topic').value=(c.notifications&&c.notifications.ntfyTopic)||'';
+ document.getElementById('cfg-ntfy-enabled').checked=(c.notifications&&c.notifications.ntfyEnabled!==false);
  document.getElementById('cfg-tg-token').value=(c.notifications&&c.notifications.telegramToken)||'';
  document.getElementById('cfg-tg-chat').value=(c.notifications&&c.notifications.telegramChatId)||'';
+ document.getElementById('cfg-tg-enabled').checked=(c.notifications&&c.notifications.telegramEnabled!==false);
  document.getElementById('cfg-soc-alert').value=(c.notifications&&c.notifications.lowSocAlert)||20;
  document.getElementById('cfg-conn-timeout').value=(c.notifications&&c.notifications.connTimeout)||10;
+ document.getElementById('ntfy-fields').style.display=(c.notifications&&c.notifications.ntfyEnabled!==false)?'block':'none';
+ document.getElementById('tg-fields').style.display=(c.notifications&&c.notifications.telegramEnabled!==false)?'block':'none';
  const tf=c.tariff||{};
  document.getElementById('cfg-tariff-currency').value=tf.currency||'UAH';
  document.getElementById('cfg-tariff-type').value=tf.type||'daynight';
@@ -3488,7 +3508,7 @@ if(r.success){document.getElementById('restartModal').classList.add('show');}els
 }
 async function saveNotifConfig(){
 const cfg={
-notifications:{ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
+notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10}
 };
 const st=document.getElementById('notif-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';
 try{const r=await apiPost('/api/plugin-config',{config:cfg});if(r.success){st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Saved.';setTimeout(()=>st.style.display='none',3000);}else st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+(r.message||'Error');}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}
