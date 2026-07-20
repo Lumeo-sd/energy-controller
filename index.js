@@ -1816,8 +1816,9 @@ async function sendNotification(title, message, critical) {
       try {
         const body = JSON.stringify({ topic: n.ntfyTopic, title, message, priority: 4 });
         await new Promise((resolve, reject) => {
-          const req2 = https.request('https://ntfy.sh', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': body.length } }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
-          req2.on('error', reject);
+          const req2 = https.request({ hostname: 'ntfy.sh', port: 443, path: '/', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, timeout: 10000 }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
+          req2.on('error', e => reject(new Error('ntfy: ' + (e.code || e.message || typeof e))));
+          req2.on('timeout', () => { req2.destroy(); reject(new Error('ntfy timeout')); });
           req2.write(body);
           req2.end();
         });
@@ -1828,8 +1829,10 @@ async function sendNotification(title, message, critical) {
       try {
         const body = JSON.stringify({ chat_id: n.telegramChatId, text: '*' + title + '*\n' + message, parse_mode: 'Markdown' });
         await new Promise((resolve, reject) => {
-          const req2 = https.request('https://api.telegram.org/bot' + n.telegramToken + '/sendMessage', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': body.length } }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
-          req2.on('error', reject);
+          const url = new URL('https://api.telegram.org/bot' + n.telegramToken + '/sendMessage');
+          const req2 = https.request({ hostname: url.hostname, port: 443, path: url.pathname + url.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, timeout: 10000 }, res2 => { res2.on('data', () => {}); res2.on('end', resolve); });
+          req2.on('error', e => reject(new Error('tg: ' + (e.code || e.message || typeof e))));
+          req2.on('timeout', () => { req2.destroy(); reject(new Error('telegram timeout')); });
           req2.write(body);
           req2.end();
         });
@@ -2934,7 +2937,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div id="critical-fields">
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Low SOC alert (%)</label><input type="number" id="cfg-soc-alert" class="form-hb" min="0" max="100" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Connection timeout (min)</label><input type="number" id="cfg-conn-timeout" class="form-hb" min="0" /></div>
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Grid outage report</label><label class="sw"><input type="checkbox" id="cfg-notif-grid-outage" checked><span class="sw-slider"></span></label></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.6rem 0 .2rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-lightning" style="margin-right:.4rem"></i>Grid outage report</span><label class="sw"><input type="checkbox" id="cfg-notif-grid-outage" checked><span class="sw-slider"></span></label></div>
 </div>
 </div>
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="testNotification()" style="width:100%"><i class="bi bi-send"></i> Send Test</button>
