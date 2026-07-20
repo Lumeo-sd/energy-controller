@@ -579,7 +579,7 @@ async function updateCostTracking() {
       const elapsedH = (now - costState.lastTs) / 3600000;
       const gridW = Math.abs(inverterData.gridPowerW || 0);
       if (gridW > 0 && elapsedH > 0 && elapsedH < 0.1) {
-        delta = Math.round(gridW * elapsedH * 1000) / 1000;
+        delta = gridW * elapsedH / 1000;
       }
     }
     if (delta > 0) {
