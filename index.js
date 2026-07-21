@@ -2931,6 +2931,8 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes sheetIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.type-dropdown{position:fixed;z-index:1003;min-width:200px;max-width:260px;background:var(--card-solid);border:1px solid var(--border);border-radius:var(--radius-md);padding:.3rem;box-shadow:0 12px 40px rgba(0,0,0,.6);animation:sheetIn .15s ease;display:none}.type-dropdown.show{display:block}.type-dd-head{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:.45rem .6rem .35rem;font-weight:700}.type-dd-item{display:flex;align-items:center;gap:.55rem;padding:.5rem .6rem;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--text);transition:background .1s}.type-dd-item:hover{background:rgba(191,90,242,.14);color:var(--primary-light)}.type-dd-item i{font-size:1.1rem;color:var(--primary-light);width:1.3rem;text-align:center}
+@keyframes sheetIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 .type-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;z-index:1002}
 .type-sheet-backdrop.show{display:flex}
 .type-sheet{width:100%;max-width:400px;background:var(--card-solid);border-radius:20px 20px 0 0;padding:1.1rem 1rem calc(1.1rem + var(--safe-b));max-height:70vh;overflow-y:auto;animation:sheetUp .22s ease;margin:0 auto}
@@ -3044,12 +3046,12 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="automation-section-label"><i class="bi bi-arrow-down-right-circle"></i> WHEN</div>
 <select id="scene-logic" class="form-hb" style="margin-bottom:.6rem;font-size:.8rem" onchange="renderAutomationSummary()"><option value="AND">Match ALL conditions</option><option value="OR">Match ANY condition</option></select>
 <div id="if-conditions"></div>
-<button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addCondition()"><i class="bi bi-plus"></i> Add Condition</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addCondition(this)"><i class="bi bi-plus"></i> Add Condition</button>
 </div>
 <div class="automation-section then-section">
 <div class="automation-section-label"><i class="bi bi-lightning-charge-fill"></i> THEN</div>
 <div id="then-actions"></div>
-<button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addAction()"><i class="bi bi-plus"></i> Add Action</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addAction(this)"><i class="bi bi-plus"></i> Add Action</button>
 </div>
 </div>
 </div>
@@ -3439,7 +3441,7 @@ function expandNewAutomation(){
 const card=document.getElementById('new-automation-card');
 if(card.classList.contains('collapsed'))card.classList.remove('collapsed');
 }
-function addCondition(){
+function addCondition(btn){
 expandNewAutomation();
 openTypeSheet('Add Condition', CONDITION_TYPES, function(type){
 const c=document.getElementById('if-conditions');
@@ -3467,7 +3469,7 @@ body+='<button class="rule-remove-x btn-hb btn-hb-sm btn-hb-icon btn-hb-outline"
 r.innerHTML=body;
 r.querySelectorAll('select,input').forEach(function(el){el.addEventListener('input',renderAutomationSummary);});
 }
-function addAction(){
+function addAction(btn){
 expandNewAutomation();
 openTypeSheet('Add Action', ACTION_TYPES, function(type){
 var c=document.getElementById('then-actions');
@@ -3537,10 +3539,29 @@ el.innerHTML='When <b>'+(condParts.join(joiner)||'\u2026')+'</b>, then <b>'+(act
 function closeTypeSheet(){
 var sheet=document.getElementById('typeSheetBackdrop');
 if(sheet)sheet.classList.remove('show');
+var dd=document.querySelector('.type-dropdown');
+if(dd)dd.remove();
 }
 var CONDITION_TYPES=[{value:'battery',icon:'bi-battery-half',label:'Battery Level'},{value:'grid',icon:'bi-plug-fill',label:'City Grid'},{value:'time',icon:'bi-clock-fill',label:'Time of Day'},{value:'weekday',icon:'bi-calendar-week',label:'Day of Week'},{value:'device_online',icon:'bi-wifi',label:'Device Online'}];
 var ACTION_TYPES=[{value:'tuya',icon:'bi-toggle-on',label:'Device'},{value:'notify',icon:'bi-bell-fill',label:'Notify'}];
-function openTypeSheet(title,options,onPick){
+function openTypeSheet(title,options,onPick,anchor){
+if(window.innerWidth>=770&&anchor){
+var old=document.querySelector('.type-dropdown');
+if(old)old.remove();
+var dd=document.createElement('div');
+dd.className='type-dropdown show';
+dd.innerHTML='<div class="type-dd-head">'+escHtml(title)+'</div>'+options.map(function(o,i){return '<div class="type-dd-item" data-i="'+i+'"><i class="bi '+o.icon+'"></i>'+escHtml(o.label)+'</div>';}).join('');
+anchor.parentNode.appendChild(dd);
+var rect=anchor.getBoundingClientRect();
+var top=rect.bottom+4;
+if(top+dd.offsetHeight>window.innerHeight)top=rect.top-dd.offsetHeight-4;
+dd.style.top=top+'px';
+dd.style.left=Math.min(rect.left,window.innerWidth-260)+'px';
+dd.querySelectorAll('.type-dd-item').forEach(function(t){t.onclick=function(){onPick(options[+t.dataset.i].value);dd.remove();};});
+function close(e){if(!dd.contains(e.target)&&e.target!==anchor){dd.remove();document.removeEventListener('click',close);}}
+setTimeout(function(){document.addEventListener('click',close);},0);
+return;
+}
 var sheet=document.getElementById('typeSheetBackdrop');
 if(!sheet){
 sheet=document.createElement('div');
