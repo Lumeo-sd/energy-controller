@@ -3444,12 +3444,12 @@ if(card.classList.contains('collapsed'))card.classList.remove('collapsed');
 function addCondition(btn){
 expandNewAutomation();
 openTypeSheet('Add Condition', CONDITION_TYPES, function(type){
-const c=document.getElementById('if-conditions');
-const r=document.createElement('div');r.className='rule-sentence';r.dataset.type=type;
+var c=document.getElementById('if-conditions');
+var r=document.createElement('div');r.className='rule-sentence';r.dataset.type=type;
 renderConditionRow(r,type);
 c.appendChild(r);
 renderAutomationSummary();
-});
+},btn);
 }
 function renderConditionRow(r,type){
 var meta=CONDITION_TYPES.find(function(t){return t.value===type;});
@@ -3477,7 +3477,7 @@ var r=document.createElement('div');r.className='rule-sentence';r.dataset.type=t
 renderActionRow(r,type);
 c.appendChild(r);
 renderAutomationSummary();
-});
+},btn);
 }
 function renderActionRow(r,type){
 var body;
