@@ -2944,7 +2944,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 @media (hover:none) and (pointer:coarse) and (min-width:1080px){
   .device-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
 }
-</style>
+
 .type-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:flex-end;z-index:1002}
 .type-sheet-backdrop.show{display:flex}
 .type-sheet{width:100%;background:var(--card-solid);border-radius:20px 20px 0 0;padding:1.1rem 1rem calc(1.1rem + var(--safe-b));max-height:70vh;overflow-y:auto;animation:sheetUp .22s ease}
@@ -2955,6 +2955,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .type-tile:active{transform:scale(.96);background:rgba(191,90,242,.18)}
 .type-tile i{font-size:1.4rem;color:var(--primary-light)}
 .type-tile span{font-size:.72rem;color:var(--text);text-align:center}
+</style>
 
 </head>
 <body>
