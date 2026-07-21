@@ -3434,7 +3434,7 @@ renderAutomationSummary();
 }
 function renderConditionRow(r,type){
 var meta=CONDITION_TYPES.find(function(t){return t.value===type;});
-var body='<span class="chip-label"><i class="bi '+meta.icon+'"></i> '+meta.label+'</span>';
+var body='<span class="chip-label type-'+type+'"><i class="bi '+meta.icon+'"></i> '+meta.label+'</span>';
 if(type==='battery'){
 body+='<select class="chip-select condition-operator"><option value="<">is below</option><option value=">">is above</option><option value="=">equals</option></select><input type="number" class="chip-input condition-value" placeholder="20" min="0" max="100" />%';
 }else if(type==='grid'){
@@ -3466,7 +3466,7 @@ if(type==='tuya'){
 var opts=tuyaDevices.map(function(d){return '<option value="'+escHtml(d.id)+'">'+escHtml(d.name)+'</option>';}).join('');
 body='<select class="chip-select action-device"><option value="">\u2014 device \u2014</option>'+opts+'</select><select class="chip-select action-value"><option value="true">turn ON</option><option value="false">turn OFF</option></select><details class="advanced-fields"><summary><i class="bi bi-chevron-right"></i> duration / interval <span class="text-muted-hb" style="font-weight:400;font-size:.75rem">(optional)</span></summary><div style="display:flex;gap:.5rem;margin-top:.3rem"><input type="number" class="chip-input action-duration" placeholder="min" min="0" style="width:70px" /><input type="number" class="chip-input action-interval" placeholder="min" min="0" style="width:70px" /></div></details>';
 }else{
-body='<i class="bi bi-bell-fill" style="color:var(--primary-light)"></i><input type="text" class="chip-input action-title" placeholder="Title" style="flex:1;min-width:110px;border-radius:10px" /><input type="text" class="chip-input action-message" placeholder="Message" style="flex:1;min-width:110px;border-radius:10px" />';
+body='<div class="action-notify"><i class="bi bi-bell-fill" style="color:var(--primary-light);flex-shrink:0"></i><input type="text" class="chip-input action-title" placeholder="Title" style="flex:1" /><input type="text" class="chip-input action-message" placeholder="Message" style="flex:1" /></div>';
 }
 body+='<button class="rule-remove-x btn-hb btn-hb-sm btn-hb-icon btn-hb-outline" onclick="this.closest(\\'.rule-sentence\\').remove();renderAutomationSummary()"><i class="bi bi-x"></i></button>';
 r.innerHTML=body;
