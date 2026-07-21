@@ -2585,29 +2585,64 @@ function getWebUI() {
 <style>
 :root{
   --bg:#000000;
+  --primary-background-color:#111111;
+  --secondary-background-color:#1c1c1e;
+  --card-background-color:#1c1c1e;
   --sidebar:rgba(28,28,30,.78);
-  --card:rgba(28,28,30,.72);
+  --card:var(--card-background-color);
   --card-solid:#1c1c1e;
   --border:rgba(255,255,255,.09);
+  --divider-color:rgba(255,255,255,.09);
   --separator:rgba(84,84,88,.48);
   --text:#f5f5f7;
+  --primary-text-color:#e1e1e1;
+  --secondary-text-color:#9b9b9b;
   --muted:#98989f;
   --primary:#bf5af2;
   --primary-dark:#a742d6;
   --primary-light:#d18ffb;
+  --accent-color:#ff9800;
   --success:#30d158;
   --danger:#ff453a;
   --blue:#0a84ff;
-  --sidebar-e:250px;
+  --info-color:#0a84ff;
+  --warning-color:#ff9800;
+  --error-color:#ff453a;
+  --state-active-color:#f5c518;
+  --state-inactive-color:#6f6f6f;
+  --state-on-color:#30d158;
+  --state-off-color:#6f6f6f;
+  --state-unavailable-color:#404040;
+  --disabled-text-color:#6f6f6f;
+  --ha-card-border-radius:12px;
+  --ha-card-box-shadow:0 2px 4px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2);
   --radius-lg:20px;
   --radius-md:14px;
   --radius-sm:10px;
+  --sidebar-e:250px;
   --tabbar-h:56px;
   --safe-t:env(safe-area-inset-top,0px);
   --safe-b:env(safe-area-inset-bottom,0px);
   --safe-l:env(safe-area-inset-left,0px);
   --safe-r:env(safe-area-inset-right,0px);
 }
+[data-theme="light"]{
+  --bg:#fafafa;
+  --primary-background-color:#fafafa;
+  --secondary-background-color:#f0f0f0;
+  --card-background-color:#ffffff;
+  --card:#ffffff;
+  --card-solid:#ffffff;
+  --border:rgba(0,0,0,.12);
+  --divider-color:rgba(0,0,0,.12);
+  --separator:rgba(0,0,0,.12);
+  --text:#212121;
+  --primary-text-color:#212121;
+  --secondary-text-color:#727272;
+  --muted:#727272;
+  --ha-card-box-shadow:0 2px 4px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+}
+
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
 body{
@@ -2623,7 +2658,7 @@ body{
 a{color:inherit}
 .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-e);height:100vh;height:100dvh;
   background:var(--sidebar);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);
-  border-right:.5px solid var(--separator);display:flex;flex-direction:column;z-index:1000;overflow:hidden;
+  border-right:.5px solid var(--separator);display:flex;flex-direction:column;z-index:1002;overflow:hidden;
   padding:calc(.6rem + var(--safe-t)) 0 .6rem;
   transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
 .sidebar.open{transform:translateX(0)}
@@ -2639,6 +2674,34 @@ a{color:inherit}
 .menu-item.active i{color:var(--primary)}
 .menu-item i{font-size:1.25rem;width:1.6rem;text-align:center;flex-shrink:0;color:var(--muted)}
 .menu-item .badge-hb{margin-left:auto}
+.notif-bell{position:relative;cursor:pointer;padding:.35rem .6rem;border-radius:6px;transition:background .15s;display:flex;align-items:center}
+.notif-bell:hover{background:var(--sidebar-active-bg)}
+.notif-bell .notif-badge{position:absolute;top:-2px;right:-2px;min-width:17px;height:17px;border-radius:9px;background:var(--state-active-color);color:#000;font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--sidebar-bg,#1c1c1e);line-height:1}
+.notif-drawer-backdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s ease}
+.notif-drawer-backdrop.show{opacity:1;pointer-events:all}
+.notif-drawer{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:92vw;background:var(--card-background-color);z-index:10000;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(0,0,.3,1);box-shadow:-4px 0 24px rgba(0,0,0,.3)}
+.notif-drawer.show{transform:translateX(0)}
+.notif-drawer-header{display:flex;align-items:center;gap:.6rem;padding:.85rem 1rem;border-bottom:.5px solid var(--divider-color);flex-shrink:0}
+.notif-drawer-header h3{margin:0;flex:1;font-size:1rem;font-weight:500;color:var(--primary-text-color)}
+.notif-drawer-close{width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--secondary-text-color);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.notif-drawer-close:hover{background:rgba(255,255,255,.08)}
+.notif-drawer-body{flex:1;overflow-y:auto;padding:.5rem 0}
+.notif-empty{text-align:center;padding:2rem 1rem;color:var(--secondary-text-color);font-size:.85rem}
+.notif-item{display:flex;gap:.7rem;padding:.65rem 1rem;border-bottom:.5px solid var(--divider-color);align-items:flex-start;transition:background .15s}
+.notif-item:hover{background:var(--secondary-background-color)}
+.notif-item-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem}
+.notif-item-icon.info{background:rgba(10,132,255,.15);color:var(--blue)}
+.notif-item-icon.warn{background:rgba(245,197,24,.15);color:var(--state-active-color)}
+.notif-item-icon.error{background:rgba(255,69,58,.15);color:var(--danger)}
+.notif-item-icon.success{background:rgba(48,209,88,.15);color:var(--success)}
+.notif-item-body{flex:1;min-width:0}
+.notif-item-title{font-size:.82rem;font-weight:500;color:var(--primary-text-color);line-height:1.3}
+.notif-item-msg{font-size:.74rem;color:var(--secondary-text-color);line-height:1.35;margin-top:1px}
+.notif-item-time{font-size:.65rem;color:var(--secondary-text-color);margin-top:2px;opacity:.6}
+.notif-item-actions{display:flex;gap:.3rem;flex-shrink:0}
+.notif-item-actions button{width:26px;height:26px;border-radius:50%;border:none;background:transparent;color:var(--secondary-text-color);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem}
+.notif-item-actions button:hover{background:rgba(255,255,255,.08);color:var(--primary-text-color)}
+@media(max-width:769px){.notif-drawer{width:100vw;max-width:100vw}}
 .sidebar-footer{padding:.3rem .4rem;border-top:.5px solid var(--separator);display:flex;justify-content:space-around;align-items:center}
 .power-item{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
 .power-item:hover{color:var(--text);background:rgba(255,255,255,.08)}
@@ -2672,6 +2735,34 @@ a{color:inherit}
 .hb-card.collapsed .save-btn-h{display:none}
 .hb-card.collapsed #syncBtn{display:none}
 .tiles-container{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem;contain:layout style}
+.more-info-backdrop{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s ease}
+.more-info-backdrop.show{opacity:1;pointer-events:all}
+.more-info-card{background:var(--card-background-color);border:.5px solid var(--divider-color);border-radius:var(--ha-card-border-radius,14px);padding:1.25rem 1.1rem;max-width:400px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:var(--ha-card-box-shadow);transform:translateY(12px);transition:transform .25s cubic-bezier(0,0,.3,1)}
+.more-info-backdrop.show .more-info-card{transform:translateY(0)}
+.more-info-header{display:flex;align-items:center;gap:.7rem;margin-bottom:.9rem}
+.more-info-header-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.07);color:var(--primary-text-color);font-size:1rem;flex-shrink:0}
+.more-info-header-text{flex:1}
+.more-info-header-title{font-size:.95rem;font-weight:500;color:var(--primary-text-color)}
+.more-info-header-sub{font-size:.75rem;color:var(--secondary-text-color)}
+.more-info-close{width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--secondary-text-color);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:background .15s;flex-shrink:0}
+.more-info-close:hover{background:rgba(255,255,255,.08)}
+.more-info-stats{display:flex;gap:.6rem;margin-bottom:.9rem;flex-wrap:wrap}
+.more-info-stat{background:var(--secondary-background-color);border-radius:8px;padding:.35rem .6rem;font-size:.72rem;color:var(--secondary-text-color);line-height:1.4}
+.more-info-stat b{color:var(--primary-text-color);font-weight:500}
+.more-info-chart{height:170px;margin-bottom:.5rem}
+.ha-entity-list{display:flex;flex-direction:column;margin-bottom:.75rem;background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:.5px solid var(--border);border-radius:var(--radius-md);overflow:hidden}
+.ha-entity-row{display:flex;align-items:center;gap:.9rem;padding:.65rem .9rem;border-bottom:1px solid var(--divider-color);cursor:pointer;transition:background .15s}
+.ha-entity-row:last-child{border-bottom:none}
+.ha-entity-row:active{background:var(--secondary-background-color)}
+.ha-entity-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:var(--state-inactive-color);flex-shrink:0;font-size:1rem}
+.ha-entity-icon.state-on{background:rgba(245,197,24,.15);color:var(--state-active-color)}
+.ha-entity-icon.state-off{background:rgba(255,69,58,.12);color:var(--danger)}
+.ha-entity-icon.state-ok{background:rgba(48,209,88,.12);color:var(--success)}
+.ha-entity-info{flex:1;min-width:0}
+.ha-entity-name{font-size:.88rem;font-weight:500;color:var(--primary-text-color)}
+.ha-entity-state{font-size:.78rem;color:var(--secondary-text-color)}
+.ha-entity-toggle{flex-shrink:0}
+
 .tiles-container .tile{flex:0 0 calc(25% - .5625rem);min-width:0}
 .tile{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border:.5px solid var(--border);border-radius:var(--radius-md);padding:1rem .6rem;text-align:center;
@@ -2681,7 +2772,7 @@ a{color:inherit}
 .tile .label{font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.25rem;font-weight:600}
 .tile .value{font-size:1.5rem;font-weight:700;color:var(--text);line-height:1.2;letter-spacing:-.01em}
 .tile .sub{font-size:.72rem;color:var(--muted)}
-.tile.on{border-color:rgba(48,209,88,.55)}.tile.on .value{color:var(--success)}.tile.on .icon{color:var(--success)}
+.tile.on{border-color:rgba(245,197,24,.45)}.tile.on .value{color:var(--state-active-color)}.tile.on .icon{color:var(--state-active-color)}
 .tile.off{border-color:rgba(255,69,58,.55)}.tile.off .value{color:var(--danger)}.tile.off .icon{color:var(--danger)}
 .hb-card.collapsed #debug-grid{display:none!important}
 .hb-card.collapsed .toggle-arrow{transform:rotate(0deg)}
@@ -2713,7 +2804,7 @@ a{color:inherit}
 .badge-hb.purple{background:rgba(191,90,242,.2);color:var(--primary-light)}
 .badge-hb.online{background:rgba(48,209,88,.18);color:var(--success)}
 .badge-hb.offline{background:rgba(255,69,58,.18);color:var(--danger)}
-.badge-hb.active{background:rgba(48,209,88,.18);color:var(--success)}
+.badge-hb.active{background:rgba(245,197,24,.18);color:var(--state-active-color)}
 .badge-hb.inactive{background:rgba(152,152,159,.18);color:var(--muted)}
 .btn-hb{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.62rem 1.2rem;
   border-radius:980px;font-weight:600;font-size:.85rem;border:.5px solid transparent;cursor:pointer;
@@ -2753,10 +2844,10 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .entity-card:active{transform:scale(.98)}
 .device-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.9rem;align-items:start}
 .device-card{padding:1.1rem}
-.device-card.is-on{border-color:rgba(48,209,88,.4)}
+.device-card.is-on{border-color:rgba(245,197,24,.35)}
 .device-card-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem}
 .device-icon{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:background .2s,box-shadow .2s}
-.device-icon.on{background:var(--success);box-shadow:0 0 8px rgba(48,209,88,.7)}
+.device-icon.on{background:var(--state-active-color);box-shadow:0 0 8px rgba(245,197,24,.6)}
 .device-icon.off{background:var(--danger);box-shadow:0 0 6px rgba(255,69,58,.5)}
 .device-icon.unknown{background:var(--muted)}
 .device-icon.pulse{animation:iconPulse .6s ease}
@@ -2769,15 +2860,15 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   min-height:40px;transition:background .15s,color .15s,transform .1s}
 .device-toggle-btn:active{transform:scale(.96)}
 .device-toggle-btn.on{background:rgba(255,255,255,.06);color:var(--muted);border:.5px solid var(--border)}
-.device-toggle-btn.on.active{background:var(--success);color:#04220c;border-color:var(--success)}
+.device-toggle-btn.on.active{background:var(--state-active-color);color:#1a1400;border-color:var(--state-active-color)}
 .device-toggle-btn.off{background:rgba(255,255,255,.06);color:var(--muted);border:.5px solid var(--border)}
 .device-toggle-btn.off.active{background:var(--danger);color:#fff;border-color:var(--danger)}
 .automation-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.9rem;align-items:start}
 .automation-card{padding:1.1rem}
-.automation-card.is-active{border-color:rgba(48,209,88,.4)}
+.automation-card.is-active{border-color:rgba(245,197,24,.35)}
 .automation-card-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem}
 .automation-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.automation-dot.on{background:var(--success);box-shadow:0 0 8px rgba(48,209,88,.7)}
+.automation-dot.on{background:var(--state-active-color);box-shadow:0 0 8px rgba(245,197,24,.6)}
 .automation-dot.off{background:var(--muted)}
 .automation-name{font-weight:600;color:var(--text);font-size:.9rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .automation-rule{font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:.85rem;word-break:break-word}
@@ -2933,7 +3024,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 @keyframes sheetIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 .type-dropdown{position:fixed;z-index:1003;min-width:200px;max-width:260px;background:var(--card-solid);border:1px solid var(--border);border-radius:var(--radius-md);padding:.3rem;box-shadow:0 12px 40px rgba(0,0,0,.6);animation:sheetIn .15s ease;display:none}.type-dropdown.show{display:block}.type-dd-head{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:.45rem .6rem .35rem;font-weight:700}.type-dd-item{display:flex;align-items:center;gap:.55rem;padding:.5rem .6rem;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--text);transition:background .1s}.type-dd-item:hover{background:rgba(191,90,242,.14);color:var(--primary-light)}.type-dd-item i{font-size:1.1rem;color:var(--primary-light);width:1.3rem;text-align:center}
 @keyframes sheetIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
-.type-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;z-index:1002}
+.type-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;z-index:1003}
 .type-sheet-backdrop.show{display:flex}
 .type-sheet{width:100%;max-width:400px;background:var(--card-solid);border-radius:20px 20px 0 0;padding:1.1rem 1rem calc(1.1rem + var(--safe-b));max-height:70vh;overflow-y:auto;animation:sheetUp .22s ease;margin:0 auto}
 .type-sheet h4{font-size:.95rem;margin-bottom:.9rem;text-align:center;color:var(--text)}
@@ -2986,8 +3077,9 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <li class="menu-item" data-tab="automations"><i class="bi bi-diagram-3"></i><span>Automations</span><span class="badge-hb purple" id="sidebar-scene-count">0</span></li>
 <li class="menu-item" data-tab="server"><i class="bi bi-server"></i><span>Server</span></li>
 <li class="menu-item" data-tab="settings"><i class="bi bi-gear"></i><span>Settings</span></li>
-</ul>
+<li class="menu-item notif-bell-item"><div class="notif-bell" onclick="toggleNotifDrawer()"><i class="bi bi-bell"></i><span class="notif-badge" id="notifBadge" style="display:none">0</span></div><span style="margin-left:-.3rem;cursor:pointer;font-size:.82rem" onclick="toggleNotifDrawer()">Notifications</span></li></ul>
 <div class="sidebar-footer">
+<div class="power-item" onclick="toggleTheme()" title="Toggle theme"><i class="bi bi-moon-stars" id="themeIcon"></i></div>
 <div class="power-item" onclick="location.reload()" title="Restart UI"><i class="bi bi-arrow-clockwise"></i></div>
 <div class="power-item c-primary" onclick="document.getElementById('restartModal').classList.add('show')" title="Restart App"><i class="bi bi-arrow-repeat"></i></div>
 <div class="power-item c-danger" onclick="logout()" title="Log Out"><i class="bi bi-box-arrow-right"></i></div>
@@ -2998,7 +3090,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="tab-pane active" id="tab-status">
 <div id="pull-indicator"><i class="bi bi-arrow-down"></i></div>
 <div class="page-header"><h1>Status</h1></div>
-<div class="tiles-container" id="tilesContainer"></div>
+<div class="ha-entity-list" id="tilesContainer"></div>
 <div class="flow-section" id="flowSection"><div class="flow-metrics" id="flowMetrics"></div><div class="flow-svg-wrap"><svg id="energyFlow" viewBox="0 0 400 190" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
 <div class="hb-card chart-section collapsed" style="margin-bottom:.75rem">
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cpu" style="margin-right:.5rem"></i>Inverter Debug</div></div>
@@ -3193,16 +3285,59 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 
 </div>
+<div class="notif-drawer-backdrop" id="notifBackdrop" onclick="toggleNotifDrawer()"></div>
+<div class="notif-drawer" id="notifDrawer">
+<div class="notif-drawer-header">
+<h3><i class="bi bi-bell" style="margin-right:.4rem"></i>Notifications</h3>
+<button class="notif-drawer-close" onclick="toggleNotifDrawer()"><i class="bi bi-x"></i></button>
+</div>
+<div class="notif-drawer-body" id="notifDrawerBody">
+<div class="notif-empty">No notifications yet</div>
+</div>
+</div>
 <div class="hb-toast" id="toast"><div class="toast-title" id="toastTitle">Success</div><div class="toast-body" id="toastBody">Done.</div></div>
 <div class="modal-backdrop" id="restartModal" style="background:#000!important"><div class="modal-box" style="background:#1c1c1e!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:14px!important;padding:1.8rem 1.5rem!important;max-width:340px;width:90%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,.7)!important"><div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="bi bi-arrow-repeat" style="font-size:1.3rem;color:var(--primary)"></i></div><h3 style="margin:0 0 .5rem;font-size:1.05rem;color:#f5f5f7!important">Restart now?</h3><p style="margin:0 0 1.2rem;font-size:.85rem;color:#a1a1a6!important">Changes will be applied after restart.</p><div style="display:flex;gap:.6rem;justify-content:center"><button class="btn-hb btn-hb-primary btn-hb-sm" onclick="restartApp()" style="flex:1;max-width:160px"><i class="bi bi-arrow-repeat"></i> Restart</button><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="document.getElementById('restartModal').classList.remove('show')" style="flex:1;max-width:160px">Later</button></div></div></div>
 <div id="restartOverlay"><div class="restart-spinner"></div><h3>Restarting<span class="restart-dots"></span></h3><p>Waiting for server to come back online</p></div>
-<div class="modal-backdrop" id="tileDetailModal" style="background:rgba(0,0,0,.6)!important" onclick="if(event.target===this)closeTileDetail()"><div class="modal-box" style="background:#1c1c1e!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:14px!important;padding:1.2rem!important;max-width:420px;width:92%;box-shadow:0 12px 48px rgba(0,0,0,.7)!important">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem"><h3 id="tileDetailTitle" style="margin:0;font-size:1rem;color:#f5f5f7!important">\u2014</h3><button class="btn-hb btn-hb-sm btn-hb-icon btn-hb-outline" onclick="closeTileDetail()"><i class="bi bi-x"></i></button></div>
-<div id="tileDetailStats" style="display:flex;gap:.8rem;margin-bottom:.8rem;font-size:.78rem;color:#a1a1a6"></div>
-<div style="height:180px"><canvas id="tileDetailChart"></canvas></div>
-</div></div>
-</main>
+<div class="more-info-backdrop" id="tileDetailModal" onclick="if(event.target===this)closeTileDetail()"><div class="more-info-card">
+<div class="more-info-header">
+<div class="more-info-header-icon" id="miIcon"><i class="bi bi-graph-up"></i></div>
+<div class="more-info-header-text"><div class="more-info-header-title" id="tileDetailTitle">&#8212;</div><div class="more-info-header-sub" id="miSubtitle">last 24h</div></div>
+<button class="more-info-close" onclick="closeTileDetail()"><i class="bi bi-x"></i></button>
+</div>
+<div class="more-info-stats" id="tileDetailStats"></div>
+<div class="more-info-chart"><canvas id="tileDetailChart"></canvas></div>
+</div></div></main>
 <script>
+
+let _notifications=[];
+function addNotification(title,msg,type,ts){const n={id:Date.now()+Math.random(),title,msg,type:type||'info',ts:ts||Date.now()};_notifications.unshift(n);if(_notifications.length>100)_notifications.length=100;localStorage.setItem('ec-notifs',JSON.stringify(_notifications));updateNotifBadge();return n;}
+function loadNotifications(){try{const d=JSON.parse(localStorage.getItem('ec-notifs')||'[]');_notifications=Array.isArray(d)?d:[];updateNotifBadge();}catch{_notifications=[]}}
+function updateNotifBadge(){const el=document.getElementById('notifBadge');if(!el)return;const unread=_notifications.length;if(unread>0){el.textContent=unread>99?'99+':unread;el.style.display='flex';}else if(type==='scene'){
+body='<select class="chip-select action-scene"><option value="">\u2014 scene \u2014</option>'+_cachedScenes.map(function(s){return '<option value="'+s.name+'">'+s.name+'</option>';}).join('')+'</select><select class="chip-select action-scene-mode"><option value="trigger">trigger</option><option value="toggle">toggle</option></select>';
+}else{el.style.display='none';}}
+function toggleNotifDrawer(){const dr=document.getElementById('notifDrawer');const bk=document.getElementById('notifBackdrop');if(!dr)return;const show=!dr.classList.contains('show');dr.classList.toggle('show');bk.classList.toggle('show');if(show)renderNotifList();}
+function renderNotifList(){const el=document.getElementById('notifDrawerBody');if(!el)return;if(!_notifications.length){el.innerHTML='<div class="notif-empty">No notifications yet</div>';return;}el.innerHTML=_notifications.map(n=>{
+const icons={info:'bi-info-circle',warn:'bi-exclamation-triangle',error:'bi-x-circle',success:'bi-check-circle'};
+return '<div class="notif-item"><div class="notif-item-icon '+n.type+'"><i class="bi '+(icons[n.type]||'bi-info-circle')+'"></i></div><div class="notif-item-body"><div class="notif-item-title">'+escHtml(n.title||'')+'</div>'+(n.msg?'<div class="notif-item-msg">'+escHtml(n.msg)+'</div>':'')+'<div class="notif-item-time">'+fmtTime(n.ts)+'</div></div><div class="notif-item-actions"><button onclick="removeNotification('+n.id+')" title="Dismiss"><i class="bi bi-x"></i></button></div></div>';
+}).join('');}
+function removeNotification(id){_notifications=_notifications.filter(n=>n.id!==id);localStorage.setItem('ec-notifs',JSON.stringify(_notifications));updateNotifBadge();renderNotifList();}
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function fmtTime(ts){const d=new Date(ts);const now=new Date();const diff=now-d;if(diff<60000)return'just now';if(diff<3600000)return Math.floor(diff/60000)+'m ago';if(diff<86400000)return Math.floor(diff/3600000)+'h ago';return d.toLocaleDateString();}
+loadNotifications();
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.dataset.theme!=='light';
+  html.dataset.theme=isDark?'light':'';
+  localStorage.setItem('ha-theme',isDark?'light':'dark');
+  const el=document.getElementById('themeIcon');
+  if(el)el.className='bi '+(isDark?'bi-sun':'bi-moon-stars');
+}
+(function(){
+  const saved=localStorage.getItem('ha-theme');
+  if(saved==='light'){document.documentElement.dataset.theme='light';var el=document.getElementById('themeIcon');if(el)el.className='bi bi-sun';}
+})();
+
+
 let tuyaDevices=[];
 let _csrfToken=null;
 document.querySelectorAll('.menu-item').forEach(item=>{
@@ -3400,7 +3535,7 @@ return '<div class="entity-card automation-card'+(en?' is-active':'')+'">'
 +'<div class="automation-card-top"><span class="automation-dot '+(en?'on':'off')+'"></span><span class="automation-name">'+escHtml(s.name)+'</span><span class="badge-hb '+(en?'active':'inactive')+'">'+(en?'Active':'Paused')+'</span></div>'
 +'<div class="automation-rule"><b>IF</b> '+escHtml(ifT)+' <b>\u2192 THEN</b> '+escHtml(thenT)+'</div>'
 +traceHtml
-+'<div class="automation-footer">'+toggleBtn+'<button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="runSceneNow(\\\''+escHtml(s.name)+'\\\',this)" title="Run now"><i class="bi bi-play-circle"></i></button><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="deleteScene(\\\''+escHtml(s.name)+'\\\')"><i class="bi bi-trash"></i></button></div>'
++'<div class="automation-footer">'+toggleBtn+'<button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="runSceneNow(\\\''+escHtml(s.name)+'\\\',this)" title="Run now"><i class="bi bi-play-circle"></i></button><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="editScene(\\\''+escHtml(s.name)+'\\\')" title="Edit"><i class="bi bi-pencil"></i></button><button class="btn-hb btn-hb-outline btn-hb-sm btn-hb-icon" onclick="deleteScene(\\\''+escHtml(s.name)+'\\\')"><i class="bi bi-trash"></i></button></div>'
 +'</div>';
 }).join('')+'</div>';
 }catch(e){console.error('loadScenes',e);}
@@ -3462,6 +3597,24 @@ body+='<select class="chip-select condition-value"><option value="true">is ON</o
 body+='<span class="text-muted-hb" style="font-size:.78rem">between</span><input type="time" class="chip-input condition-after" value="00:00" /><span class="text-muted-hb" style="font-size:.78rem">and</span><input type="time" class="chip-input condition-before" value="23:59" />';
 }else if(type==='weekday'){
 body+='<span class="wdays">'+["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(function(d,i){return '<label class="wday-lbl"><input type="checkbox" class="wday-cb" value="'+i+'"'+(i>0&&i<6?' checked':'')+' />'+d+'</label>';}).join('')+'</span>';
+}else if(type==='load'){
+body+='<select class="chip-select condition-operator"><option value="<">is below</option><option value=">">is above</option></select><input type="number" class="chip-input condition-value" placeholder="0" min="0" />W';
+}else if(type==='pv'){
+body+='<select class="chip-select condition-operator"><option value="<">is below</option><option value=">">is above</option></select><input type="number" class="chip-input condition-value" placeholder="0" min="0" />W';
+}else if(type==='temperature'){
+body+='<select class="chip-select condition-operator"><option value="<">is below</option><option value=">">is above</option></select><input type="number" class="chip-input condition-value" placeholder="0" />\u00b0C';
+}else if(type==='load'){
+var op=r.querySelector('.condition-operator').value;
+var val=r.querySelector('.condition-value').value||'0';
+condParts.push('Load is '+(op==='<'?'below':'above')+' '+val+'W');
+}else if(type==='pv'){
+var op=r.querySelector('.condition-operator').value;
+var val=r.querySelector('.condition-value').value||'0';
+condParts.push('Solar PV is '+(op==='<'?'below':'above')+' '+val+'W');
+}else if(type==='temperature'){
+var op=r.querySelector('.condition-operator').value;
+var val=r.querySelector('.condition-value').value||'0';
+condParts.push('Temperature is '+(op==='<'?'below':'above')+' '+val+'\u00b0C');
 }else if(type==='device_online'){
 body+='<select class="chip-select condition-device"><option value="">\u2014 device \u2014</option>'+tuyaDevices.map(function(d){return '<option value="'+d.id+'">'+d.name+'</option>';}).join('')+'</select><select class="chip-select condition-device-status"><option value="true">Online</option><option value="false">Offline</option></select>';
 }
@@ -3542,8 +3695,9 @@ if(sheet)sheet.classList.remove('show');
 var dd=document.querySelector('.type-dropdown');
 if(dd)dd.remove();
 }
-var CONDITION_TYPES=[{value:'battery',icon:'bi-battery-half',label:'Battery Level'},{value:'grid',icon:'bi-plug-fill',label:'City Grid'},{value:'time',icon:'bi-clock-fill',label:'Time of Day'},{value:'weekday',icon:'bi-calendar-week',label:'Day of Week'},{value:'device_online',icon:'bi-wifi',label:'Device Online'}];
-var ACTION_TYPES=[{value:'tuya',icon:'bi-toggle-on',label:'Device'},{value:'notify',icon:'bi-bell-fill',label:'Notify'}];
+var _cachedScenes=[];
+var CONDITION_TYPES=[{value:'battery',icon:'bi-battery-half',label:'Battery Level'},{value:'grid',icon:'bi-plug-fill',label:'City Grid'},{value:'time',icon:'bi-clock-fill',label:'Time of Day'},{value:'weekday',icon:'bi-calendar-week',label:'Day of Week'},{value:'device_online',icon:'bi-wifi',label:'Device Online'},{value:'load',icon:'bi-laptop',label:'Load Power'},{value:'pv',icon:'bi-sun',label:'Solar PV'},{value:'temperature',icon:'bi-thermometer-half',label:'Temperature'}];
+var ACTION_TYPES=[{value:'tuya',icon:'bi-toggle-on',label:'Device'},{value:'notify',icon:'bi-bell-fill',label:'Notify'},{value:'scene',icon:'bi-diagram-3',label:'Scene'}];
 function openTypeSheet(title,options,onPick,anchor){
 if(window.innerWidth>=770&&anchor){
 var old=document.querySelector('.type-dropdown');
@@ -3579,6 +3733,61 @@ const sels=document.querySelectorAll('.action-device');
 const opts=tuyaDevices.map(d=>'<option value="'+escHtml(d.id)+'">'+escHtml(d.name)+'</option>').join('');
 sels.forEach(s=>{const cur=s.value;s.innerHTML='<option value="">\\u2014 Device \\u2014</option>'+opts;if(cur)s.value=cur;});
 }
+function editScene(name){
+var scenes=_cachedScenes;
+var s=scenes.find(function(x){return x.name===name;});
+if(!s)return;
+document.getElementById('scene-name').value=s.name;
+document.getElementById('scene-logic').value=s.logic||'AND';
+var ifEl=document.getElementById('if-conditions');
+ifEl.innerHTML='';
+(s.conditions||[]).forEach(function(cond){
+var r=document.createElement('div');r.className='rule-sentence';r.dataset.type=cond.type;
+renderConditionRow(r,cond.type);
+ifEl.appendChild(r);
+if(cond.type==='battery'){
+if(r.querySelector('.condition-operator'))r.querySelector('.condition-operator').value=cond.operator||'<';
+if(r.querySelector('.condition-value'))r.querySelector('.condition-value').value=cond.value||'';
+}else if(cond.type==='grid'){
+if(r.querySelector('.condition-value'))r.querySelector('.condition-value').value=cond.value||'true';
+}else if(cond.type==='time'){
+if(r.querySelector('.condition-after'))r.querySelector('.condition-after').value=cond.after||'00:00';
+if(r.querySelector('.condition-before'))r.querySelector('.condition-before').value=cond.before||'23:59';
+}else if(cond.type==='weekday'){
+r.querySelectorAll('.wday-cb').forEach(function(cb){cb.checked=(cond.days||[]).indexOf(+cb.value)>=0;});
+}else if(cond.type==='device_online'){
+if(r.querySelector('.condition-device'))r.querySelector('.condition-device').value=cond.device||'';
+if(r.querySelector('.condition-device-status'))r.querySelector('.condition-device-status').value=cond.status||'true';
+}else if(cond.type==='load'||cond.type==='pv'||cond.type==='temperature'){
+if(r.querySelector('.condition-operator'))r.querySelector('.condition-operator').value=cond.operator||'<';
+if(r.querySelector('.condition-value'))r.querySelector('.condition-value').value=cond.value||'';
+}
+});
+var thenEl=document.getElementById('then-actions');
+thenEl.innerHTML='';
+(s.actions||[]).forEach(function(act){
+var r=document.createElement('div');r.className='rule-sentence';r.dataset.type=act.type;
+renderActionRow(r,act.type);
+thenEl.appendChild(r);
+if(act.type==='tuya'){
+if(r.querySelector('.action-device'))r.querySelector('.action-device').value=act.device||'';
+if(r.querySelector('.action-value'))r.querySelector('.action-value').value=act.on?'true':'false';
+if(r.querySelector('.action-duration'))r.querySelector('.action-duration').value=act.duration||'';
+if(r.querySelector('.action-interval'))r.querySelector('.action-interval').value=act.interval||'';
+}else if(act.type==='notify'){
+if(r.querySelector('.action-title'))r.querySelector('.action-title').value=act.title||'';
+if(r.querySelector('.action-message'))r.querySelector('.action-message').value=act.message||'';
+}else if(act.type==='scene'){
+if(r.querySelector('.action-scene'))r.querySelector('.action-scene').value=act.scene||'';
+if(r.querySelector('.action-scene-mode'))r.querySelector('.action-scene-mode').value=act.mode||'trigger';
+}
+});
+_editingScene=name;
+var card=document.getElementById('new-automation-card');
+if(card)card.classList.remove('collapsed');
+renderAutomationSummary();
+}
+var _editingScene=null;
 async function saveScene(){
 const name=document.getElementById('scene-name').value.trim();
 if(!name)return;
@@ -3961,10 +4170,10 @@ const TILE_REGISTRY=[
 ];
 const TILE_IDS=TILE_REGISTRY.map(t=>t.id);
 const TILE_MAP={};TILE_REGISTRY.forEach(t=>{TILE_MAP[t.id]=t;});
-const TILE_METRIC_MAP={'tile-battery':{key:'soc',label:'Battery SOC',unit:'%'},'tile-pv':{key:'pv',label:'Solar PV',unit:'W'},'tile-load':{key:'load',label:'Load',unit:'W'}};
+const TILE_METRIC_MAP={'tile-grid':{key:'grid_voltage',label:'Grid',unit:'V'},'tile-battery':{key:'soc',label:'Battery SOC',unit:'%'},'tile-pv':{key:'pv',label:'Solar PV',unit:'W'},'tile-load':{key:'load',label:'Load',unit:'W'},'tile-bat-temp':{key:'bat_temp',label:'Battery Temp',unit:'°C'},'tile-rad-temp':{key:'rad_temp',label:'Radiator Temp',unit:'°C'}};
 const TILE_CATEGORIES=[{id:'main',label:'Main'},{id:'dc',label:'DC Block (48-111)'},{id:'ac',label:'AC Block (150-249)'},{id:'settings',label:'Settings (200-249)'}];
-function buildTiles(){const c=document.getElementById('tilesContainer');c.innerHTML='';TILE_REGISTRY.forEach(t=>{const tile=document.createElement('div');tile.className='tile';tile.id=t.id;tile.innerHTML='<span class="icon"><i class="bi '+t.icon+'"></i></span><div class="label">'+t.label+'</div><div class="value">--</div><div class="sub"></div>';if(TILE_METRIC_MAP[t.id]){tile.style.cursor='pointer';tile.onclick=()=>openTileDetail(t.id);}c.appendChild(tile);});}
-function updateTiles(d,g){const dg=g||{};TILE_REGISTRY.forEach(t=>{const el=document.getElementById(t.id);if(!el)return;try{const r=t.update(d,dg);if(!r)return;const v=el.querySelector('.value');const s=el.querySelector('.sub');if(v)v.textContent=r.value;if(s)s.textContent=r.sub;el.classList.remove('on','off');if(r.cls)el.classList.add(r.cls);}catch{}})}
+function buildTiles(){const c=document.getElementById('tilesContainer');c.innerHTML='';TILE_CATEGORIES.forEach(cat=>{const catTiles=TILE_REGISTRY.filter(t=>t.cat===cat.id);if(!catTiles.length||catTiles.every(t=>{const p=loadTilePrefs();return p[t.id]!==undefined?!p[t.id]:!t.def;}))return;catTiles.forEach(t=>{const p=loadTilePrefs();const vis=p[t.id]!==undefined?p[t.id]:t.def;if(!vis)return;const row=document.createElement('div');row.className='ha-entity-row';row.id=t.id;row.innerHTML='<div class="ha-entity-icon"><i class="bi '+t.icon+'"></i></div><div class="ha-entity-info"><div class="ha-entity-name">'+t.label+'</div><div class="ha-entity-state">--</div></div>';if(TILE_METRIC_MAP[t.id])row.addEventListener('click',()=>openMoreInfo(t.id));c.appendChild(row);});});}
+function updateTiles(d,g){const dg=g||{};TILE_REGISTRY.forEach(t=>{const el=document.getElementById(t.id);if(!el)return;try{const r=t.update(d,dg);if(!r)return;const ic=el.querySelector('.ha-entity-icon');const st=el.querySelector('.ha-entity-state');if(st)st.textContent=r.value+(r.sub?' \u00b7 '+r.sub:'');if(ic){ic.className='ha-entity-icon'+(r.cls?' state-'+r.cls:'');}}catch{}})}
 function loadTilePrefs(){try{return JSON.parse(localStorage.getItem('tileVis')||'null')||{}}catch{return{}}}
 function saveTilePrefs(p){localStorage.setItem('tileVis',JSON.stringify(p));}
 function loadTileOrder(){try{const o=JSON.parse(localStorage.getItem('tileOrder')||'null');if(Array.isArray(o)){const ids=TILE_IDS.filter(id=>o.includes(id));TILE_IDS.forEach(id=>{if(!ids.includes(id))ids.push(id);});return ids;}}catch{}return[...TILE_IDS];}
@@ -4029,23 +4238,27 @@ let _tileDetailChart=null;
 async function openTileDetail(tileId){
 const m=TILE_METRIC_MAP[tileId];
 if(!m)return;
-document.getElementById('tileDetailTitle').textContent=m.label+' \u2014 last 24h';
+const tile=TILE_REGISTRY.find(t=>t.id===tileId);
+const iconEl=document.getElementById('miIcon');
+if(iconEl&&tile)iconEl.innerHTML='<i class="bi '+tile.icon+'"></i>';
+document.getElementById('tileDetailTitle').textContent=m.label;
+document.getElementById('miSubtitle').textContent='last 24h';
 document.getElementById('tileDetailModal').classList.add('show');
-document.getElementById('tileDetailStats').innerHTML='<span>Loading\u2026</span>';
+document.getElementById('tileDetailStats').innerHTML='<div class="more-info-stat">Loading\u2026</div>';
 try{
 const d=await apiGet('/api/history?period=day');
 const pts=(d.points||[]).filter(p=>p[m.key]!==undefined&&p[m.key]!==null);
-if(!pts.length){document.getElementById('tileDetailStats').innerHTML='<span>No history yet</span>';return;}
+if(!pts.length){document.getElementById('tileDetailStats').innerHTML='<div class="more-info-stat">No history yet</div>';return;}
 const vals=pts.map(p=>p[m.key]);
 const min=Math.min(...vals),max=Math.max(...vals);
 const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
 document.getElementById('tileDetailStats').innerHTML=
-'<span><b>Min</b> '+min.toFixed(1)+m.unit+'</span><span><b>Avg</b> '+avg.toFixed(1)+m.unit+'</span><span><b>Max</b> '+max.toFixed(1)+m.unit+'</span>';
+'<div class="more-info-stat"><b>Min</b> '+min.toFixed(1)+m.unit+'</div><div class="more-info-stat"><b>Avg</b> '+avg.toFixed(1)+m.unit+'</div><div class="more-info-stat"><b>Max</b> '+max.toFixed(1)+m.unit+'</div>';
 const labels=pts.map(p=>{const dt=new Date(p.ts);return dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');});
 if(_tileDetailChart){_tileDetailChart.destroy();_tileDetailChart=null;}
 const ctx=document.getElementById('tileDetailChart').getContext('2d');
-_tileDetailChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{data:vals,borderColor:'#0a84ff',backgroundColor:'rgba(10,132,255,.12)',fill:true,pointRadius:0,borderWidth:1.5,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',cornerRadius:8,padding:8,callbacks:{label:c=>c.raw+m.unit}}},scales:{x:{ticks:{color:'#98989f',font:{size:9},maxTicksLimit:6,maxRotation:0},grid:{display:false}},y:{ticks:{color:'#98989f',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}}}}});
-}catch(e){document.getElementById('tileDetailStats').innerHTML='<span>Failed to load: '+e.message+'</span>';}
+_tileDetailChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{data:vals,borderColor:'#0a84ff',backgroundColor:'rgba(10,132,255,.12)',fill:true,pointRadius:0,borderWidth:1.5,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',cornerRadius:8,padding:8,callbacks:{label:c=>c.raw+m.unit}}},scales:{x:{ticks:{color:'#98989f',font:{size:9},maxTicksLimit:6,maxRotation:0},grid:{color:'rgba(255,255,255,0.06)'}},y:{ticks:{color:'#98989f',font:{size:9}},grid:{color:'rgba(255,255,255,0.06)'}}}}});
+}catch(e){document.getElementById('tileDetailStats').innerHTML='<div class="more-info-stat">Failed: '+e.message+'</div>';}
 }
 function closeTileDetail(){
 document.getElementById('tileDetailModal').classList.remove('show');
