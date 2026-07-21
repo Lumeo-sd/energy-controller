@@ -2513,8 +2513,8 @@ button:disabled{opacity:.6}
 .automation-summary b{color:var(--primary-light)}
 .rule-sentence details.advanced-fields{width:100%;margin-top:.4rem;font-size:.75rem;color:var(--muted)}
 .rule-sentence details.advanced-fields summary{cursor:pointer;color:var(--blue);list-style:none}
-.rule-sentence details.advanced-fields[open] summary{margin-bottom:.4rem}
-.type-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:flex-end;z-index:1000}
+.rule-sentence details.advanced-fields[open] summary{margin-bottom:.4rem}.rule-sentence details.advanced-fields summary i.bi{transition:transform .2s}.rule-sentence details.advanced-fields[open] summary i.bi{transform:rotate(90deg)}
+.type-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;align-items:flex-end;z-index:1002}
 .type-sheet-backdrop.show{display:flex}
 .type-sheet{width:100%;background:var(--card-solid);border-radius:20px 20px 0 0;padding:1.1rem 1rem calc(1.1rem + var(--safe-b));max-height:70vh;overflow-y:auto;animation:sheetUp .22s ease}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -3462,7 +3462,7 @@ function renderActionRow(r,type){
 var body;
 if(type==='tuya'){
 var opts=tuyaDevices.map(function(d){return '<option value="'+escHtml(d.id)+'">'+escHtml(d.name)+'</option>';}).join('');
-body='<select class="chip-select action-device"><option value="">\u2014 device \u2014</option>'+opts+'</select><select class="chip-select action-value"><option value="true">turn ON</option><option value="false">turn OFF</option></select><details class="advanced-fields"><summary>duration / interval (optional)</summary><div style="display:flex;gap:.5rem;margin-top:.3rem"><input type="number" class="chip-input action-duration" placeholder="min" min="0" style="width:70px" /><input type="number" class="chip-input action-interval" placeholder="min" min="0" style="width:70px" /></div></details>';
+body='<select class="chip-select action-device"><option value="">\u2014 device \u2014</option>'+opts+'</select><select class="chip-select action-value"><option value="true">turn ON</option><option value="false">turn OFF</option></select><details class="advanced-fields"><summary><i class="bi bi-chevron-right"></i> duration / interval <span class="text-muted-hb" style="font-weight:400;font-size:.75rem">(optional)</span></summary><div style="display:flex;gap:.5rem;margin-top:.3rem"><input type="number" class="chip-input action-duration" placeholder="min" min="0" style="width:70px" /><input type="number" class="chip-input action-interval" placeholder="min" min="0" style="width:70px" /></div></details>';
 }else{
 body='<i class="bi bi-bell-fill" style="color:var(--primary-light)"></i><input type="text" class="chip-input action-title" placeholder="Title" style="flex:1;min-width:110px;border-radius:10px" /><input type="text" class="chip-input action-message" placeholder="Message" style="flex:1;min-width:110px;border-radius:10px" />';
 }
