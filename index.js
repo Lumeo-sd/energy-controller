@@ -4152,9 +4152,9 @@ h+='<path d="'+p3+'" stroke="#a855f7" stroke-width="5" fill="none" opacity="0.15
 h+='<path d="'+p3+'" stroke="#a855f7" stroke-width="2" fill="none" opacity="0.75" stroke-linecap="round"/>';
 h+='<circle r="3.5" fill="#a855f7" id="homD"><animateMotion dur="3s" repeatCount="indefinite" path="'+p3+'"/></circle>';h+='<circle r="3.5" fill="#a855f7" id="homE" style="display:none"><animateMotion dur="3s" repeatCount="indefinite" path="'+p3r+'"/></circle>';
 function N(cx,cy,cl,ic,id1,id2,id3){
-h+='<circle cx="'+cx+'" cy="'+cy+'" r="34" fill="'+cl+'" opacity="0.03"/>';
+h+='<circle cx="'+cx+'" cy="'+cy+'" r="34" fill="'+cl+'" opacity="0.08"/>';
 h+='<circle cx="'+cx+'" cy="'+cy+'" r="26" fill="none" stroke="'+cl+'" stroke-width="2.5" opacity="0.85"/>';
-h+='<circle cx="'+cx+'" cy="'+cy+'" r="22" fill="var(--bg)" stroke="var(--border)" stroke-width="0.5"/>';
+h+='<circle cx="'+cx+'" cy="'+cy+'" r="22" fill="none" stroke="var(--border)" stroke-width="0.5"/>';
 h+='<text id="'+id1+'" x="'+cx+'" y="'+(cy+5)+'" text-anchor="middle" fill="'+cl+'" font-size="13" font-weight="800"></text>';
 h+='<text id="'+id2+'" x="'+cx+'" y="'+(cy+17)+'" text-anchor="middle" fill="'+cl+'" font-size="8" font-weight="600"></text>';
 if(id3){h+='<text id="'+id3+'" x="'+cx+'" y="'+(cy+27)+'" text-anchor="middle" fill="'+cl+'" font-size="7"></text>';}}
@@ -4162,9 +4162,9 @@ N(70,40,'#0ea5e9','\u26A1','egp1','egp2','egp3');
 N(70,185,'#f59e0b','\uD83D\uDD0B','ebt1','ebt2',null);
 N(435,110,'#a855f7','\uD83C\uDFE0','ehm1','ehm2',null);
 var gc='#22c55e';
-h+='<circle id="egr" cx="250" cy="110" r="34" fill="#22c55e" opacity="0.03"/>';
+h+='<circle id="egr" cx="250" cy="110" r="34" fill="#22c55e" opacity="0.08"/>';
 h+='<circle id="egs" cx="250" cy="110" r="26" fill="none" stroke="#22c55e" stroke-width="2.5" opacity="0.85"/>';
-h+='<circle cx="250" cy="110" r="22" fill="var(--bg)" stroke="var(--border)" stroke-width="0.5"/>';
+h+='<circle cx="250" cy="110" r="22" fill="none" stroke="var(--border)" stroke-width="0.5"/>';
 h+='<text id="egr1" x="250" y="115" text-anchor="middle" fill="'+gc+'" font-size="15" font-weight="800"></text>';
 svg.innerHTML=h;
 svg._rdy=true;}
