@@ -1251,6 +1251,14 @@ async function saveConfig(cfg) {
   }
 }
 
+async function netbirdExec(args) {
+  return new Promise((resolve) => {
+    exec('sudo netbird ' + args.join(' '), { timeout: 15000, maxBuffer: 1024 * 64 }, (err, stdout, stderr) => {
+      resolve({ stdout: (stdout || '').trim(), stderr: (stderr || '').trim(), err });
+    });
+  });
+}
+
 // ============================================================
 // RATE LIMITING (token bucket per IP)
 // ============================================================
@@ -1818,6 +1826,7 @@ route('GET', '/api/plugin-config', async (req, res) => {
     if (safe.tuya && safe.tuya.password) safe.tuya.password = '••••••••';
     if (safe.tuya && safe.tuya.accessKey) safe.tuya.accessKey = '••••••••';
     if (safe.notifications && safe.notifications.telegramToken) safe.notifications.telegramToken = '••••••••';
+    if (safe.netbird && safe.netbird.setupKey) safe.netbird.setupKey = '••••••••';
     sendJson(res, 200, { success: true, config: safe });
   } catch (err) {
     sendJson(res, 500, { success: false, message: err.message });
@@ -1856,6 +1865,14 @@ route('POST', '/api/plugin-config', async (req, res) => {
       if (newCfg.notifications.lowSocAlert !== undefined) merged.notifications.lowSocAlert = parseInt(newCfg.notifications.lowSocAlert) || 20;
       if (newCfg.notifications.connTimeout !== undefined) merged.notifications.connTimeout = parseInt(newCfg.notifications.connTimeout) || 10;
       if (newCfg.notifications.gridOutageReport !== undefined) merged.notifications.gridOutageReport = newCfg.notifications.gridOutageReport;
+    }
+        if (newCfg.netbird) {
+      merged.netbird = merged.netbird || {};
+      for (const k of ['setupKey', 'managementUrl']) {
+        if (newCfg.netbird[k] === '••••••••' || newCfg.netbird[k] === '') continue;
+        merged.netbird[k] = newCfg.netbird[k];
+      }
+      if (newCfg.netbird.enabled !== undefined) merged.netbird.enabled = !!newCfg.netbird.enabled;
     }
     if (newCfg.tariff) {
       merged.tariff = merged.tariff || {};
@@ -1925,6 +1942,74 @@ async function sendNotification(title, message, critical) {
     return results;
   } catch (e) { return ['error: ' + e.message]; }
 }
+
+route('GET', '/api/netbird/status', async (req, res) => {
+  try {
+    const r = await netbirdExec(['status']);
+    const cfg = await loadConfig();
+    const nb = cfg.netbird || {};
+    const daemonOk = !r.stderr.includes('no such file') && !r.stderr.includes('connect to daemon') && !r.stderr.includes('Daemon');
+    sendJson(res, 200, { success: !!r.stdout || daemonOk, status: r.stdout || 'Daemon not running', enabled: !!nb.enabled });
+  } catch (err) {
+    sendJson(res, 200, { success: false, message: err.message });
+  }
+});
+
+route('POST', '/api/netbird/up', async (req, res) => {
+  try {
+    const cfg = await loadConfig();
+    const nb = cfg.netbird || {};
+    if (!nb.setupKey || nb.setupKey === '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022') {
+      return sendJson(res, 400, { success: false, message: 'Setup key not configured. Save settings first.' });
+    }
+    // Start the NetBird daemon service first
+    await new Promise((resolve) => {
+      exec('sudo netbird service start', { timeout: 15000 }, (err, stdout, stderr) => {
+        if (err) log.warn('netbird service start (non-fatal): ' + (stderr || err.message));
+        resolve();
+      });
+    });
+    const args = ['up', '--setup-key', nb.setupKey];
+    if (nb.managementUrl) { args.push('--management-url', nb.managementUrl); }
+    const r = await netbirdExec(args);
+    if (r.err) {
+      sendJson(res, 200, { success: false, message: r.stderr || r.err.message });
+    } else {
+      cfg.netbird = cfg.netbird || {}; cfg.netbird.enabled = true;
+      await saveConfig(cfg);
+      exec('sudo systemctl enable netbird', (err) => {
+        if (err) log.warn('systemctl enable netbird (non-fatal): ' + err.message);
+      });
+      sendJson(res, 200, { success: true, message: 'Connected to NetBird' });
+    }
+  } catch (err) {
+    sendJson(res, 200, { success: false, message: err.message });
+  }
+});
+
+route('POST', '/api/netbird/down', async (req, res) => {
+  try {
+    const r = await netbirdExec(['down']);
+    if (r.err) {
+      // Try to stop service even if down fails
+      exec('sudo netbird service stop && sudo systemctl disable netbird', (err) => {});
+      sendJson(res, 200, { success: false, message: r.stderr || r.err.message });
+    } else {
+      await new Promise((resolve) => {
+        exec('sudo netbird service stop && sudo systemctl disable netbird', { timeout: 15000 }, (err) => {
+          if (err) log.warn('netbird service stop (non-fatal): ' + err.message);
+          resolve();
+        });
+      });
+      const cfg = await loadConfig();
+      cfg.netbird = cfg.netbird || {}; cfg.netbird.enabled = false;
+      await saveConfig(cfg);
+      sendJson(res, 200, { success: true, message: 'Disconnected from NetBird' });
+    }
+  } catch (err) {
+    sendJson(res, 200, { success: false, message: err.message });
+  }
+});
 
 route('POST', '/api/test-notification', async (req, res) => {
   const results = await sendNotification('Test', 'Energy Controller notification test at ' + new Date().toLocaleString());
@@ -2974,6 +3059,8 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 @media(min-width:770px){.rule-sentence{flex-wrap:nowrap;gap:.5rem;padding:.5rem .8rem} .rule-sentence .chip-select{max-width:160px} .rule-sentence .chip-input[type=number]{width:72px} }
 
 .type-tile span{font-size:.72rem;color:var(--text);text-align:center}
+.flow-container{width:100%;max-width:760px;margin:0 auto;border-radius:16px;overflow:hidden;background:var(--card);padding:12px}
+.flow-container svg{display:block;width:100%;height:auto}
 </style>
 
 </head>
@@ -2999,7 +3086,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div id="pull-indicator"><i class="bi bi-arrow-down"></i></div>
 <div class="page-header"><h1>Status</h1></div>
 <div class="tiles-container" id="tilesContainer"></div>
-<div class="flow-section" id="flowSection"><div class="flow-metrics" id="flowMetrics"></div><div class="flow-svg-wrap"><svg id="energyFlow" viewBox="0 0 400 190" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
+<div class="flow-section" id="flowSection"><div class="flow-metrics" id="flowMetrics"></div><div class="flow-svg-wrap"><svg id="energyFlow" viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
 <div class="hb-card chart-section collapsed" style="margin-bottom:.75rem">
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cpu" style="margin-right:.5rem"></i>Inverter Debug</div></div>
 <div id="debug-grid" style="padding:.5rem .75rem;font-size:.78rem;font-family:monospace;color:var(--text);display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.25rem .75rem"></div>
@@ -3158,6 +3245,16 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Bot Token</label><input type="password" id="cfg-tg-token" class="form-hb" placeholder="123456:ABC-DEF1234..." /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Chat ID</label><input type="text" id="cfg-tg-chat" class="form-hb" placeholder="-1001234567890" /></div>
 </div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.8rem 0 .6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-wifi" style="margin-right:.4rem"></i>NetBird Mesh</span><label class="sw"><input type="checkbox" id="cfg-netbird-enabled" onchange="document.getElementById('netbird-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="netbird-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Setup Key</label><input type="password" id="cfg-netbird-setupKey" class="form-hb" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Management URL</label><input type="text" id="cfg-netbird-managementUrl" class="form-hb" placeholder="https://api.netbird.io:443" /></div>
+<div style="display:flex;gap:.5rem;margin-top:.6rem">
+<button class="btn-hb btn-hb-sm" onclick="netbirdUp()" style="flex:1"><i class="bi bi-wifi"></i> Connect</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="netbirdDown()" style="flex:1"><i class="bi bi-wifi-off"></i> Disconnect</button>
+</div>
+<div id="netbird-status" style="margin-top:.6rem;font-size:.8rem;display:none;padding:.5rem;border-radius:6px;background:rgba(255,255,255,.04);white-space:pre-wrap;font-family:monospace"></div>
+</div>
 </div>
 </div>
 <div class="hb-card collapsed" style="margin-top:1rem">
@@ -3234,7 +3331,7 @@ try{
 const d=await apiGet('/api/status');
 if(d.csrfToken)_csrfToken=d.csrfToken;
 updateTiles(d,d.debug||{});
-renderEnergyFlow(d);
+window._lastData=d;renderEnergyFlow(d);
 const dg=d.debug||{};
 const dgEl=document.getElementById('debug-grid');
 if(dgEl){
@@ -3835,7 +3932,11 @@ document.getElementById('cfg-tuya-appSchema').value=(c.tuya&&c.tuya.appSchema)||
  document.getElementById('cfg-tariff-night-rate').value=tf.nightRate||0;
  document.getElementById('cfg-tariff-day-start').value=tf.dayStart||'07:00';
  document.getElementById('cfg-tariff-night-start').value=tf.nightStart||'23:00';
- toggleTariffFields();
+  document.getElementById('cfg-netbird-setupKey').value=(c.netbird&&c.netbird.setupKey)||'';
+ document.getElementById('cfg-netbird-managementUrl').value=(c.netbird&&c.netbird.managementUrl)||'';
+ document.getElementById('cfg-netbird-enabled').checked=!!(c.netbird&&c.netbird.enabled);
+ document.getElementById('netbird-fields').style.display=(c.netbird&&c.netbird.enabled)?'block':'none';
+toggleTariffFields();
 
 }catch(e){}
 }
@@ -3845,6 +3946,7 @@ const cfg={
 inverter:{ip:document.getElementById('cfg-inverter-ip').value.trim(),serial:document.getElementById('cfg-inverter-serial').value.trim(),port:parseInt(document.getElementById('cfg-inverter-port').value)||8899},
 tuya:{accessId:document.getElementById('cfg-tuya-accessId').value.trim(),accessKey:document.getElementById('cfg-tuya-accessKey').value,countryCode:parseInt(document.getElementById('cfg-tuya-countryCode').value)||48,username:document.getElementById('cfg-tuya-username').value.trim(),password:document.getElementById('cfg-tuya-password').value,appSchema:document.getElementById('cfg-tuya-appSchema').value},
 webPort:parseInt(document.getElementById('cfg-webPort').value)||8583,
+netbird:{setupKey:document.getElementById('cfg-netbird-setupKey').value,managementUrl:document.getElementById('cfg-netbird-managementUrl').value.trim(),enabled:document.getElementById('cfg-netbird-enabled').checked},
 notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyNotifEnabled:document.getElementById('cfg-ntfy-notif-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramNotifEnabled:document.getElementById('cfg-tg-notif-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),criticalEnabled:document.getElementById('cfg-notif-critical-enabled').checked,lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10,gridOutageReport:document.getElementById('cfg-notif-grid-outage').checked}
 };
 const r=await apiPost('/api/plugin-config',{config:cfg});
@@ -3875,6 +3977,17 @@ nightStart:document.getElementById('cfg-tariff-night-start').value||'23:00'
 }};
 const st=document.getElementById('tariff-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';
 try{const r=await apiPost('/api/plugin-config',{config:cfg});if(r.success){st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> Saved';setTimeout(()=>st.style.display='none',3000);}else st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+(r.message||'Error');}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;}
+}
+async function netbirdUp(){
+const st=document.getElementById('netbird-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Connecting...';st.style.color='#3b82f6';
+try{const r=await apiPost('/api/netbird/up',{});if(r.success){st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> '+r.message;document.getElementById('cfg-netbird-enabled').checked=true;document.getElementById('netbird-fields').style.display='block';}else{st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+(r.message||'Failed');st.style.color='#ef4444';}}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;st.style.color='#ef4444';}
+}
+async function netbirdDown(){
+const st=document.getElementById('netbird-status');st.style.display='block';st.innerHTML='<i class="bi bi-hourglass-split"></i> Disconnecting...';st.style.color='#f59e0b';
+try{const r=await apiPost('/api/netbird/down',{});if(r.success){st.innerHTML='<i class="bi bi-check-circle" style="color:#22c55e"></i> '+r.message;document.getElementById('cfg-netbird-enabled').checked=false;document.getElementById('netbird-fields').style.display='none';}else{st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+(r.message||'Failed');st.style.color='#ef4444';}}catch(e){st.innerHTML='<i class="bi bi-x-circle" style="color:#ef4444"></i> '+e.message;st.style.color='#ef4444';}
+}
+async function refreshNetbirdStatus(){
+try{const r=await apiGet('/api/netbird/status');const st=document.getElementById('netbird-status');if(r.success){const lines=r.status.split('\\n').filter(l=>l.trim());const brief=lines.filter(l=>l.includes('Daemon')||l.includes('Status')||l.includes('IP')||l.includes('Peers')).join('\\n')||r.status;st.style.display='block';st.style.color='var(--text)';st.textContent=brief||(r.enabled?'Connected':'Disconnected');}else{if(st){st.style.display='block';st.style.color='#ef4444';st.textContent=r.status||'Disconnected';}document.getElementById('cfg-netbird-enabled').checked=false;}}catch{}
 }
 function copyMetricsUrl(){
 const el=document.getElementById('cfg-metrics-url');
@@ -3982,31 +4095,51 @@ if(mainEl){mainEl.addEventListener('touchstart',function(e){if(mainEl.scrollTop<
 
 function renderEnergyFlow(d){
 const svg=document.getElementById('energyFlow');if(!svg)return;
-const pv=(d.pvPower||0)+(d.pvPower2||0);
-const load=d.loadPower||0;
-const bp=d.batteryPower||0;
-const gridOn=d.gridPower===true;
-const dayPV=d.dayPV||0;
-const dayGridImport=d.dayGridImport||0;
-const dayGridExport=d.dayGridExport||0;
-const dayLoadEnergy=d.dayLoadEnergy||0;
-const charging=bp<0;const discharging=bp>0;
-const toGrid=gridOn&&pv>load+Math.max(0,-bp);
-const fromGrid=gridOn&&pv+Math.max(0,bp)<load;
-const soc=d.batterySOC||0;
-const sc=dayPV>0?((dayPV-dayGridExport)/dayPV*100):0;
-const aut=dayLoadEnergy>0?((dayLoadEnergy-dayGridImport)/dayLoadEnergy*100):0;
-const html='<defs><marker id="ar" markerWidth="6" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke-width="1.2" stroke="var(--muted)"/></marker><marker id="ar-pv" markerWidth="6" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke-width="1.6" stroke="#f59e0b"/></marker></defs>'
-+'<rect x="10" y="10" width="90" height="44" rx="8" fill="rgba(245,158,11,.15)" stroke="#f59e0b" stroke-width="1"/><text x="55" y="28" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="600">Solar</text><text x="55" y="46" text-anchor="middle" fill="var(--text)" font-size="13" font-weight="700">'+(pv||'0')+' W</text>'
-+'<rect x="10" y="136" width="90" height="44" rx="8" fill="rgba(48,209,88,.15)" stroke="#30d158" stroke-width="1"/><text x="55" y="154" text-anchor="middle" fill="#30d158" font-size="11" font-weight="600">Battery</text><text x="55" y="172" text-anchor="middle" fill="var(--text)" font-size="13" font-weight="700">'+soc+'%</text><text x="55" y="133" text-anchor="middle" fill="var(--muted)" font-size="9">'+(bp?bp+'W':'0W')+'</text>'
-+'<rect x="145" y="73" width="90" height="44" rx="8" fill="rgba(191,90,242,.15)" stroke="#bf5af2" stroke-width="1"/><text x="190" y="91" text-anchor="middle" fill="#bf5af2" font-size="11" font-weight="600">Home</text><text x="190" y="109" text-anchor="middle" fill="var(--text)" font-size="13" font-weight="700">'+(load||'0')+' W</text>'
-+'<rect x="295" y="73" width="90" height="44" rx="8" fill="rgba(255,69,58,.12)" stroke="#ff453a" stroke-width="1"/><text x="340" y="91" text-anchor="middle" fill="#ff453a" font-size="11" font-weight="600">Grid</text><text x="340" y="109" text-anchor="middle" fill="var(--text)" font-size="12" font-weight="700">'+(gridOn?'ON':'OFF')+'</text>'
-// Solar → Home arrow
-+'<line x1="100" y1="32" x2="145" y2="95" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ar)"/>'
-// Battery ↔ Home arrow
-+'<line x1="100" y1="158" x2="145" y2="117" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ar)"/>'
-// Home ↔ Grid arrow
-+(gridOn?'<line x1="235" y1="95" x2="295" y2="95" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ar)"/>':'');
+if(!svg._rdy){
+var h='';
+var p1='M94,49 C156,60 196,81 226,101',p2='M94,175 C156,164 196,129 226,120',p3='M276,110 C299,110 350,110 409,110',p1r='M226,101 C196,81 156,60 94,49',p2r='M226,120 C196,129 156,164 94,175',p3r='M409,110 C350,110 299,110 276,110';
+h+='<path d="'+p1+'" stroke="#0ea5e9" stroke-width="5" fill="none" opacity="0.15" stroke-linecap="round"/>';
+h+='<path d="'+p1+'" stroke="#0ea5e9" stroke-width="2" fill="none" opacity="0.75" stroke-linecap="round"/>';
+h+='<circle r="3.5" fill="#0ea5e9" id="grdD"><animateMotion dur="3s" repeatCount="indefinite" path="'+p1+'"/></circle>';h+='<circle r="3.5" fill="#0ea5e9" id="grdE" style="display:none"><animateMotion dur="3s" repeatCount="indefinite" path="'+p1r+'"/></circle>';
+h+='<path d="'+p2+'" stroke="#f59e0b" stroke-width="5" fill="none" opacity="0.15" stroke-linecap="round"/>';
+h+='<path d="'+p2+'" stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.75" stroke-linecap="round"/>';
+h+='<circle r="3.5" fill="#f59e0b" id="batD"><animateMotion dur="3s" repeatCount="indefinite" path="'+p2+'"/></circle>';h+='<circle r="3.5" fill="#f59e0b" id="batC" style="display:none"><animateMotion dur="3s" repeatCount="indefinite" path="'+p2r+'"/></circle>';
+h+='<path d="'+p3+'" stroke="#a855f7" stroke-width="5" fill="none" opacity="0.15" stroke-linecap="round"/>';
+h+='<path d="'+p3+'" stroke="#a855f7" stroke-width="2" fill="none" opacity="0.75" stroke-linecap="round"/>';
+h+='<circle r="3.5" fill="#a855f7" id="homD"><animateMotion dur="3s" repeatCount="indefinite" path="'+p3+'"/></circle>';h+='<circle r="3.5" fill="#a855f7" id="homE" style="display:none"><animateMotion dur="3s" repeatCount="indefinite" path="'+p3r+'"/></circle>';
+function N(cx,cy,cl,ic,id1,id2,id3){
+h+='<circle cx="'+cx+'" cy="'+cy+'" r="34" fill="'+cl+'" opacity="0.03"/>';
+h+='<circle cx="'+cx+'" cy="'+cy+'" r="26" fill="none" stroke="'+cl+'" stroke-width="2.5" opacity="0.85"/>';
+h+='<circle cx="'+cx+'" cy="'+cy+'" r="22" fill="var(--bg)" stroke="var(--border)" stroke-width="0.5"/>';
+h+='<text id="'+id1+'" x="'+cx+'" y="'+(cy+5)+'" text-anchor="middle" fill="'+cl+'" font-size="13" font-weight="800"></text>';
+h+='<text id="'+id2+'" x="'+cx+'" y="'+(cy+17)+'" text-anchor="middle" fill="'+cl+'" font-size="8" font-weight="600"></text>';
+if(id3){h+='<text id="'+id3+'" x="'+cx+'" y="'+(cy+27)+'" text-anchor="middle" fill="'+cl+'" font-size="7"></text>';}}
+N(70,40,'#0ea5e9','\u26A1','egp1','egp2','egp3');
+N(70,185,'#f59e0b','\uD83D\uDD0B','ebt1','ebt2',null);
+N(435,110,'#a855f7','\uD83C\uDFE0','ehm1','ehm2',null);
+var gc='#22c55e';
+h+='<circle id="egr" cx="250" cy="110" r="34" fill="#22c55e" opacity="0.03"/>';
+h+='<circle id="egs" cx="250" cy="110" r="26" fill="none" stroke="#22c55e" stroke-width="2.5" opacity="0.85"/>';
+h+='<circle cx="250" cy="110" r="22" fill="var(--bg)" stroke="var(--border)" stroke-width="0.5"/>';
+h+='<text id="egr1" x="250" y="115" text-anchor="middle" fill="'+gc+'" font-size="15" font-weight="800"></text>';
+svg.innerHTML=h;
+svg._rdy=true;}
+var gc=d.gridPower?'#22c55e':'#ef4444';
+document.getElementById('egr').setAttribute('fill',gc);
+document.getElementById('egr').setAttribute('fill-opacity','0.07');
+document.getElementById('egs').setAttribute('stroke',gc);
+document.getElementById('egr1').setAttribute('fill',gc);
+
+var gp=(d.debug&&d.debug.gridPower)||0,sc=d.batterySOC||0,ld=d.loadPower||0,bp=d.batteryPower||0;
+document.getElementById('egp1').textContent=gp+'W';
+document.getElementById('egp2').textContent='Grid';
+document.getElementById('egp3').textContent='';
+document.getElementById('ebt1').textContent=sc+'%';
+document.getElementById('ebt2').textContent=bp?bp+'W':'0W';
+document.getElementById('ehm1').textContent=ld+'W';
+document.getElementById('ehm2').textContent='Home';
+document.getElementById('egr1').textContent=d.gridPower?'ON':'OFF';
+var gd=document.getElementById('grdD'),ge=document.getElementById('grdE');if(gd&&ge){gd.style.display=gp>0?'':'none';ge.style.display=gp<0?'':'none';}var bd=document.getElementById('batD'),bc=document.getElementById('batC');if(bd&&bc){bd.style.display=bp>0?'':'none';bc.style.display=bp<0?'':'none';}var hd=document.getElementById('homD'),he=document.getElementById('homE');if(hd&&he){hd.style.display=ld>0?'':'none';he.style.display=ld<0?'':'none';}
 const scEl=document.getElementById('flowMetrics');
 if(scEl){
 const tariff=d.tariff||{};
@@ -4023,8 +4156,8 @@ const efficiency=tgi>0?((tle/tgi)*100).toFixed(1):'—';
 scEl.innerHTML='<div class="metric-card"><span class="metric-lbl">Cost Today</span><span class="metric-val">'+todayC.toFixed(2)+' '+cur+'</span><span class="metric-sub">'+costToday.day.toFixed(1)+' day + '+costToday.night.toFixed(1)+' night kWh</span></div>'
 +'<div class="metric-card"><span class="metric-lbl">All-Time Cost</span><span class="metric-val">'+allTimeC.toFixed(2)+' '+cur+'</span><span class="metric-sub">'+tgi.toFixed(1)+' kWh total import</span></div>'
 +'<div class="metric-card"><span class="metric-lbl">Standby Loss</span><span class="metric-val">'+standbyC.toFixed(2)+' '+cur+'</span><span class="metric-sub">'+standbyLoss.toFixed(1)+' kWh lost · efficiency '+efficiency+'%</span></div>';}
-svg.innerHTML=html;
 }
+
 let _tileDetailChart=null;
 async function openTileDetail(tileId){
 const m=TILE_METRIC_MAP[tileId];
