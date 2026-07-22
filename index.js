@@ -1834,6 +1834,29 @@ route('GET', '/api/plugin-config', async (req, res) => {
 });
 
 // Plugin config POST
+route('GET', '/api/notifications', async (req, res) => {
+  sendJson(res, 200, { success: true, notifications: _notifHistory.filter(n => !n.dismissed).reverse() });
+});
+route('POST', '/api/notifications/dismiss', async (req, res) => {
+  try {
+    const b = req.body;
+    const n = _notifHistory.find(x => x.id === b.id);
+    if (n) n.dismissed = true;
+    sendJson(res, 200, { success: true });
+  } catch (e) { sendJson(res, 400, { success: false, message: e.message }); }
+});
+route('POST', '/api/notifications/dismiss-all', async (req, res) => {
+  _notifHistory.forEach(n => n.dismissed = true);
+  sendJson(res, 200, { success: true });
+});
+route('POST', '/api/notifications/add', async (req, res) => {
+  try {
+    const b = req.body;
+    pushNotification(b.title || 'Notification', b.message || '', b.type || 'info');
+    sendJson(res, 200, { success: true });
+  } catch (e) { sendJson(res, 400, { success: false, message: e.message }); }
+});
+
 route('POST', '/api/plugin-config', async (req, res) => {
   try {
     const { config: newCfg } = req.body || {};
@@ -1896,6 +1919,7 @@ async function sendNotification(title, message, critical) {
   try {
     const cfg = await loadConfig();
     const n = cfg.notifications || {};
+    pushNotification(title, message, critical ? 'error' : 'info');
     if (n.criticalEnabled === false && critical) return [];
     if (n.notifEnabled === false) return [];
     const results = [];
@@ -1941,6 +1965,15 @@ async function sendNotification(title, message, critical) {
     if (results.length) log.info('Notification (' + title + '): ' + results.join(', '));
     return results;
   } catch (e) { return ['error: ' + e.message]; }
+}
+
+// In-app notification history
+const _notifHistory = [];
+let _notifId = 0;
+function pushNotification(title, message, type) {
+  const id = ++_notifId;
+  _notifHistory.push({ id, title, message, type: type || 'info', time: Date.now(), dismissed: false });
+  if (_notifHistory.length > 200) _notifHistory.shift();
 }
 
 route('GET', '/api/netbird/status', async (req, res) => {
@@ -2717,6 +2750,7 @@ a{color:inherit}
 .sidebar-brand i{color:var(--primary);font-size:1.4rem;flex-shrink:0}
 .sidebar-brand .brand-version{font-size:.68rem;color:var(--muted);margin-left:auto}
 .sidebar-menu{flex:1;list-style:none;padding:0 .4rem;margin:0;overflow:hidden}
+.sidebar-menu-bottom{padding:.4rem .4rem 0;margin-top:auto;list-style:none;border-top:.5px solid var(--separator)}
 .menu-item{padding:.65rem .7rem;margin:.15rem 0;display:flex;align-items:center;gap:.75rem;color:var(--muted);
   cursor:pointer;font-size:.92rem;white-space:nowrap;border-radius:var(--radius-sm);transition:background .15s,color .15s}
 .menu-item:hover{color:var(--text);background:rgba(255,255,255,.06)}
@@ -2724,11 +2758,6 @@ a{color:inherit}
 .menu-item.active i{color:var(--primary)}
 .menu-item i{font-size:1.25rem;width:1.6rem;text-align:center;flex-shrink:0;color:var(--muted)}
 .menu-item .badge-hb{margin-left:auto}
-.sidebar-footer{padding:.3rem .4rem;border-top:.5px solid var(--separator);display:flex;justify-content:space-around;align-items:center}
-.power-item{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
-.power-item:hover{color:var(--text);background:rgba(255,255,255,.08)}
-.power-item i{font-size:.9rem}
-.power-item.c-primary{color:var(--muted)}.power-item.c-danger{color:var(--muted)}
 .main{margin-left:0;flex:1;padding:calc(1.5rem + var(--safe-t)) 2rem 2rem;min-height:100vh;min-height:100dvh;
   max-width:100%;transition:margin-left .25s cubic-bezier(.4,0,.2,1)}
 .sidebar.open~.main{margin-left:var(--sidebar-e);max-width:calc(100% - var(--sidebar-e))}
@@ -2882,6 +2911,20 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .metric-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
 .metric-val{font-size:1rem;font-weight:700;color:var(--text)}
 .metric-sub{font-size:.65rem;color:var(--muted)}
+.notif-list{max-height:65vh;overflow-y:auto;display:flex;flex-direction:column;gap:.25rem;padding:.25rem 0}
+.notif-item{display:flex;align-items:flex-start;gap:.6rem;padding:.45rem .6rem;border-radius:8px;background:var(--card);transition:opacity .3s}
+.notif-item.dismissed{opacity:.3}
+.notif-item .notif-icon{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-top:1px}
+.notif-item .notif-icon.info{background:rgba(48,209,88,.15);color:var(--success)}
+.notif-item .notif-icon.warn{background:rgba(255,204,0,.15);color:#ffcc00}
+.notif-item .notif-icon.error{background:rgba(255,69,58,.15);color:var(--danger)}
+.notif-item .notif-body{flex:1;min-width:0}
+.notif-item .notif-title{font-size:.8rem;font-weight:700;color:var(--text)}
+.notif-item .notif-msg{font-size:.72rem;color:var(--muted);margin-top:2px;white-space:pre-wrap}
+.notif-item .notif-time{font-size:.62rem;color:var(--muted);margin-top:1px}
+.notif-item .notif-dismiss{flex-shrink:0;width:22px;height:22px;border:none;background:none;color:var(--muted);cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem;margin-top:3px}
+.notif-item .notif-dismiss:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.notif-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem}
 .hb-toast{position:fixed;bottom:calc(2rem + var(--safe-b));right:2rem;background:var(--card-solid);
   -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:.5px solid var(--border);
   border-radius:var(--radius-md);padding:.9rem 1.25rem;box-shadow:0 12px 40px rgba(0,0,0,.55);
@@ -2958,8 +3001,8 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
     flex-direction:row;align-items:stretch;justify-content:space-around;
     border-right:none;border-top:.5px solid var(--separator);
     background:rgba(20,20,22,.82);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px)}
-  .sidebar-brand,.sidebar-footer,.sidebar-toggle{display:none}
-  .sidebar-menu{display:flex;flex-direction:row;justify-content:space-around;align-items:stretch;flex:1;padding:0;overflow:visible}
+  .sidebar-brand,.sidebar-toggle{display:none}
+  .sidebar-menu,.sidebar-menu-bottom{display:flex;flex-direction:row;justify-content:space-around;align-items:stretch;flex:1;padding:0;overflow:visible}
   .menu-item{flex-direction:column;justify-content:center;align-items:center;gap:.15rem;padding:.3rem .4rem;
     margin:0;border-radius:var(--radius-sm);flex:1;min-width:0;background:none!important}
   .menu-item.active{background:none!important}
@@ -3072,13 +3115,12 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <li class="menu-item" data-tab="devices"><i class="bi bi-cpu"></i><span>Devices</span><span class="badge-hb purple" id="sidebar-device-count">0</span></li>
 <li class="menu-item" data-tab="automations"><i class="bi bi-diagram-3"></i><span>Automations</span><span class="badge-hb purple" id="sidebar-scene-count">0</span></li>
 <li class="menu-item" data-tab="server"><i class="bi bi-server"></i><span>Server</span></li>
+</ul>
+<ul class="sidebar-menu sidebar-menu-bottom">
+<li class="menu-item" data-tab="notifications"><i class="bi bi-bell"></i><span>Notifications</span><span class="badge-hb purple" id="sidebar-notif-count" style="display:none">0</span></li>
 <li class="menu-item" data-tab="settings"><i class="bi bi-gear"></i><span>Settings</span></li>
 </ul>
-<div class="sidebar-footer">
-<div class="power-item" onclick="location.reload()" title="Restart UI"><i class="bi bi-arrow-clockwise"></i></div>
-<div class="power-item c-primary" onclick="document.getElementById('restartModal').classList.add('show')" title="Restart App"><i class="bi bi-arrow-repeat"></i></div>
-<div class="power-item c-danger" onclick="logout()" title="Log Out"><i class="bi bi-box-arrow-right"></i></div>
-</div>
+
 </aside>
 <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar"><i class="bi bi-chevron-left"></i></button>
 <main class="main">
@@ -3156,6 +3198,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 </div>
 </div>
 </div>
+<div class="tab-pane" id="tab-notifications"><div class="page-header"><h1>Notifications</h1></div><div class="hb-card"><div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()"><i class="bi bi-check2-all"></i> Dismiss All</button></span></div><div id="notif-list" class="notif-list"><div class="notif-empty">No notifications</div></div></div></div>
 <div class="tab-pane" id="tab-settings">
 <div class="page-header"><h1>Settings</h1></div>
 <div class="hb-card collapsed">
@@ -3278,13 +3321,13 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div id="backup-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
 </div>
 </div>
-<div class="hb-card mobile-only" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-phone" style="margin-right:.5rem"></i>Session</div></div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-phone" style="margin-right:.5rem"></i>Session</div></div>
 <div class="hb-card-body">
 <div style="display:flex;flex-direction:column;gap:.6rem">
-<button class="btn-hb btn-hb-outline w-100" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> Restart UI</button>
-<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="document.getElementById('restartModal').classList.add('show')"><i class="bi bi-arrow-repeat"></i> Restart App</button>
-<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
+<button class="btn-hb btn-hb-outline w-100" onclick="event.stopPropagation();location.reload()"><i class="bi bi-arrow-clockwise"></i> Restart UI</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="event.stopPropagation();document.getElementById('restartModal').classList.add('show')"><i class="bi bi-arrow-repeat"></i> Restart App</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="event.stopPropagation();logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
 </div>
 </div>
 </div>
@@ -3318,9 +3361,10 @@ if(tab==='devices')loadTuyaDevices();
 if(tab==='automations'){loadScenes();populateDeviceSelects();}
 if(tab==='server')loadServerInfo();
 if(tab==='settings'){loadPluginConfig();loadAppVersion();}
+if(tab==='notifications')loadNotifications();
 });
 });
-function showToast(t,b,e){const el=document.getElementById('toast');document.getElementById('toastTitle').textContent=t;document.getElementById('toastBody').textContent=b;el.className='hb-toast show'+(e?' error':'');clearTimeout(el._hide);el._hide=setTimeout(()=>el.classList.remove('show'),4000);}
+function showToast(t,b,e){const el=document.getElementById('toast');document.getElementById('toastTitle').textContent=t;document.getElementById('toastBody').textContent=b;el.className='hb-toast show'+(e?' error':'');clearTimeout(el._hide);el._hide=setTimeout(()=>el.classList.remove('show'),4000);try{fetch('/api/notifications/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:t,message:b||'',type:e?'error':'info'})});}catch(ee){}}var _unreadCount=0;async function loadNotifications(){try{var r=await apiGet('/api/notifications');if(!r.success)return;var list=r.notifications||[];var badEl=document.getElementById('sidebar-notif-count');if(badEl){badEl.textContent=list.length;badEl.style.display=list.length?'':'none';}var con=document.getElementById('notif-list');if(!con)return;if(!list.length){con.innerHTML='<div class="notif-empty">No notifications</div>';return;}con.innerHTML=list.map(function(n){return '<div class="notif-item"><div class="notif-icon '+(n.type||'info')+'">'+(n.type==='error'?'!':n.type==='warn'?'\u26a0':'\u2713')+'</div><div class="notif-body"><div class="notif-title">'+_esc(n.title)+'</div>'+(n.message?'<div class="notif-msg">'+_esc(n.message)+'</div>':'')+'<div class="notif-time">'+new Date(n.time).toLocaleString()+'</div></div><button class="notif-dismiss" onclick="dismissNotif('+n.id+')" title="Dismiss">\u2715</button></div>';}).join('');}catch(e){}}function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}async function dismissNotif(id){try{await apiPost('/api/notifications/dismiss',{id});loadNotifications();}catch(e){}}async function dismissAllNotif(){try{await apiPost('/api/notifications/dismiss-all',{});loadNotifications();}catch(e){}}
 function handleAuthStatus(r){if(r.status===401){window.location.href='/login';throw new Error('Unauthorized');}return r;}
 async function apiGet(p){const r=handleAuthStatus(await fetch(p));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 async function apiPost(p,b){const h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=handleAuthStatus(await fetch(p,{method:'POST',headers:h,body:JSON.stringify(b)}));if(!r.ok){let msg='HTTP '+r.status;try{const e=await r.json();if(e.message)msg=e.message;}catch{}throw new Error(msg);}return r.json();}
@@ -4206,7 +4250,7 @@ function selectUpdateTarget(el){document.querySelectorAll('.update-tag').forEach
 async function applyUpdate(){const btn=document.getElementById('btn-apply-update');const st=document.getElementById('update-status');if(!_updateTarget){st.style.display='block';st.style.color='#f59e0b';st.textContent='Select a branch or tag first.';return;}const label=_updateTarget.branch||_updateTarget.tag;if(!confirm('Update to '+label+' and restart?'))return;btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Updating...';st.style.display='block';st.style.color='#3b82f6';st.textContent='Checking out '+label+'...';try{await apiPost('/api/update-apply',_updateTarget);st.textContent='Updated! Reconnecting...';setTimeout(()=>{let tries=0;const iv=setInterval(async()=>{tries++;try{const r=await fetch('/');if(r.ok){clearInterval(iv);location.reload();}}catch{}if(tries>30){clearInterval(iv);st.textContent='Restart timed out. Refresh the page manually.';}},1500);},3000);}catch(e){st.style.color='#ef4444';st.textContent='Update failed: '+e.message;btn.disabled=false;btn.innerHTML='<i class="bi bi-download"></i> Update & Restart';}}
 loadAppVersion();
 
-loadStatus();loadTuyaDevices();loadScenes();loadLogs();loadHistory('day');loadSocketHistory('day');loadOtherHistory('day');
+loadStatus();loadTuyaDevices();loadScenes();loadLogs();loadHistory('day');loadSocketHistory('day');loadOtherHistory('day');loadNotifications();setInterval(loadNotifications,15000);
 buildTiles();applyTileOrder();applyTileVisibility();buildTileEditor();
 (function(){const s=document.querySelector('.sidebar');if(!s||window.innerWidth<=768)return;const ls=localStorage.getItem('sidebarOpen');const isOpen=ls!==null?ls==='1':true;s.classList.toggle('open',isOpen);const btn=document.querySelector('.sidebar-toggle i');if(btn)btn.className=isOpen?'bi bi-chevron-left':'bi bi-chevron-right';})();
 setInterval(loadStatus,10000);
@@ -4308,6 +4352,7 @@ async function main() {
     if (_inverterConsecutiveFails >= 5) {
       if (_pollingInverter) return;
       log.info('Inverter: too many failures, reconnecting...');
+      pushNotification('Reconnecting', 'Too many inverter failures — reconnecting...', 'warn');
       connectToInverter().then(() => pollInverter());
     } else {
       pollInverter();
@@ -4386,6 +4431,7 @@ let _gridWasOn=null; let _gridOffSince=null; let _gridOffSoc=null; let _gridOffL
             _gridOffLoadAccum = 0;
             _gridOffLastTs = now;
             log.info('Grid outage started at ' + _gridOffSince.toLocaleTimeString() + ' (SOC: ' + _gridOffSoc + '%)');
+            pushNotification('Grid Outage', 'Grid went down at ' + _gridOffSince.toLocaleTimeString() + ' (SOC: ' + _gridOffSoc + '%)', 'error');
           } else {
             const elapsedH = (now - _gridOffLastTs) / 3600000;
             if (elapsedH > 0) _gridOffLoadAccum += (inverterData.loadPower || 0) * elapsedH / 1000;
@@ -4409,7 +4455,7 @@ let _gridWasOn=null; let _gridOffSince=null; let _gridOffSoc=null; let _gridOffL
           ].join('\n');
 
           if (n.ntfyTopic || n.telegramToken) sendNotification('Grid Restored', report, false);
-          log.info('Grid outage ended: ' + hours + 'h' + mins + 'm, SOC ' + _gridOffSoc + '%→' + socNow + '%');
+          log.info('Grid outage ended: ' + hours + 'h' + mins + 'm, SOC ' + _gridOffSoc + '%→' + socNow + '%');pushNotification('Grid Restored', 'Outage ended after ' + hours + 'h ' + mins + 'm, SOC ' + _gridOffSoc + '%→' + socNow + '%', 'info');
 
           _gridOffSince = null;
           _gridOffSoc = null;
@@ -4429,6 +4475,7 @@ let _gridWasOn=null; let _gridOffSince=null; let _gridOffSoc=null; let _gridOffL
   }, 60 * 60 * 1000);
 
   log.info('Energy Controller started');
+  pushNotification('System Ready', 'Energy Controller started successfully', 'info');
 }
 
 main().catch(err => {
