@@ -1,3 +1,11 @@
+## v0.3.10 — 2026-07-23
+### Added
+- Haptic feedback (vibration): device toggle, scene run, toast, pull-to-refresh, swipe
+- Swipe gestures: horizontal swipe to switch between tabs on mobile
+- Improved pull-to-refresh with haptic threshold indicator
+- `haptic()` utility function wrapping `navigator.vibrate`
+- CSS `slideInRight`/`slideInLeft` keyframe animations
+
 ## v0.3.9 — 2026-07-23
 ### Added
 - Device grouping: assign devices to rooms/categories via group field
