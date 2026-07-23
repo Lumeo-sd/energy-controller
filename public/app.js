@@ -66,7 +66,10 @@ async function loadNotifications(){
       con.innerHTML='<div class="notif-empty">No notifications</div>';
       return;
     }
-    var html='<div class="notif-group-header">Latest</div>';
+    var html='<div style="display:flex;gap:.4rem;padding:.4rem .6rem">';
+    html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markAllRead()" style="flex:1"><i class="bi bi-check-all"></i> Read all</button>';
+    html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()" style="flex:1"><i class="bi bi-trash3"></i> Dismiss all</button></div>';
+    html+='<div class="notif-group-header">Latest</div>';
     var groups={};
     for(var i=0;i<list.length;i++){
       var n=list[i];
@@ -81,20 +84,30 @@ async function loadNotifications(){
       var first=items[0];
       var groupUnread=items.some(function(x){return !x.read;});
       if(items.length>1){
-        html+='<div class="notif-item'+(groupUnread?' unread':'')+'">';
+        html+='<div class="notif-item'+(groupUnread?' unread':'')+'" onclick="toggleNotifGroup(this)" style="cursor:pointer">';
+        html+='<span class="notif-expand-icon" style="flex-shrink:0;width:16px;text-align:center;font-size:.6rem;color:var(--muted);margin-top:6px"><i class="bi bi-chevron-right"></i></span>';
         html+='<div class="notif-icon '+(first.type||'info')+'">'+(first.type==='error'?'!':first.type==='warn'?'\u26a0':'\u2713')+'</div>';
         html+='<div class="notif-body">';
         html+='<div class="notif-title">'+_esc(first.title)+'</div>';
         html+='<div class="notif-msg">'+items.length+'x</div>';
         html+='<div class="notif-time">'+new Date(first.time).toLocaleString()+'</div>';
         html+='</div>';
-        var uc=items.filter(function(x){return !x.read;}).length;if(uc)html+='<div class="notif-count-badge" style="background:var(--primary);color:#000;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:700;line-height:18px;min-width:18px;text-align:center;margin-top:4px;flex-shrink:0">'+uc+'</div>';
+        var gucid=items.filter(function(x){return !x.read;}).length;if(gucid)html+='<div class="notif-count-badge" style="background:var(--primary);color:#000;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:700;line-height:18px;min-width:18px;text-align:center;margin-top:4px;flex-shrink:0">'+gucid+'</div>';
         html+='<div class="notif-actions">';
-        if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="markNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
-        html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="dismissNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
+        if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="event.stopPropagation();markNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
+        html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="event.stopPropagation();dismissNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
+        html+='</div>';
+        html+='<div class="notif-sub-list" style="display:none;width:100%;padding-top:4px;border-top:1px solid rgba(255,255,255,.05);margin-top:4px">';
+        for(var si=0;si<items.length;si++){
+          var sn=items[si];
+          html+='<div class="notif-sub-item'+(sn.read?'':' notif-sub-unread')+'">';
+          html+='<div class="notif-sub-time">'+new Date(sn.time).toLocaleString()+'</div>';
+          html+=(sn.message?'<div class="notif-sub-msg">'+_esc(sn.message)+'</div>':'');
+          html+='</div>';
+        }
         html+='</div>';
         html+='</div>';
-      }else{
+      }else{      }else{
         html+='<div class="notif-item'+(groupUnread?' unread':'')+'">';
         html+='<div class="notif-icon '+(first.type||'info')+'">'+(first.type==='error'?'!':first.type==='warn'?'\u26a0':'\u2713')+'</div>';
         html+='<div class="notif-body">';
@@ -114,10 +127,19 @@ async function loadNotifications(){
 }
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function _escAttr(s){return _esc(s).replace(/"/g,'&quot;');}
+function toggleNotifGroup(el){
+  var icon=el.querySelector('.notif-expand-icon i');
+  var sub=el.querySelector('.notif-sub-list');
+  if(!sub)return;
+  var expanded=sub.style.display!='none';
+  sub.style.display=expanded?'none':'block';
+  if(icon)icon.className=expanded?'bi bi-chevron-right':'bi bi-chevron-down';
+}
 async function dismissNotifGroup(title,type){try{await apiPost('/api/notifications/dismiss',{title:title,type:type||'info'});loadNotifications();}catch(e){}}
 async function markNotifGroup(title,type){try{await apiPost('/api/notifications/mark-read',{title:title,type:type||'info'});loadNotifications();}catch(e){}}
 async function dismissAllNotif(){try{await apiPost('/api/notifications/dismiss-all',{});loadNotifications();}catch(e){}}
 async function markAllRead(){try{await apiPost('/api/notifications/mark-read',{});loadNotifications();}catch(e){}}
+
 function handleAuthStatus(r){if(r.status===401){window.location.href='/login';throw new Error('Unauthorized');}return r;}
 async function apiGet(p){const r=handleAuthStatus(await fetch(p));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 async function apiPost(p,b){const h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=handleAuthStatus(await fetch(p,{method:'POST',headers:h,body:JSON.stringify(b)}));if(!r.ok){let msg='HTTP '+r.status;try{const e=await r.json();if(e.message)msg=e.message;}catch{}throw new Error(msg);}return r.json();}
