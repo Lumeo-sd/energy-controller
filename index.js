@@ -29,6 +29,7 @@ const DEVICES_FILE = path.join(DATA_DIR, 'devices.json');
 const CERT_FILE = path.join(DATA_DIR, 'cert.pem');
 const KEY_FILE = path.join(DATA_DIR, 'key.pem');
 const SECRET_FILE = path.join(DATA_DIR, 'secret.key');
+const NOTIF_FILE = path.join(DATA_DIR, 'notifications.json');
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -473,6 +474,7 @@ function tuyaRequest(method, urlPath, body, token, cfg) {
 let inverter = null;
 let _pollingInverter = false;
 let _inverterConsecutiveFails = 0;
+let _lastResolveAttempt = 0;
 let inverterData = {
   gridPower: false,
   gridRaw: 0,
@@ -506,11 +508,127 @@ async function connectToInverter() {
       { port: inv.port || 8899, autoReconnect: true }
     );
     await inverter.connect();
+    // Auto-capture MAC on success
+    if (inv.autoResolve && !inv.mac) {
+      try {
+        const arp = fs.readFileSync("/proc/net/arp", "utf8");
+        const lines = arp.split("\n").slice(1);
+        for (const l of lines) {
+          const parts = l.trim().split(/\s+/);
+          if (parts.length >= 4 && parts[0] === inv.ip && normalizeMAC(parts[3]) !== '000000000000') {
+            const mac = parts[3];
+            const cfg2 = await loadConfig();
+            cfg2.inverter = cfg2.inverter || {};
+            cfg2.inverter.mac = mac;
+            await saveConfig(cfg2);
+            log.info("Inverter MAC captured: " + mac);
+            break;
+          }
+        }
+      } catch (e) { log.warn("MAC capture failed: " + e.message); }
+    }
     log.info('Connected to inverter at ' + inv.ip);
     return true;
   } catch (err) {
+    if (err.message && err.message.includes("EHOSTUNREACH") && inv.autoResolve && inv.mac && _inverterConsecutiveFails >= (inv.resolveAfterFails || 10)) {
+      const nowish = Date.now();
+      if (nowish - _lastResolveAttempt < 60000) {
+        log.warn("Inverter unreachable — last resolve was " + ((nowish - _lastResolveAttempt) / 1000).toFixed(0) + "s ago, skipping");
+        log.error('Failed to connect to inverter: ' + err.message);
+        return false;
+      }
+      _lastResolveAttempt = nowish;
+      pushNotification("Inverter", "Connection lost — scanning network for new IP...", "warn");
+      log.info("Inverter unreachable, attempting MAC resolution...");
+      const resolved = await resolveInverterIP(inv.mac, inv.ip);
+      if (resolved && resolved !== inv.ip) {
+        const cfg2 = await loadConfig();
+        cfg2.inverter.ip = resolved;
+        await saveConfig(cfg2);
+        log.info("Inverter IP updated: " + inv.ip + " -> " + resolved);
+        pushNotification("Inverter", "IP changed to " + resolved + " — reconnected", "info");
+        return await connectToInverter();
+      } else if (resolved === inv.ip) {
+        log.info("Inverter found at " + resolved + " — waiting for next poll cycle");
+      } else {
+        pushNotification("Inverter", "Auto-resolve failed — MAC not found on network", "error");
+      }
+    }
     log.error('Failed to connect to inverter: ' + err.message);
     return false;
+  }
+}
+
+function normalizeMAC(m) {
+  if (!m) return '';
+  return m.toLowerCase().replace(/[^a-f0-9]/g, '');
+}
+
+async function resolveInverterIP(mac, fallbackIp) {
+  try {
+    // Check ARP table first
+    const arp = fs.readFileSync("/proc/net/arp", "utf8");
+    const lines = arp.split("\n").slice(1);
+    for (const l of lines) {
+      const parts = l.trim().split(/\s+/);
+      if (parts.length >= 4 && normalizeMAC(parts[3]) === normalizeMAC(mac)) {
+        const candidate = parts[0];
+        // Quick TCP check: is port 8899 actually reachable?
+        try {
+          const sock = new net.Socket();
+          const ok = await new Promise(r => {
+            sock.connect(8899, candidate, () => { sock.destroy(); r(true); });
+            sock.on('error', () => { sock.destroy(); r(false); });
+            setTimeout(() => { sock.destroy(); r(false); }, 2000);
+          });
+          if (ok) { log.info("Inverter found in ARP: " + candidate); return candidate; }
+          // Stale ARP — flush and continue to ping sweep
+          log.warn("Inverter ARP stale for " + candidate + " — flushing");
+          try { exec("ip neigh del " + candidate + " dev wlan0"); } catch {}
+        } catch {}
+      }
+    }
+    // Ping sweep
+    const prefix = fallbackIp.substring(0, fallbackIp.lastIndexOf(".") + 1);
+    log.info("Scanning subnet " + prefix + "0/24 for " + mac + "...");
+
+    const batchSize = 20;
+    const allIps = [];
+    for (let i = 1; i <= 254; i += batchSize) {
+      const batch = [];
+      for (let j = 0; j < batchSize && i + j <= 254; j++) {
+        batch.push(prefix + (i + j));
+      }
+      await Promise.all(batch.map(ip => new Promise(r => {
+        const p = exec("ping -c 1 -W 1 " + ip, { timeout: 2000 }, () => r());
+        p.on("error", () => r());
+        setTimeout(() => r(), 2000);
+      })));
+    }
+    // Re-check ARP after sweep
+    const arp2 = fs.readFileSync("/proc/net/arp", "utf8");
+    for (const l of arp2.split("\n").slice(1)) {
+      const parts = l.trim().split(/\s+/);
+      if (parts.length >= 4 && normalizeMAC(parts[3]) === normalizeMAC(mac)) {
+        const candidate = parts[0];
+        try {
+          const sock = new net.Socket();
+          const ok = await new Promise(r => {
+            sock.connect(8899, candidate, () => { sock.destroy(); r(true); });
+            sock.on('error', () => { sock.destroy(); r(false); });
+            setTimeout(() => { sock.destroy(); r(false); }, 2000);
+          });
+          if (ok) { log.info("Inverter found after scan: " + candidate); return candidate; }
+          log.warn("Inverter ARP stale for " + candidate + " after ping sweep");
+          try { exec("ip neigh del " + candidate + " dev wlan0"); } catch {}
+        } catch {}
+      }
+    }
+    log.warn("Inverter MAC " + mac + " not found on network");
+    return null;
+  } catch (e) {
+    log.error("resolveInverterIP failed: " + e.message);
+    return null;
   }
 }
 
@@ -1229,7 +1347,7 @@ async function loadConfig() {
     log.error('Failed to load config: ' + err.message);
   }
   return {
-    inverter: { ip: '', serial: '', port: 8899 },
+    inverter: { ip: '', serial: '', port: 8899, mac: '', autoResolve: false, resolveAfterFails: 10 },
     tuya: { accessId: '', accessKey: '', countryCode: 48, username: '', password: '', appSchema: 'tuyaSmart' },
     webPort: 8583,
     notifications: { notifEnabled: true, ntfyEnabled: true, ntfyNotifEnabled: true, ntfyTopic: '', telegramEnabled: true, telegramNotifEnabled: true, telegramToken: '', telegramChatId: '', lowSocAlert: 20, connTimeout: 10, gridOutageReport: true },
@@ -1442,6 +1560,8 @@ async function saveScenes() {
   }
 }
 
+function deviceName(id) { const d = tuyaDevices.find(x => x.id === id); return d ? d.name : id; }
+
 async function checkScenes() {
   if (_checkingScenes) return;
   if (!tuyaDevices.length) return;
@@ -1480,21 +1600,7 @@ async function checkScenes() {
       const conditionsMet = logic === 'AND' ? condResults.every(Boolean) : condResults.some(Boolean);
 
       for (const action of scene.then.actions) {
-        if (action.type === 'notify') {
-          const key = scene.name + ':notify:' + (action.title || 'notify');
-          let nstate = sceneTimers[key];
-          if (!nstate) { nstate = { active: false, appliedAt: 0, revertedAt: 0 }; sceneTimers[key] = nstate; }
-          if (conditionsMet && !nstate.active) {
-            try {
-              await sendNotification(action.title || scene.name, action.message || ('Automation "' + scene.name + '" triggered'));
-              pushSceneTrace(scene.name, 'notify', action.title || action.message || 'sent');
-            } catch (err) { pushSceneTrace(scene.name, 'notify:error', err.message); }
-            nstate.active = true; nstate.appliedAt = now;
-          } else if (!conditionsMet && nstate.active) {
-            nstate.active = false; nstate.revertedAt = now;
-          }
-          continue;
-        }
+
         const key = scene.name + ':' + action.device;
         let state = sceneTimers[key];
         if (!state) {
@@ -1509,9 +1615,10 @@ async function checkScenes() {
             if (hasDuration && now - state.appliedAt >= action.duration * 60000) {
               try {
                 await controlDevice(action.device, !action.value);
-                log.info('Scene "' + scene.name + '" reverted ' + action.device + ' after ' + action.duration + 'min');
+                log.info('Scene "' + scene.name + '" reverted ' + deviceName(action.device) + ' after ' + action.duration + 'min');
+                pushNotification('Automation "' + scene.name + '"', deviceName(action.device) + ' = ' + (!action.value ? 'ON' : 'OFF') + ' (timeout ' + action.duration + 'min)', 'info');
                 pushSceneTrace(scene.name, 'revert (timeout)', action.device + '=' + (!action.value ? 'ON' : 'OFF'));
-              } catch (err) { log.error('Scene revert failed: ' + err.message); pushSceneTrace(scene.name, 'revert:error', err.message); }
+              } catch (err) { log.error('Scene revert failed: ' + err.message); pushNotification('Automation "' + scene.name + '"', 'Revert failed: ' + err.message, 'error'); pushSceneTrace(scene.name, 'revert:error', err.message); }
               state.active = false;
               state.revertedAt = now;
             }
@@ -1521,9 +1628,10 @@ async function checkScenes() {
             if (elapsedSinceRevert >= intervalMs) {
               try {
                 await controlDevice(action.device, action.value);
-                log.info('Scene "' + scene.name + '" applied ' + action.device + ' = ' + (action.value ? 'ON' : 'OFF'));
+                log.info('Scene "' + scene.name + '" applied ' + deviceName(action.device) + ' = ' + (action.value ? 'ON' : 'OFF'));
+                pushNotification('Automation "' + scene.name + '"', deviceName(action.device) + ' = ' + (action.value ? 'ON' : 'OFF'), 'info');
                 pushSceneTrace(scene.name, 'apply', action.device + '=' + (action.value ? 'ON' : 'OFF'));
-              } catch (err) { log.error('Scene action failed: ' + err.message); pushSceneTrace(scene.name, 'apply:error', err.message); }
+              } catch (err) { log.error('Scene action failed: ' + err.message); pushNotification('Automation "' + scene.name + '"', 'Failed: ' + err.message, 'error'); pushSceneTrace(scene.name, 'apply:error', err.message); }
               state.active = true;
               state.appliedAt = now;
             }
@@ -1533,8 +1641,9 @@ async function checkScenes() {
               try {
                 await controlDevice(action.device, !action.value);
                 log.info('Scene "' + scene.name + '" reverted (conditions changed)');
+                pushNotification('Automation "' + scene.name + '"', deviceName(action.device) + ' = ' + (!action.value ? 'ON' : 'OFF') + ' (conditions changed)', 'info');
                 pushSceneTrace(scene.name, 'revert (conditions)', action.device + '=' + (!action.value ? 'ON' : 'OFF'));
-              } catch (err) { log.error('Scene revert failed: ' + err.message); pushSceneTrace(scene.name, 'revert:error', err.message); }
+              } catch (err) { log.error('Scene revert failed: ' + err.message); pushNotification('Automation "' + scene.name + '"', 'Revert failed: ' + err.message, 'error'); pushSceneTrace(scene.name, 'revert:error', err.message); }
             state.active = false;
             state.revertedAt = now;
           }
@@ -1834,6 +1943,28 @@ route('GET', '/api/plugin-config', async (req, res) => {
 });
 
 // Plugin config POST
+route('POST', '/api/inverter/scan', async (req, res) => {
+  try {
+    const cfg = await loadConfig();
+    const inv = cfg.inverter || {};
+    if (!inv.mac) return sendJson(res, 400, { success: false, message: "MAC not configured" });
+    const found = await resolveInverterIP(inv.mac, inv.ip);
+    if (found) {
+      if (found !== inv.ip) {
+        cfg.inverter.ip = found;
+        await saveConfig(cfg);
+        log.info("Inverter scan: IP updated " + inv.ip + " -> " + found);
+        if (inverter) try { await inverter.disconnect(); } catch {}
+        inverter = null;
+      }
+      sendJson(res, 200, { success: true, ip: found, updated: found !== inv.ip });
+    } else {
+      sendJson(res, 200, { success: false, message: "Inverter not found on network" });
+    }
+  } catch (e) {
+    sendJson(res, 500, { success: false, message: e.message });
+  }
+});
 route('GET', '/api/notifications', async (req, res) => {
   sendJson(res, 200, { success: true, notifications: _notifHistory.filter(n => !n.dismissed).reverse() });
 });
@@ -1842,11 +1973,13 @@ route('POST', '/api/notifications/dismiss', async (req, res) => {
     const b = req.body;
     const n = _notifHistory.find(x => x.id === b.id);
     if (n) n.dismissed = true;
+    saveNotifHistory();
     sendJson(res, 200, { success: true });
   } catch (e) { sendJson(res, 400, { success: false, message: e.message }); }
 });
 route('POST', '/api/notifications/dismiss-all', async (req, res) => {
   _notifHistory.forEach(n => n.dismissed = true);
+  saveNotifHistory();
   sendJson(res, 200, { success: true });
 });
 route('POST', '/api/notifications/add', async (req, res) => {
@@ -1914,12 +2047,16 @@ route('POST', '/api/plugin-config', async (req, res) => {
   }
 });
 
-// Notifications — send via ntfy.sh and/or Telegram
+// Notifications — add to history + send via ntfy.sh and/or Telegram
 async function sendNotification(title, message, critical) {
+  pushNotification(title, message, critical ? 'error' : 'info');
+}
+
+// Notifications — send via ntfy.sh and/or Telegram only
+async function _sendExtNotification(title, message, critical) {
   try {
     const cfg = await loadConfig();
     const n = cfg.notifications || {};
-    pushNotification(title, message, critical ? 'error' : 'info');
     if (n.criticalEnabled === false && critical) return [];
     if (n.notifEnabled === false) return [];
     const results = [];
@@ -1968,12 +2105,21 @@ async function sendNotification(title, message, critical) {
 }
 
 // In-app notification history
-const _notifHistory = [];
-let _notifId = 0;
+let _notifHistory = [];
+try {
+  _notifHistory = JSON.parse(fs.readFileSync(NOTIF_FILE, 'utf8'));
+} catch { _notifHistory = []; }
+let _notifId = _notifHistory.reduce((max, n) => Math.max(max, n.id || 0), 0);
 function pushNotification(title, message, type) {
   const id = ++_notifId;
   _notifHistory.push({ id, title, message, type: type || 'info', time: Date.now(), dismissed: false });
   if (_notifHistory.length > 200) _notifHistory.shift();
+  saveNotifHistory();
+  // Fire-and-forget external send (ntfy, telegram)
+  _sendExtNotification(title, message, (type || 'info') === 'error').catch(function noop() {});
+}
+function saveNotifHistory() {
+  try { fs.writeFileSync(NOTIF_FILE, JSON.stringify(_notifHistory)); } catch {}
 }
 
 route('GET', '/api/netbird/status', async (req, res) => {
@@ -2092,16 +2238,12 @@ route('POST', '/api/scenes/:name/run', async (req, res) => {
   const results = [];
   for (const action of (scene.then && scene.then.actions) || []) {
     try {
-      if (action.type === 'notify') {
-        await sendNotification(action.title || scene.name, action.message || ('Manually triggered: ' + scene.name));
-        pushSceneTrace(scene.name, 'notify (manual)', action.title || action.message || 'sent');
-        results.push({ ok: true, action: 'notify' });
-      } else {
         await controlDevice(action.device, action.value);
+        pushNotification('Automation "' + scene.name + '" (manual)', deviceName(action.device) + ' = ' + (action.value ? 'ON' : 'OFF'), 'info');
         pushSceneTrace(scene.name, 'apply (manual)', action.device + '=' + (action.value ? 'ON' : 'OFF'));
         results.push({ ok: true, action: action.device });
-      }
     } catch (err) {
+      pushNotification('Automation "' + scene.name + '" (manual)', 'Failed: ' + err.message, 'error');
       pushSceneTrace(scene.name, 'apply:error (manual)', err.message);
       results.push({ ok: false, action: action.device || 'notify', error: err.message });
     }
@@ -2716,11 +2858,11 @@ function getWebUI() {
   --success:#30d158;
   --danger:#ff453a;
   --blue:#0a84ff;
-  --sidebar-e:250px;
+  --sidebar-e:270px;
   --radius-lg:20px;
   --radius-md:14px;
   --radius-sm:10px;
-  --tabbar-h:56px;
+  --tabbar-h:52px;
   --safe-t:env(safe-area-inset-top,0px);
   --safe-b:env(safe-area-inset-bottom,0px);
   --safe-l:env(safe-area-inset-left,0px);
@@ -2751,10 +2893,10 @@ a{color:inherit}
 .sidebar-brand .brand-version{font-size:.68rem;color:var(--muted);margin-left:auto}
 .sidebar-menu{flex:1;list-style:none;padding:0 .4rem;margin:0;overflow:hidden}
 .sidebar-menu-bottom{position:absolute;bottom:0;left:0;right:0;padding:.4rem .4rem 0;list-style:none;border-top:.5px solid var(--separator)}
-.menu-item{padding:.65rem .7rem;margin:.15rem 0;display:flex;align-items:center;gap:.75rem;color:var(--muted);
+.menu-item{position:relative;padding:.65rem .7rem;margin:.15rem 0;display:flex;align-items:center;gap:.75rem;color:var(--muted);
   cursor:pointer;font-size:.92rem;white-space:nowrap;border-radius:var(--radius-sm);transition:background .15s,color .15s}
 .menu-item:hover{color:var(--text);background:rgba(255,255,255,.06)}
-.menu-item.active{color:var(--text);background:rgba(191,90,242,.16)}
+.menu-item.active{color:var(--text)}.menu-item.active::before{content:'';position:absolute;left:.2rem;right:.2rem;top:.08rem;bottom:.08rem;border-radius:12px;background:rgba(191,90,242,.18);pointer-events:none}
 .menu-item.active i{color:var(--primary)}
 .menu-item i{font-size:1.25rem;width:1.6rem;text-align:center;flex-shrink:0;color:var(--muted)}
 .menu-item .badge-hb{margin-left:auto}
@@ -2867,11 +3009,11 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .entity-card:active{transform:scale(.98)}
 .device-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.9rem;align-items:start}
 .device-card{padding:1.1rem}
-.device-card.is-on{border-color:rgba(48,209,88,.4)}
+.device-card.is-on{border-color:rgba(48,209,88,.2)}
 .device-card-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem}
 .device-icon{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:background .2s,box-shadow .2s}
-.device-icon.on{background:var(--success);box-shadow:0 0 8px rgba(48,209,88,.7)}
-.device-icon.off{background:var(--danger);box-shadow:0 0 6px rgba(255,69,58,.5)}
+.device-icon.on{background:rgba(48,209,88,.55);box-shadow:0 0 6px rgba(48,209,88,.35)}
+.device-icon.off{background:rgba(255,69,58,.55);box-shadow:0 0 4px rgba(255,69,58,.3)}
 .device-icon.unknown{background:var(--muted)}
 .device-icon.pulse{animation:iconPulse .6s ease}
 @keyframes iconPulse{0%{transform:scale(1)}50%{transform:scale(1.8)}100%{transform:scale(1)}}
@@ -2883,9 +3025,9 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   min-height:40px;transition:background .15s,color .15s,transform .1s}
 .device-toggle-btn:active{transform:scale(.96)}
 .device-toggle-btn.on{background:rgba(255,255,255,.06);color:var(--muted);border:.5px solid var(--border)}
-.device-toggle-btn.on.active{background:var(--success);color:#04220c;border-color:var(--success)}
+.device-toggle-btn.on.active{background:rgba(48,209,88,.2);color:#30d158;border-color:rgba(48,209,88,.3)}
 .device-toggle-btn.off{background:rgba(255,255,255,.06);color:var(--muted);border:.5px solid var(--border)}
-.device-toggle-btn.off.active{background:var(--danger);color:#fff;border-color:var(--danger)}
+.device-toggle-btn.off.active{background:rgba(255,69,58,.2);color:#ff6a60;border-color:rgba(255,69,58,.3)}
 .automation-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.9rem;align-items:start}
 .automation-card{padding:1.1rem}
 .automation-card.is-active{border-color:rgba(48,209,88,.4)}
@@ -2996,21 +3138,23 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 @media(max-width:768px){
   .mobile-only{display:block}
   body{display:block;overflow-x:hidden}
-  .sidebar,.sidebar.open{top:auto;bottom:0;left:0;width:100%;height:auto;overflow:visible;transform:none;
-    padding:.35rem 0 calc(.35rem + var(--safe-b));
-    flex-direction:row;align-items:stretch;justify-content:space-around;
-    border-right:none;border-top:.5px solid var(--separator);
-    background:rgba(20,20,22,.82);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px)}
+  .sidebar,.sidebar.open{top:auto;bottom:max(.6rem,env(safe-area-inset-bottom,0px));left:.4rem;right:.4rem;width:auto;height:auto;overflow:visible;transform:none;
+    padding:.35rem .2rem .35rem;
+    flex-direction:row;align-items:center;justify-content:space-evenly;gap:0;
+    border-right:none;border-top:none;border-radius:22px;
+    background:rgba(22,22,26,.72);-webkit-backdrop-filter:saturate(180%) blur(50px);backdrop-filter:saturate(180%) blur(50px);
+    box-shadow:0 0 20px rgba(0,0,0,.5)}
   .sidebar-brand,.sidebar-toggle{display:none}
-  .sidebar-menu,.sidebar-menu-bottom{display:flex;flex-direction:row;justify-content:space-around;align-items:stretch;flex:1;padding:0;overflow:visible}
-  .menu-item{flex-direction:column;justify-content:center;align-items:center;gap:.15rem;padding:.3rem .4rem;
-    margin:0;border-radius:var(--radius-sm);flex:1;min-width:0;background:none!important}
+  .sidebar-menu,.sidebar-menu-bottom{display:contents}
+  .menu-item{flex-direction:column;justify-content:center;align-items:center;gap:.12rem;padding:.22rem .15rem .28rem;
+    margin:0;flex:0 1 auto;min-width:44px;background:none!important;position:relative;transition:opacity .2s}
   .menu-item.active{background:none!important}
-  .menu-item i{font-size:1.4rem;width:auto}
-  .menu-item span:not(.badge-hb){opacity:1;font-size:.66rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  .menu-item .badge-hb{opacity:1;position:absolute;margin-left:0;transform:translate(10px,-14px);padding:.05rem .4rem;font-size:.55rem}
-  .menu-item{position:relative}
-  .main,.sidebar.open~.main{margin-left:0;max-width:100%;padding:calc(1rem + var(--safe-t)) 1rem calc(var(--tabbar-h) + var(--safe-b) + 1.5rem)}
+  .menu-item.active i{color:var(--primary)}
+  .menu-item i{font-size:1.25rem;width:auto;position:relative;z-index:1}
+  .menu-item span:not(.badge-hb){opacity:.6;font-size:.55rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.1}
+  .menu-item .badge-hb{opacity:1;position:absolute;margin-left:0;transform:translate(11px,-12px);padding:.03rem .32rem;font-size:.45rem;z-index:2}
+  .menu-item.active::before{content:'';position:absolute;top:.05rem;left:50%;transform:translateX(-50%);width:100%;max-width:74px;height:46px;border-radius:23px;background:rgba(191,90,242,.18);pointer-events:none}
+  .main,.sidebar.open~.main{margin-left:0;max-width:100%;padding:calc(1rem + var(--safe-t)) 1rem calc(var(--tabbar-h) + var(--safe-b) + 1.2rem)}
   .page-header{position:sticky;top:calc(-1rem - var(--safe-t));margin:calc(-1rem - var(--safe-t)) -1rem 1rem;
     padding:calc(.85rem + var(--safe-t)) 1rem .85rem;z-index:50;
     background:rgba(0,0,0,.65);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
@@ -3035,7 +3179,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   .item-actions{width:100%;justify-content:flex-start;margin-left:0}
   .device-controls{width:100%}
   .device-controls .btn-hb{flex:1}
-  .hb-toast{left:1rem;right:1rem;bottom:calc(var(--tabbar-h) + var(--safe-b) + 1rem);max-width:none}
+  .hb-toast{left:1rem;right:1rem;bottom:calc(var(--tabbar-h) + var(--safe-b) + 1.2rem);max-width:none}
   .btn-hb-primary.w-100{position:sticky;bottom:0}
 }
 @media(max-width:380px){
@@ -3048,10 +3192,11 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   .device-toggle-btn{padding:.4rem .5rem;font-size:.7rem}
 }
 @media (hover:none) and (pointer:coarse) and (min-width:769px){
-  .sidebar.open{width:210px;padding-top:calc(.5rem + var(--safe-t));padding-left:var(--safe-l)}
-  .main,.sidebar.open~.main{margin-left:210px;max-width:calc(100% - 210px);padding:calc(1.25rem + var(--safe-t)) 1.5rem 1.5rem}
+  .sidebar.open{width:260px;padding-top:calc(.5rem + var(--safe-t));padding-left:var(--safe-l)}
+  .main,.sidebar.open~.main{margin-left:260px;max-width:calc(100% - 260px);padding:calc(1.25rem + var(--safe-t)) 1.5rem 1.5rem}
   .device-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
   .rule-row .rule-field{min-width:160px}
+  .menu-item.active::before{left:.3rem;right:.3rem;top:.1rem;bottom:.1rem;border-radius:14px;background:rgba(191,90,242,.22)}
 }
 @media (hover:none) and (pointer:coarse) and (min-width:1080px){
   .device-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
@@ -3213,6 +3358,11 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Inverter IP</label><input type="text" id="cfg-inverter-ip" class="form-hb" placeholder="192.168.0.116" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Serial Number</label><input type="text" id="cfg-inverter-serial" class="form-hb" placeholder="2317564280" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Modbus Port</label><input type="number" id="cfg-inverter-port" class="form-hb" value="8899" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">MAC Address</label><input type="text" id="cfg-inverter-mac" class="form-hb" placeholder="72:4F:56:8E:BB:40" style="text-transform:uppercase" /></div>
+<div class="mb-3" style="display:flex;align-items:center;gap:.5rem"><input type="checkbox" id="cfg-inverter-autoResolve" style="accent-color:var(--primary);width:16px;height:16px" /><label class="text-muted-hb" style="font-size:.8rem;cursor:pointer" for="cfg-inverter-autoResolve">Auto-resolve IP when offline (uses ping sweep)</label></div>
+<div class="mb-3" id="resolveAfterFails-row" style="display:none"><label class="text-muted-hb" style="font-size:.8rem">Consecutive fails to trigger resolve</label><input type="number" id="cfg-inverter-resolveAfterFails" class="form-hb" value="10" min="3" max="100" /></div>
+<script>document.getElementById('cfg-inverter-autoResolve').addEventListener('change',function(){document.getElementById('resolveAfterFails-row').style.display=this.checked?'block':'none';});<\/script>
+<div style="margin-top:.5rem"><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="scanInverterNetwork()" id="btn-scan-inv"><i class="bi bi-wifi"></i> Scan Network</button><span id="scan-status" style="margin-left:.5rem;font-size:.75rem;color:var(--muted)"></span></div>
 </div>
 </div>
 <div class="hb-card collapsed" style="margin-top:1rem">
@@ -3626,7 +3776,7 @@ if(type==='tuya'){
 var opts=tuyaDevices.map(function(d){return '<option value="'+escHtml(d.id)+'">'+escHtml(d.name)+'</option>';}).join('');
 body='<select class="chip-select action-device"><option value="">\u2014 device \u2014</option>'+opts+'</select><select class="chip-select action-value"><option value="true">turn ON</option><option value="false">turn OFF</option></select><details class="advanced-fields"><summary><i class="bi bi-chevron-right"></i> duration / interval <span class="text-muted-hb" style="font-weight:400;font-size:.75rem">(optional)</span></summary><div style="display:flex;gap:.5rem;margin-top:.3rem"><input type="number" class="chip-input action-duration" placeholder="min" min="0" style="width:70px" /><input type="number" class="chip-input action-interval" placeholder="min" min="0" style="width:70px" /></div></details>';
 }else{
-body='<div class="action-notify"><i class="bi bi-bell-fill" style="color:var(--primary-light);flex-shrink:0"></i><input type="text" class="chip-input action-title" placeholder="Title" style="flex:1" /><input type="text" class="chip-input action-message" placeholder="Message" style="flex:1" /></div>';
+
 }
 body+='<button class="rule-remove-x btn-hb btn-hb-sm btn-hb-icon btn-hb-outline" onclick="this.closest(\\'.rule-sentence\\').remove();renderAutomationSummary()"><i class="bi bi-x"></i></button>';
 r.innerHTML=body;
@@ -3662,7 +3812,6 @@ var actionParts=[];
 document.querySelectorAll('#then-actions > .rule-sentence').forEach(function(r){
 var type=r.dataset.type;
 if(type==='notify'){
-actionParts.push('notify "'+(r.querySelector('.action-title').value||'\u2026')+'"');
 }else{
 var devSel=r.querySelector('.action-device');
 var dn=devSel.options[devSel.selectedIndex]?devSel.options[devSel.selectedIndex].textContent:'\u2026';
@@ -3684,7 +3833,7 @@ var dd=document.querySelector('.type-dropdown');
 if(dd)dd.remove();
 }
 var CONDITION_TYPES=[{value:'battery',icon:'bi-battery-half',label:'Battery Level'},{value:'grid',icon:'bi-plug-fill',label:'City Grid'},{value:'time',icon:'bi-clock-fill',label:'Time of Day'},{value:'weekday',icon:'bi-calendar-week',label:'Day of Week'},{value:'device_online',icon:'bi-wifi',label:'Device Online'}];
-var ACTION_TYPES=[{value:'tuya',icon:'bi-toggle-on',label:'Device'},{value:'notify',icon:'bi-bell-fill',label:'Notify'}];
+var ACTION_TYPES=[{value:'tuya',icon:'bi-toggle-on',label:'Device'}];
 function openTypeSheet(title,options,onPick,anchor){
 if(window.innerWidth>=770&&anchor){
 var old=document.querySelector('.type-dropdown');
@@ -3943,7 +4092,7 @@ if(!d.success){showToast('Error',d.message||'Failed to load config',true);return
 const c=d.config;
 document.getElementById('cfg-inverter-ip').value=(c.inverter&&c.inverter.ip)||'';
 document.getElementById('cfg-inverter-serial').value=(c.inverter&&c.inverter.serial)||'';
-document.getElementById('cfg-inverter-port').value=(c.inverter&&c.inverter.port)||8899;
+document.getElementById('cfg-inverter-port').value=(c.inverter&&c.inverter.port)||8899;document.getElementById('cfg-inverter-mac').value=(c.inverter&&c.inverter.mac)||'';document.getElementById('cfg-inverter-autoResolve').checked=!!(c.inverter&&c.inverter.autoResolve);document.getElementById('cfg-inverter-resolveAfterFails').value=(c.inverter&&c.inverter.resolveAfterFails)||10;if(document.getElementById('cfg-inverter-autoResolve').checked)document.getElementById('resolveAfterFails-row').style.display='block';
 document.getElementById('cfg-tuya-accessId').value=(c.tuya&&c.tuya.accessId)||'';
 document.getElementById('cfg-tuya-accessKey').value=(c.tuya&&c.tuya.accessKey)||'';
 document.getElementById('cfg-tuya-countryCode').value=(c.tuya&&c.tuya.countryCode)||48;
@@ -3984,10 +4133,12 @@ toggleTariffFields();
 
 }catch(e){}
 }
+async function scanInverterNetwork(){const st=document.getElementById('scan-status');const btn=document.getElementById('btn-scan-inv');st.textContent='Scanning...';btn.disabled=true;try{const r=await apiPost('/api/inverter/scan',{});if(r.success){if(r.ip){st.innerHTML='Found: <b>'+r.ip+'</b>'+(r.updated?' (saved, reconnecting...)':'');if(r.updated)setTimeout(()=>{if(window._lastData)loadStatus();},2000);}else st.textContent='Not found';}else st.textContent=r.message||'Failed';}catch(e){st.textContent=e.message;}btn.disabled=false;setTimeout(()=>{st.textContent='';},8000);}
+
 async function savePluginConfig(){
 try{
 const cfg={
-inverter:{ip:document.getElementById('cfg-inverter-ip').value.trim(),serial:document.getElementById('cfg-inverter-serial').value.trim(),port:parseInt(document.getElementById('cfg-inverter-port').value)||8899},
+inverter:{ip:document.getElementById('cfg-inverter-ip').value.trim(),serial:document.getElementById('cfg-inverter-serial').value.trim(),port:parseInt(document.getElementById('cfg-inverter-port').value)||8899,mac:(function(){const r=document.getElementById('cfg-inverter-mac').value.replace(/[^a-fA-F0-9]/g,'').toUpperCase();return r.length===12?r.replace(/(..)/g,'$1:').slice(0,-1):r;})(),autoResolve:document.getElementById('cfg-inverter-autoResolve').checked,resolveAfterFails:parseInt(document.getElementById('cfg-inverter-resolveAfterFails').value)||10},
 tuya:{accessId:document.getElementById('cfg-tuya-accessId').value.trim(),accessKey:document.getElementById('cfg-tuya-accessKey').value,countryCode:parseInt(document.getElementById('cfg-tuya-countryCode').value)||48,username:document.getElementById('cfg-tuya-username').value.trim(),password:document.getElementById('cfg-tuya-password').value,appSchema:document.getElementById('cfg-tuya-appSchema').value},
 webPort:parseInt(document.getElementById('cfg-webPort').value)||8583,
 netbird:{setupKey:document.getElementById('cfg-netbird-setupKey').value,managementUrl:document.getElementById('cfg-netbird-managementUrl').value.trim(),enabled:document.getElementById('cfg-netbird-enabled').checked},
@@ -4454,8 +4605,8 @@ let _gridWasOn=null; let _gridOffSince=null; let _gridOffSoc=null; let _gridOffL
             'Load energy: ~' + loadUsed + ' kWh',
           ].join('\n');
 
-          if (n.ntfyTopic || n.telegramToken) sendNotification('Grid Restored', report, false);
-          log.info('Grid outage ended: ' + hours + 'h' + mins + 'm, SOC ' + _gridOffSoc + '%→' + socNow + '%');pushNotification('Grid Restored', 'Outage ended after ' + hours + 'h ' + mins + 'm, SOC ' + _gridOffSoc + '%→' + socNow + '%', 'info');
+          sendNotification('Grid Restored', report, false);
+          log.info('Grid outage ended: ' + hours + 'h' + mins + 'm, SOC ' + _gridOffSoc + '%→' + socNow + '%');
 
           _gridOffSince = null;
           _gridOffSoc = null;
