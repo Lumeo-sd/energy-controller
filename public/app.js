@@ -56,7 +56,6 @@ async function loadNotifications(){
     if(list.length)_lastNotifId=list[0].id;
     _unreadNotifCount=unread;
     var badElUnread=document.getElementById('sidebar-notif-unread');
-    }
     if(badElUnread){
       badElUnread.textContent=unread;
       badElUnread.style.display=unread?'':'none';
@@ -67,10 +66,7 @@ async function loadNotifications(){
       con.innerHTML='<div class="notif-empty">No notifications</div>';
       return;
     }
-    var html='<div style="display:flex;gap:.4rem;padding:.4rem .6rem">';
-    html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markAllRead()" style="flex:1"><i class="bi bi-check-all"></i> Mark read</button>';
-    html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()" style="flex:1"><i class="bi bi-trash3"></i> Dismiss all</button></div>';
-    html+='<div class="notif-group-header">Latest</div>';
+    var html='<div class="notif-group-header">Latest</div>';
     var groups={};
     for(var i=0;i<list.length;i++){
       var n=list[i];
@@ -83,27 +79,33 @@ async function loadNotifications(){
       var gk=sortedGroups[gi];
       var items=groups[gk];
       var first=items[0];
-      var isUnread=!first.read;
+      var groupUnread=items.some(function(x){return !x.read;});
       if(items.length>1){
-        html+='<div class="notif-item'+(isUnread?' unread':'')+'">';
+        html+='<div class="notif-item'+(groupUnread?' unread':'')+'">';
         html+='<div class="notif-icon '+(first.type||'info')+'">'+(first.type==='error'?'!':first.type==='warn'?'\u26a0':'\u2713')+'</div>';
         html+='<div class="notif-body">';
         html+='<div class="notif-title">'+_esc(first.title)+'</div>';
         html+='<div class="notif-msg">'+items.length+'x</div>';
         html+='<div class="notif-time">'+new Date(first.time).toLocaleString()+'</div>';
         html+='</div>';
-        html+='<div class="notif-count-badge" style="background:var(--primary);color:#000;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:700;line-height:18px;min-width:18px;text-align:center;margin-top:4px;flex-shrink:0">'+items.length+'</div>';
-        html+='<button class="notif-dismiss" onclick="dismissNotif('+first.id+')" title="Dismiss">\u2715</button>';
+        html+='<div class="notif-count-badge" style="background:var(--primary);color:#000;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:700;line-height:18px;min-width:18px;text-align:center;margin-top:4px;flex-shrink:0">'+items.filter(function(x){return !x.read;}).length+'</div>';
+        html+='<div class="notif-actions">';
+        if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
+        html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
+        html+='</div>';
         html+='</div>';
       }else{
-        html+='<div class="notif-item'+(isUnread?' unread':'')+'">';
+        html+='<div class="notif-item'+(groupUnread?' unread':'')+'">';
         html+='<div class="notif-icon '+(first.type||'info')+'">'+(first.type==='error'?'!':first.type==='warn'?'\u26a0':'\u2713')+'</div>';
         html+='<div class="notif-body">';
         html+='<div class="notif-title">'+_esc(first.title)+'</div>';
         html+=(first.message?'<div class="notif-msg">'+_esc(first.message)+'</div>':'');
         html+='<div class="notif-time">'+new Date(first.time).toLocaleString()+'</div>';
         html+='</div>';
-        html+='<button class="notif-dismiss" onclick="dismissNotif('+first.id+')" title="Dismiss">\u2715</button>';
+        html+='<div class="notif-actions">';
+        if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
+        html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
+        html+='</div>';
         html+='</div>';
       }
     }
