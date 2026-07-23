@@ -23,6 +23,7 @@ if(tab==='notifications')loadNotifications();
 });
 });
 function showToast(t,b,e,undoCb,undoLabel){
+  haptic(e?40:10);
   const el=document.getElementById('toast');
   document.getElementById('toastTitle').textContent=t;
   document.getElementById('toastBody').textContent=b;
@@ -198,6 +199,7 @@ if(iconEl){prevClass=iconEl.className;iconEl.className='device-icon '+(value?'on
 }
 const dev=tuyaDevices.find(d=>d.id===id);
 if(dev)dev.switch=value;
+haptic(value?20:15);
 try{
 const r=await apiPost('/api/tuya-control',{deviceId:id,value});
 if(!r.success){showToast('Error',r.message||'Control failed',true);if(iconEl)iconEl.className=prevClass;}
@@ -291,6 +293,7 @@ try{await apiDelete('/api/scenes/'+encodeURIComponent(n));loadScenes();}
 catch(e){showToast('Error',e.message,true);}
 }
 async function runSceneNow(name,btnEl){
+haptic(10);
 if(btnEl)btnEl.disabled=true;
 try{
 const r=await apiPost('/api/scenes/'+encodeURIComponent(name)+'/run',{});
@@ -502,6 +505,7 @@ loadScenes();
 }catch(e){showToast('Error',e.message,true);}
 }
 function escHtml(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function haptic(p){try{if(navigator.vibrate)navigator.vibrate(typeof p==='number'?p:10);}catch(e){}}
 async function logout(){try{await apiPost('/api/logout',{});}catch(e){}window.location.href='/login';}
 function resetRestartOverlay(){const ov=document.getElementById('restartOverlay');ov.classList.remove('show');const sp=ov.querySelector('.restart-spinner');if(sp)sp.style.display='';const ci=ov.querySelector('.check-icon');if(ci)ci.remove();ov.querySelector('h3').innerHTML='Restarting<span class="restart-dots"></span>';ov.querySelector('p').textContent='Waiting for server to come back online';}
 async function restartApp(){
@@ -858,12 +862,12 @@ function applyTileVisibility(){const p=loadTilePrefs();TILE_IDS.forEach(id=>{con
 function applyTileOrder(){const order=loadTileOrder();const c=document.getElementById('tilesContainer');order.forEach(id=>{const el=document.getElementById(id);if(el)c.appendChild(el);});}
 function moveTile(id,dir){const order=loadTileOrder();const idx=order.indexOf(id);if(idx<0)return;const ni=idx+dir;if(ni<0||ni>=order.length)return;[order[idx],order[ni]]=[order[ni],order[idx]];saveTileOrder(order);applyTileOrder();}
 function buildTileEditor(){const p=loadTilePrefs();const order=loadTileOrder();const g=document.getElementById('tileEditGrid');g.innerHTML='';TILE_CATEGORIES.forEach(cat=>{const catTiles=order.filter(id=>{const t=TILE_MAP[id];return t&&t.cat===cat.id;});if(!catTiles.length)return;const hdr=document.createElement('div');hdr.className='tile-edit-cat';hdr.textContent=cat.label;g.appendChild(hdr);catTiles.forEach(id=>{const t=TILE_MAP[id];const lbl=t?t.label:id;const vis=p[id]!==undefined?p[id]:t?t.def:true;const d=document.createElement('label');d.className='tile-edit-item'+(vis?'':' hidden-tile');d.dataset.tile=id;d.innerHTML='<input type="checkbox" '+(vis?'checked':'')+' data-tile="'+id+'">'+lbl+'<div class="tile-edit-arrows"><button type="button" title="Move up" class="tile-arrow-btn" data-dir="-1">\u25B2</button><button type="button" title="Move down" class="tile-arrow-btn" data-dir="1">\u25BC</button></div>';d.querySelector('input').addEventListener('change',function(){const pp=loadTilePrefs();pp[this.dataset.tile]=this.checked;saveTilePrefs(pp);d.classList.toggle('hidden-tile',!this.checked);applyTileVisibility();});d.querySelectorAll('.tile-arrow-btn').forEach(btn=>{btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();moveTile(id,parseInt(this.dataset.dir));buildTileEditor();});});g.appendChild(d);});});}
-// Pull-to-refresh
-let _pullStart=0,_pulling=false;
+// Pull-to-refresh (improved with haptic)
+let _pullStart=0,_pulling=false,_pullTriggered=false,_swipeStartX=0,_swipeStartY=0,_swiping=false;
 const _pullEl=document.getElementById('pull-indicator');
 const _pullIcon=_pullEl?_pullEl.querySelector('i'):null;
 const mainEl=document.querySelector('.main');
-if(mainEl){mainEl.addEventListener('touchstart',function(e){if(mainEl.scrollTop<=0){_pullStart=e.touches[0].clientY;_pulling=true;}},{passive:true});mainEl.addEventListener('touchmove',function(e){if(!_pulling)return;const dy=e.touches[0].clientY-_pullStart;if(dy>0&&mainEl.scrollTop<=0){const pct=Math.min(dy/100,1);_pullEl.classList.add('show');_pullIcon.style.transform='rotate('+pct*180+'deg)';if(pct>=1){_pullEl.classList.add('pulling');}}},{passive:true});mainEl.addEventListener('touchend',function(){if(!_pulling)return;_pulling=false;if(_pullEl.classList.contains('pulling')){_pullEl.classList.remove('pulling');_pullEl.classList.add('refreshing');_pullIcon.className='bi bi-arrow-clockwise';loadStatus();loadLogs();loadHistory();loadSocketHistory();loadOtherHistory();loadTuyaDevices();loadScenes();loadPluginConfig();loadAppVersion();setTimeout(()=>{_pullEl.classList.remove('show','refreshing');_pullIcon.className='bi bi-arrow-down';},800);}else{_pullEl.classList.remove('show','pulling');}},{passive:true});}
+if(mainEl){mainEl.addEventListener('touchstart',function(e){_pullStart=e.touches[0].clientY;_swipeStartX=e.touches[0].clientX;_swipeStartY=e.touches[0].clientY;_pulling=mainEl.scrollTop<=0;_pullTriggered=false;_swiping=false;},{passive:true});mainEl.addEventListener('touchmove',function(e){const dy=e.touches[0].clientY-_pullStart;const dx=e.touches[0].clientX-_swipeStartX;if(_pulling&&dy>0&&mainEl.scrollTop<=0){const pct=Math.min(dy/100,1);_pullEl.classList.add('show');_pullIcon.style.transform='rotate('+pct*180+'deg)';if(pct>=1){if(!_pullTriggered){_pullTriggered=true;haptic(15);}_pullEl.classList.add('pulling');}else{_pullEl.classList.remove('pulling');_pullTriggered=false;}}else if(Math.abs(dx)>30&&Math.abs(dy)<50){_swiping=true;}},{passive:true});mainEl.addEventListener('touchend',function(e){if(_pulling){_pulling=false;if(_pullEl.classList.contains('pulling')){haptic(10);_pullEl.classList.remove('pulling');_pullEl.classList.add('refreshing');_pullIcon.className='bi bi-arrow-clockwise';loadStatus();loadLogs();loadHistory();loadSocketHistory();loadOtherHistory();loadTuyaDevices();loadScenes();loadPluginConfig();loadAppVersion();setTimeout(function(){_pullEl.classList.remove('show','refreshing');_pullIcon.className='bi bi-arrow-down';},800);}else{_pullEl.classList.remove('show','pulling');}}if(_swiping){_swiping=false;var dx2=e.changedTouches[0].clientX-_swipeStartX;if(Math.abs(dx2)>=50){var tabs=['status','devices','automations','server','notifications','settings'];var curItem=document.querySelector('.menu-item.active');var idx=tabs.indexOf(curItem?curItem.dataset.tab:'status');if(idx>=0){var dir=dx2>0?-1:1;var ni=idx+dir;if(ni>=0&&ni<tabs.length){haptic(10);var target=document.querySelector('.menu-item[data-tab="'+tabs[ni]+'"]');if(target)target.click();}}}}},{passive:true});}
 
 function renderEnergyFlow(d){
 const svg=document.getElementById('energyFlow');if(!svg)return;

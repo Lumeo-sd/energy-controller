@@ -159,6 +159,8 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .tab-pane{display:none;animation:fadeIn .25s ease}
 .tab-pane.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
 .entity-card{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border:.5px solid var(--border);border-radius:var(--radius-md);transition:border-color .2s,transform .12s}
 .entity-card:active{transform:scale(.98)}
