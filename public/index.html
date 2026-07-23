@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#000000" />
+<link rel="manifest" href="/manifest.json" />
+<title>Energy Controller</title>
+<link href="/vendor/bootstrap.min.css" rel="stylesheet" />
+<link href="/vendor/bootstrap-icons.css" rel="stylesheet" />
+<script src="/vendor/chart.umd.min.js"></script>
+<link href="/style.css" rel="stylesheet" />
+
+</head>
+<body>
+<aside class="sidebar open">
+<div class="sidebar-brand"><i class="bi bi-lightning-charge-fill"></i><span class="brand-main">Energy</span><span class="brand-version" id="sidebar-version"></span></div>
+<ul class="sidebar-menu">
+<li class="menu-item active" data-tab="status"><i class="bi bi-speedometer2"></i><span>Status</span></li>
+<li class="menu-item" data-tab="devices"><i class="bi bi-cpu"></i><span>Devices</span><span class="badge-hb purple" id="sidebar-device-count">0</span></li>
+<li class="menu-item" data-tab="automations"><i class="bi bi-diagram-3"></i><span>Automations</span><span class="badge-hb purple" id="sidebar-scene-count">0</span></li>
+<li class="menu-item" data-tab="server"><i class="bi bi-server"></i><span>Server</span></li>
+</ul>
+<ul class="sidebar-menu sidebar-menu-bottom">
+<li class="menu-item" data-tab="notifications"><i class="bi bi-bell"></i><span>Notifications</span><span class="badge-hb purple" id="sidebar-notif-count" style="display:none">0</span></li>
+<li class="menu-item" data-tab="settings"><i class="bi bi-gear"></i><span>Settings</span></li>
+</ul>
+
+</aside>
+<button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar"><i class="bi bi-chevron-left"></i></button>
+<main class="main">
+<div class="tab-pane active" id="tab-status">
+<div id="pull-indicator"><i class="bi bi-arrow-down"></i></div>
+<div class="page-header"><h1>Status</h1></div>
+<div class="tiles-container" id="tilesContainer"></div>
+<div class="flow-section" id="flowSection"><div class="flow-metrics" id="flowMetrics"></div><div class="flow-svg-wrap"><svg id="energyFlow" viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
+<div class="hb-card chart-section collapsed" style="margin-bottom:.75rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cpu" style="margin-right:.5rem"></i>Inverter Debug</div></div>
+<div id="debug-grid" style="padding:.5rem .75rem;font-size:.78rem;font-family:monospace;color:var(--text);display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.25rem .75rem"></div>
+</div>
+<div class="hb-card chart-section">
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-graph-up" style="margin-right:.5rem"></i>Power History</div><div class="chart-tabs" id="chartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
+<div class="chart-current" id="historyCurrent"></div>
+<div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="historyChart"></canvas></div></div>
+</div>
+<div class="hb-card chart-section">
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Socket Power History</div><div class="chart-tabs" id="socketChartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
+<div class="chart-current" id="socketCurrent"></div>
+<div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="socketChart"></canvas></div></div>
+</div>
+<div class="hb-card chart-section">
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-lightning" style="margin-right:.5rem"></i>Other Load</div><div class="chart-tabs" id="otherChartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
+<div class="chart-current" id="otherCurrent"></div>
+<div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="otherChart"></canvas></div></div>
+</div>
+<div class="hb-card">
+<div class="hb-card-header"><div class="hb-card-title">Logs</div></div>
+<div class="hb-card-body" style="padding:.5rem"><div class="terminal" id="log-container">Loading logs...</div></div>
+</div>
+</div>
+<div class="tab-pane" id="tab-devices">
+<div class="page-header"><h1>Devices</h1></div>
+<div class="hb-card collapsed">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-arrow-repeat" style="margin-right:.5rem"></i>Sync with Tuya</div><span><button class="btn-hb btn-hb-outline btn-hb-sm" id="syncBtn" onclick="event.stopPropagation();syncTuya()"><i class="bi bi-arrow-repeat"></i> Sync Devices</button></span></div>
+<div class="hb-card-body"><p class="text-muted-hb">Pull devices from your Tuya account.</p></div>
+</div>
+<div class="hb-card" style="margin-top:1rem">
+<div class="hb-card-header"><div class="hb-card-title">Available Devices</div><span class="badge-hb purple" id="device-count-badge">0</span></div>
+<div class="hb-card-body" id="devices-list"><div class="empty-state"><i class="bi bi-inbox"></i><p>No devices synced yet.</p></div></div>
+</div>
+</div>
+<div class="tab-pane" id="tab-automations">
+<div class="page-header"><h1>Automations</h1></div>
+<div class="hb-card collapsed" id="new-automation-card">
+<div class="hb-card-header" onclick="toggleNewAutomation()"><div class="hb-card-title"><i class="bi bi-plus-circle" style="margin-right:.5rem"></i>New Automation</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveScene()" style="margin-left:.5rem"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Name</label><input type="text" id="scene-name" class="form-hb" placeholder="e.g. Battery Saver" oninput="renderAutomationSummary()" /></div>
+<div id="automation-summary" class="automation-summary">Add a condition and an action to see a preview here.</div>
+<div class="automation-section">
+<div class="automation-section-label"><i class="bi bi-arrow-down-right-circle"></i> WHEN</div>
+<select id="scene-logic" class="form-hb" style="margin-bottom:.6rem;font-size:.8rem" onchange="renderAutomationSummary()"><option value="AND">Match ALL conditions</option><option value="OR">Match ANY condition</option></select>
+<div id="if-conditions"></div>
+<button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addCondition(this)"><i class="bi bi-plus"></i> Add Condition</button>
+</div>
+<div class="automation-section then-section">
+<div class="automation-section-label"><i class="bi bi-lightning-charge-fill"></i> THEN</div>
+<div id="then-actions"></div>
+<button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addAction(this)"><i class="bi bi-plus"></i> Add Action</button>
+</div>
+</div>
+</div>
+<div class="hb-card" style="margin-top:1rem">
+<div class="hb-card-header"><div class="hb-card-title">Saved Automations</div><span class="badge-hb purple" id="scene-count-badge2">0</span></div>
+<div class="hb-card-body" id="scenes-list"><div class="empty-state"><i class="bi bi-diagram-3"></i><p>No automations yet.</p></div></div>
+</div>
+</div>
+<div class="tab-pane" id="tab-server">
+<div class="page-header"><h1>Server</h1></div>
+<div class="hb-card">
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cpu"></i> System Resources</div></div>
+<div class="hb-card-body" id="server-info-body">
+<div style="text-align:center;padding:1rem"><i class="bi bi-hourglass-split"></i> Loading...</div>
+</div>
+</div>
+</div>
+<div class="tab-pane" id="tab-notifications"><div class="page-header"><h1>Notifications</h1></div><div class="hb-card"><div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()"><i class="bi bi-check2-all"></i> Dismiss All</button></span></div><div id="notif-list" class="notif-list"><div class="notif-empty">No notifications</div></div></div></div>
+<div class="tab-pane" id="tab-settings">
+<div class="page-header"><h1>Settings</h1></div>
+<div class="hb-card collapsed">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-pencil-square" style="margin-right:.5rem"></i>Status Tiles</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveTilePrefs(loadTilePrefs());saveTileOrder(loadTileOrder());buildTileEditor();"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div class="tile-edit-grid" id="tileEditGrid"></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Inverter</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Inverter IP</label><input type="text" id="cfg-inverter-ip" class="form-hb" placeholder="192.168.0.116" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Serial Number</label><input type="text" id="cfg-inverter-serial" class="form-hb" placeholder="2317564280" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Modbus Port</label><input type="number" id="cfg-inverter-port" class="form-hb" value="8899" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">MAC Address</label><input type="text" id="cfg-inverter-mac" class="form-hb" placeholder="72:4F:56:8E:BB:40" style="text-transform:uppercase" /></div>
+<div class="mb-3" style="display:flex;align-items:center;gap:.5rem"><input type="checkbox" id="cfg-inverter-autoResolve" style="accent-color:var(--primary);width:16px;height:16px" /><label class="text-muted-hb" style="font-size:.8rem;cursor:pointer" for="cfg-inverter-autoResolve">Auto-resolve IP when offline (uses ping sweep)</label></div>
+<div class="mb-3" id="resolveAfterFails-row" style="display:none"><label class="text-muted-hb" style="font-size:.8rem">Consecutive fails to trigger resolve</label><input type="number" id="cfg-inverter-resolveAfterFails" class="form-hb" value="10" min="3" max="100" /></div>
+<script src="/app.js"></script>
+<div style="margin-top:.5rem"><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="scanInverterNetwork()" id="btn-scan-inv"><i class="bi bi-wifi"></i> Scan Network</button><span id="scan-status" style="margin-left:.5rem;font-size:.75rem;color:var(--muted)"></span></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cloud" style="margin-right:.5rem"></i>Tuya Cloud</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Access ID</label><input type="text" id="cfg-tuya-accessId" class="form-hb" placeholder="Enter Tuya Access ID" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Access Key</label><input type="password" id="cfg-tuya-accessKey" class="form-hb" placeholder="Enter Tuya Access Key" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Country Code</label><input type="number" id="cfg-tuya-countryCode" class="form-hb" value="48" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Username / Email</label><input type="text" id="cfg-tuya-username" class="form-hb" placeholder="user@example.com" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Password</label><input type="password" id="cfg-tuya-password" class="form-hb" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">App Schema</label><select id="cfg-tuya-appSchema" class="form-hb"><option value="tuyaSmart">Tuya Smart</option><option value="smartlife">Smart Life</option></select></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-globe" style="margin-right:.5rem"></i>Web UI</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Web Port</label><input type="number" id="cfg-webPort" class="form-hb" value="8583" /></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-shield-lock" style="margin-right:.5rem"></i>Security</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();changePassword()"><i class="bi bi-key"></i> Update</button></span></div>
+<div class="hb-card-body">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Current password</label><input type="password" id="cp-current" class="form-hb" autocomplete="current-password" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">New password (min. 6 characters)</label><input type="password" id="cp-new" class="form-hb" autocomplete="new-password" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Confirm new password</label><input type="password" id="cp-confirm" class="form-hb" autocomplete="new-password" /></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveNotifConfig()"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-bell" style="margin-right:.4rem"></i>Enable notifications</span><label class="sw"><input type="checkbox" id="cfg-notif-enabled" checked onchange="document.getElementById('notif-body-rest').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="notif-body-rest">
+<div id="notif-integrations">
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)" id="notif-ntfy-row"><span style="font-size:.85rem"><i class="bi bi-bell" style="margin-right:.4rem"></i>Via ntfy.sh</span><label class="sw"><input type="checkbox" id="cfg-ntfy-notif-enabled" checked><span class="sw-slider"></span></label></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.4rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)" id="notif-tg-row"><span style="font-size:.85rem"><i class="bi bi-telegram" style="margin-right:.4rem"></i>Via Telegram</span><label class="sw"><input type="checkbox" id="cfg-tg-notif-enabled" checked><span class="sw-slider"></span></label></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.6rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-exclamation-triangle" style="margin-right:.4rem"></i>Critical alerts</span><label class="sw"><input type="checkbox" id="cfg-notif-critical-enabled" checked onchange="document.getElementById('critical-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="critical-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Low SOC alert (%)</label><input type="number" id="cfg-soc-alert" class="form-hb" min="0" max="100" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Connection timeout (min)</label><input type="number" id="cfg-conn-timeout" class="form-hb" min="0" /></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.6rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-lightning" style="margin-right:.4rem"></i>Grid outage report</span><label class="sw"><input type="checkbox" id="cfg-notif-grid-outage" checked><span class="sw-slider"></span></label></div>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="testNotification()" style="width:100%"><i class="bi bi-send"></i> Send Test</button>
+<div id="notif-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
+</div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cash-coin" style="margin-right:.5rem"></i>Tariff & Cost</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveTariffConfig()"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Currency</label><input type="text" id="cfg-tariff-currency" class="form-hb" placeholder="UAH" maxlength="8" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Tariff type</label><select id="cfg-tariff-type" class="form-hb" onchange="toggleTariffFields()"><option value="flat">Flat rate</option><option value="daynight">Day / Night</option></select></div>
+<div id="tariff-flat-fields"><div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Rate (per kWh)</label><input type="number" step="0.01" min="0" id="cfg-tariff-flat-rate" class="form-hb" placeholder="0" /></div></div>
+<div id="tariff-daynight-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Day rate (per kWh)</label><input type="number" step="0.01" min="0" id="cfg-tariff-day-rate" class="form-hb" placeholder="0" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Night rate (per kWh)</label><input type="number" step="0.01" min="0" id="cfg-tariff-night-rate" class="form-hb" placeholder="0" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Day tariff starts</label><input type="time" id="cfg-tariff-day-start" class="form-hb" value="07:00" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Night tariff starts</label><input type="time" id="cfg-tariff-night-start" class="form-hb" value="23:00" /></div>
+</div>
+<p class="text-muted-hb" style="font-size:.72rem;margin-top:-.4rem">Estimate only, based on the inverter's daily import counter. Not billing-grade.</p>
+<div id="tariff-status" style="margin-top:.4rem;font-size:.8rem;display:none"></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-hdd-network" style="margin-right:.5rem"></i>Integrations</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
+<div class="hb-card-body">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-bell" style="margin-right:.4rem"></i>ntfy.sh</span><label class="sw"><input type="checkbox" id="cfg-ntfy-enabled" checked onchange="document.getElementById('ntfy-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="ntfy-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Topic</label><input type="text" id="cfg-ntfy-topic" class="form-hb" placeholder="my-topic" /></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.8rem 0 .6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-telegram" style="margin-right:.4rem"></i>Telegram</span><label class="sw"><input type="checkbox" id="cfg-tg-enabled" checked onchange="document.getElementById('tg-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="tg-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Bot Token</label><input type="password" id="cfg-tg-token" class="form-hb" placeholder="123456:ABC-DEF1234..." /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Chat ID</label><input type="text" id="cfg-tg-chat" class="form-hb" placeholder="-1001234567890" /></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.8rem 0 .6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem;font-weight:600"><i class="bi bi-wifi" style="margin-right:.4rem"></i>NetBird Mesh</span><label class="sw"><input type="checkbox" id="cfg-netbird-enabled" onchange="document.getElementById('netbird-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label></div>
+<div id="netbird-fields">
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Setup Key</label><input type="password" id="cfg-netbird-setupKey" class="form-hb" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" /></div>
+<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Management URL</label><input type="text" id="cfg-netbird-managementUrl" class="form-hb" placeholder="https://api.netbird.io:443" /></div>
+<div style="display:flex;gap:.5rem;margin-top:.6rem">
+<button class="btn-hb btn-hb-sm" onclick="netbirdUp()" style="flex:1"><i class="bi bi-wifi"></i> Connect</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="netbirdDown()" style="flex:1"><i class="bi bi-wifi-off"></i> Disconnect</button>
+</div>
+<div id="netbird-status" style="margin-top:.6rem;font-size:.8rem;display:none;padding:.5rem;border-radius:6px;background:rgba(255,255,255,.04);white-space:pre-wrap;font-family:monospace"></div>
+</div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cloud-download" style="margin-right:.5rem"></i>Application Update</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" id="btn-check-update" onclick="event.stopPropagation();checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check</button></span></div>
+<div class="hb-card-body">
+<div id="update-info" style="font-size:.85rem;color:var(--text-secondary);margin-bottom:.75rem">Loading...</div>
+<div id="update-branches" style="display:none;margin-bottom:.75rem"></div>
+<div id="update-tags" style="display:none;margin-bottom:.75rem"></div>
+<button class="btn-hb btn-hb-outline btn-hb-sm" id="btn-apply-update" onclick="applyUpdate()" style="display:none;width:100%"><i class="bi bi-download"></i> Update & Restart</button>
+<div id="update-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-archive" style="margin-right:.5rem"></i>Backup & Restore</div></div>
+<div class="hb-card-body">
+<div style="display:flex;gap:.5rem;flex-wrap:wrap">
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="createBackup()"><i class="bi bi-download"></i> Backup</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="document.getElementById('restoreInput').click()"><i class="bi bi-upload"></i> Restore</button>
+<input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreBackup(this.files[0])" />
+</div>
+<div id="backup-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
+</div>
+</div>
+<div class="hb-card collapsed" style="margin-top:1rem">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-phone" style="margin-right:.5rem"></i>Session</div></div>
+<div class="hb-card-body">
+<div style="display:flex;flex-direction:column;gap:.6rem">
+<button class="btn-hb btn-hb-outline w-100" onclick="event.stopPropagation();location.reload()"><i class="bi bi-arrow-clockwise"></i> Restart UI</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="event.stopPropagation();document.getElementById('restartModal').classList.add('show')"><i class="bi bi-arrow-repeat"></i> Restart App</button>
+<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="event.stopPropagation();logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
+</div>
+</div>
+</div>
+
+</div>
+<div class="hb-toast" id="toast"><div class="toast-title" id="toastTitle">Success</div><div class="toast-body" id="toastBody">Done.</div><div class="toast-actions" id="toastActions" style="display:none"><button class="btn-hb btn-hb-outline btn-hb-sm" id="toastUndoBtn">Undo</button></div></div>
+<div class="modal-backdrop" id="restartModal" style="background:#000!important"><div class="modal-box" style="background:#1c1c1e!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:14px!important;padding:1.8rem 1.5rem!important;max-width:340px;width:90%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,.7)!important"><div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="bi bi-arrow-repeat" style="font-size:1.3rem;color:var(--primary)"></i></div><h3 style="margin:0 0 .5rem;font-size:1.05rem;color:#f5f5f7!important">Restart now?</h3><p style="margin:0 0 1.2rem;font-size:.85rem;color:#a1a1a6!important">Changes will be applied after restart.</p><div style="display:flex;gap:.6rem;justify-content:center"><button class="btn-hb btn-hb-primary btn-hb-sm" onclick="restartApp()" style="flex:1;max-width:160px"><i class="bi bi-arrow-repeat"></i> Restart</button><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="document.getElementById('restartModal').classList.remove('show')" style="flex:1;max-width:160px">Later</button></div></div></div>
+<div id="restartOverlay"><div class="restart-spinner"></div><h3>Restarting<span class="restart-dots"></span></h3><p>Waiting for server to come back online</p></div>
+<div class="modal-backdrop" id="tileDetailModal" style="background:rgba(0,0,0,.6)!important" onclick="if(event.target===this)closeTileDetail()"><div class="modal-box" style="background:#1c1c1e!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:14px!important;padding:1.2rem!important;max-width:420px;width:92%;box-shadow:0 12px 48px rgba(0,0,0,.7)!important">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem"><h3 id="tileDetailTitle" style="margin:0;font-size:1rem;color:#f5f5f7!important">\u2014</h3><button class="btn-hb btn-hb-sm btn-hb-icon btn-hb-outline" onclick="closeTileDetail()"><i class="bi bi-x"></i></button></div>
+<div id="tileDetailStats" style="display:flex;gap:.8rem;margin-bottom:.8rem;font-size:.78rem;color:#a1a1a6"></div>
+<div style="height:180px"><canvas id="tileDetailChart"></canvas></div>
+</div></div>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
