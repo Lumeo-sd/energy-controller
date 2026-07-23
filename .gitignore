@@ -15,3 +15,15 @@ node_modules/
 .DS_Store
 Thumbs.db
 *~
+*.bak
+
+# Generated frontend files
+public/index.html
+public/login.html
+public/style.css
+public/app.js
+public/login.css
+
+# Development
+dev/
+tools/
