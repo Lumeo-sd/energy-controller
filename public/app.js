@@ -90,8 +90,8 @@ async function loadNotifications(){
         html+='</div>';
         var uc=items.filter(function(x){return !x.read;}).length;if(uc)html+='<div class="notif-count-badge" style="background:var(--primary);color:#000;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:700;line-height:18px;min-width:18px;text-align:center;margin-top:4px;flex-shrink:0">'+uc+'</div>';
         html+='<div class="notif-actions">';
-        if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
-        html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
+        if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="markNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
+        html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="dismissNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
         html+='</div>';
         html+='</div>';
       }else{
@@ -103,8 +103,8 @@ async function loadNotifications(){
         html+='<div class="notif-time">'+new Date(first.time).toLocaleString()+'</div>';
         html+='</div>';
         html+='<div class="notif-actions">';
-        if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
-        html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
+        if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="markNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
+        html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="dismissNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
         html+='</div>';
         html+='</div>';
       }
@@ -113,6 +113,7 @@ async function loadNotifications(){
   }catch(e){console.error('loadNotifications',e);}
 }
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function _escAttr(s){return _esc(s).replace(/"/g,'&quot;');}
 async function dismissNotifGroup(title,type){try{await apiPost('/api/notifications/dismiss',{title:title,type:type||'info'});loadNotifications();}catch(e){}}
 async function markNotifGroup(title,type){try{await apiPost('/api/notifications/mark-read',{title:title,type:type||'info'});loadNotifications();}catch(e){}}
 async function dismissAllNotif(){try{await apiPost('/api/notifications/dismiss-all',{});loadNotifications();}catch(e){}}
