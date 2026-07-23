@@ -1,6 +1,5 @@
 
 /* notification center additions */
-.notif-item.unread{background:var(--card-hover)!important;border-left:2px solid var(--primary)}
 .notif-item.unread .notif-title{font-weight:800}
 .notif-item.unread .notif-icon{box-shadow:0 0 6px var(--primary)}
 .notif-group-header{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:.6rem .6rem .2rem}
@@ -212,8 +211,10 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .metric-val{font-size:1rem;font-weight:700;color:var(--text)}
 .metric-sub{font-size:.65rem;color:var(--muted)}
 .notif-list{max-height:65vh;overflow-y:auto;display:flex;flex-direction:column;gap:.25rem;padding:.25rem 0}
-.notif-item{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.6rem;padding:.45rem .6rem;border-radius:8px;background:var(--card);transition:opacity .3s}
+.notif-item{display:flex;flex-direction:column;border-radius:8px;background:var(--card);transition:opacity .3s;cursor:pointer}
 .notif-item.dismissed{opacity:.3}
+.notif-item.unread{background:var(--card-hover)!important}
+.notif-item .notif-row{display:flex;align-items:flex-start;gap:.6rem;padding:.35rem .6rem}
 .notif-item .notif-icon{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-top:1px}
 .notif-item .notif-icon.info{background:rgba(48,209,88,.15);color:var(--success)}
 .notif-item .notif-icon.warn{background:rgba(255,204,0,.15);color:#ffcc00}
@@ -222,15 +223,15 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .notif-item .notif-title{font-size:.8rem;font-weight:700;color:var(--text)}
 .notif-item .notif-msg{font-size:.72rem;color:var(--muted);margin-top:2px;white-space:pre-wrap}
 .notif-item .notif-time{font-size:.62rem;color:var(--muted);margin-top:1px}
-.notif-item .notif-dismiss{flex-shrink:0;width:22px;height:22px;border:none;background:none;color:var(--muted);cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem;margin-top:3px}
-.notif-item .notif-dismiss:hover{background:rgba(255,255,255,.1);color:var(--text)}
 .notif-item .notif-actions{flex-shrink:0;display:flex;gap:.3rem;align-items:center;margin-top:2px}
-.notif-sub-list{display:none;width:100%;padding-top:4px;border-top:1px solid rgba(255,255,255,.05);margin-top:4px}
-.notif-sub-item{display:flex;gap:.4rem;align-items:baseline;padding:.3rem .3rem .3rem 1.6rem;font-size:.72rem;border-radius:4px}
+.notif-sub-list{display:none;padding:.2rem .6rem .35rem 2.2rem;border-top:1px solid rgba(255,255,255,.04)}
+.notif-item.expanded .notif-sub-list{display:block}
+.notif-sub-item{display:flex;gap:.4rem;align-items:baseline;padding:.3rem .3rem .3rem .5rem;font-size:.72rem;border-radius:4px;position:relative}
+.notif-sub-item::before{content:'';position:absolute;left:-.55rem;top:0;bottom:0;width:2px;background:var(--primary);opacity:.25;border-radius:2px}
+.notif-sub-item:last-child::before{bottom:50%}
 .notif-sub-item:hover{background:rgba(255,255,255,.03)}
-.notif-sub-item.notif-sub-unread{font-weight:600;color:var(--text)}
-.notif-sub-time{color:var(--muted);white-space:nowrap;font-size:.65rem;min-width:120px}
-.notif-sub-msg{color:var(--text-secondary);word-break:break-word}
+.notif-sub-time{color:var(--muted);white-space:nowrap;font-size:.65rem;min-width:120px;font-weight:400}
+.notif-sub-msg{color:var(--text);word-break:break-word}
 
 .notif-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem}
 .hb-toast{position:fixed;bottom:calc(2rem + var(--safe-b));right:2rem;background:var(--card-solid);
