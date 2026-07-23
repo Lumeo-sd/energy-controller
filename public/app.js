@@ -107,7 +107,7 @@ async function loadNotifications(){
         }
         html+='</div>';
         html+='</div>';
-      }else{      }else{
+      }else{
         html+='<div class="notif-item'+(groupUnread?' unread':'')+'">';
         html+='<div class="notif-icon '+(first.type||'info')+'">'+(first.type==='error'?'!':first.type==='warn'?'\u26a0':'\u2713')+'</div>';
         html+='<div class="notif-body">';
