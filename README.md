@@ -49,22 +49,38 @@ sudo systemctl restart energy-controller
 sudo journalctl -u energy-controller -f
 ```
 
-## Uninstall
-
-```bash
-sudo ./uninstall.sh
-```
-
 ## Files
 
 ```
 /opt/energy-controller/
-├── index.js          # App (single file, zero dependencies)
-├── package.json      # ES module support
-└── data/             # NOT in git — your config & credentials
-    ├── config.json   # Inverter + Tuya + Web settings
-    ├── auth.json     # Login credentials
-    └── scenes.json   # Automation rules
+├── index.js           # Entry point — imports & wires modules
+├── package.json       # ES module support
+├── lib/               # Modular backend
+│   ├── server.js      # TLS, auth middleware, request handler
+│   ├── routes.js      # All API & page route handlers
+│   ├── app-state.js   # Inverter polling, Tuya devices, scenes engine
+│   ├── auth.js        # Login sessions, password hashing
+│   ├── config.js      # Config file load/save
+│   ├── router.js      # URL pattern matcher, JSON/HTML helpers
+│   ├── logger.js      # Buffered logger
+│   ├── notifications.js # ntfy.sh / Telegram push
+│   ├── rrd.js         # Ring-buffer history storage
+│   ├── solarman.js    # Solarman V5 Modbus TCP
+│   ├── tuya-sign.js   # Tuya cloud API signing
+│   ├── crypto.js      # AES encrypt/decrypt
+│   ├── crc16.js       # Modbus CRC16
+│   └── rate-limit.js  # IP-based rate limiter
+├── public/            # Frontend (served as static files)
+│   ├── index.html     # Dashboard UI
+│   ├── login.html     # Login page
+│   ├── style.css      # Dashboard styles
+│   ├── login.css      # Login styles
+│   ├── app.js         # Frontend JS
+│   └── login.js       # Login page JS
+└── data/              # NOT in git — your config & credentials
+    ├── config.json    # Inverter + Tuya + Web settings
+    ├── auth.json      # Login credentials
+    └── scenes.json    # Automation rules
 ```
 
 ## Configuration
@@ -126,3 +142,4 @@ After installing, open `http://<pi-ip>:8583` on iPhone → Share → Add to Home
 ## License
 
 MIT
+
