@@ -1,0 +1,32 @@
+/* ====== Energy Controller Shared Tokens ====== */
+:root {
+  --text: #f5f5f7;
+  --muted: #98989f;
+  --primary: #bf5af2;
+  --primary-dark: #a742d6;
+  --primary-light: #d18ffb;
+  --success: #30d158;
+  --danger: #ff453a;
+  --blue: #0a84ff;
+}
+
+/* ====== Accent color themes ====== */
+html[data-accent="purple"]{--primary:#bf5af2;--primary-dark:#a742d6;--primary-light:#d18ffb}
+html[data-accent="blue"]{--primary:#0a84ff;--primary-dark:#0060c0;--primary-light:#40a9ff}
+html[data-accent="green"]{--primary:#30d158;--primary-dark:#1a9e3e;--primary-light:#5be87a}
+html[data-accent="orange"]{--primary:#ff9f0a;--primary-dark:#cc7a00;--primary-light:#ffb340}
+html[data-accent="pink"]{--primary:#ff375f;--primary-dark:#cc0030;--primary-light:#ff6b85}
+html[data-accent="cyan"]{--primary:#00c7be;--primary-dark:#009e97;--primary-light:#33e0d8}
+
+/* ====== Quiet theme global colour overrides ====== */
+[data-theme="quiet"] {
+  --bg: #0b0a09;
+  --text: #f2f0ec;
+  --muted: #8a877f;
+  --primary: #c98a4f;
+  --primary-dark: #b07238;
+  --primary-light: #dba16e;
+  --success: #30d158;
+  --danger: #ff453a;
+  --blue: #0a84ff;
+}
