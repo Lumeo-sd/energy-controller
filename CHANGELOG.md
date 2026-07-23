@@ -1,3 +1,11 @@
+## v0.3.9 — 2026-07-23
+### Added
+- Device grouping: assign devices to rooms/categories via group field
+- Group headers in devices tab with collapsible sections
+- Pencil icon on device cards to edit group assignment
+- `PATCH /api/tuya-devices/:id/group` endpoint
+- `group` field persisted in `data/devices.json`
+
 # Changelog
 
 ## v0.3.7 (2026-07-23)
