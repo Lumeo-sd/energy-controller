@@ -88,7 +88,7 @@ async function loadNotifications(){
         html+='<div class="notif-msg">'+items.length+'x</div>';
         html+='<div class="notif-time">'+new Date(first.time).toLocaleString()+'</div>';
         html+='</div>';
-        html+='<div class="notif-count-badge" style="background:var(--primary);color:#000;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:700;line-height:18px;min-width:18px;text-align:center;margin-top:4px;flex-shrink:0">'+items.filter(function(x){return !x.read;}).length+'</div>';
+        var uc=items.filter(function(x){return !x.read;}).length;if(uc)html+='<div class="notif-count-badge" style="background:var(--primary);color:#000;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:700;line-height:18px;min-width:18px;text-align:center;margin-top:4px;flex-shrink:0">'+uc+'</div>';
         html+='<div class="notif-actions">';
         if(groupUnread)html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Mark read</button>';
         html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissNotifGroup(\''+_esc(first.title)+'\',\''+_esc(first.type||'info')+'\')" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
