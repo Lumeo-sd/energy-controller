@@ -39,7 +39,85 @@ function showToast(t,b,e,undoCb,undoLabel){
   el.className='hb-toast show'+(e?' error':'');
   clearTimeout(el._hide);
   el._hide=setTimeout(()=>el.classList.remove('show'),4000);
-  try{fetch('/api/notifications/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:t,message:b||'',type:e?'error':'info'})});}catch(ee){}}var _unreadCount=0;async function loadNotifications(){try{var r=await apiGet('/api/notifications');if(!r.success)return;var list=r.notifications||[];var badEl=document.getElementById('sidebar-notif-count');if(badEl){badEl.textContent=list.length;badEl.style.display=list.length?'':'none';}var con=document.getElementById('notif-list');if(!con)return;if(!list.length){con.innerHTML='<div class="notif-empty">No notifications</div>';return;}con.innerHTML=list.map(function(n){return '<div class="notif-item"><div class="notif-icon '+(n.type||'info')+'">'+(n.type==='error'?'!':n.type==='warn'?'\u26a0':'\u2713')+'</div><div class="notif-body"><div class="notif-title">'+_esc(n.title)+'</div>'+(n.message?'<div class="notif-msg">'+_esc(n.message)+'</div>':'')+'<div class="notif-time">'+new Date(n.time).toLocaleString()+'</div></div><button class="notif-dismiss" onclick="dismissNotif('+n.id+')" title="Dismiss">\u2715</button></div>';}).join('');}catch(e){}}function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}async function dismissNotif(id){try{await apiPost('/api/notifications/dismiss',{id});loadNotifications();}catch(e){}}async function dismissAllNotif(){try{await apiPost('/api/notifications/dismiss-all',{});loadNotifications();}catch(e){}}
+  try{fetch('/api/notifications/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:t,message:b||'',type:e?'error':'info'})});}catch(ee){}}
+var _lastNotifId=0,_unreadNotifCount=0;
+function playNotifSound(){
+  try{var ac=new(window.AudioContext||window.webkitAudioContext)();var osc=ac.createOscillator();var g=ac.createGain();osc.connect(g);g.connect(ac.destination);osc.frequency.setValueAtTime(880,ac.currentTime);osc.frequency.setValueAtTime(1100,ac.currentTime+.08);g.gain.setValueAtTime(.08,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.25);osc.start(ac.currentTime);osc.stop(ac.currentTime+.25);}catch(ee){}
+}
+function notifGroupKey(n){return n.title+'|'+n.type;}
+async function loadNotifications(){
+  try{
+    var r=await apiGet('/api/notifications?all=1');
+    if(!r.success)return;
+    var list=r.notifications||[];
+    var unread=r.unread||0;
+    var newCount=_lastNotifId?list.filter(function(n){return n.id>_lastNotifId&&n.type!=='info';}).length:0;
+    if(newCount>0)playNotifSound();
+    if(list.length)_lastNotifId=list[0].id;
+    _unreadNotifCount=unread;
+    var badElTotal=document.getElementById('sidebar-notif-count');
+    var badElUnread=document.getElementById('sidebar-notif-unread');
+    if(badElTotal){
+      badElTotal.textContent=list.length;
+      badElTotal.style.display=list.length?'':'none';
+    }
+    if(badElUnread){
+      badElUnread.textContent=unread;
+      badElUnread.style.display=unread?'':'none';
+    }
+    var con=document.getElementById('notif-list');
+    if(!con)return;
+    if(!list.length){
+      con.innerHTML='<div class="notif-empty">No notifications</div>';
+      return;
+    }
+    var html='<div style="display:flex;gap:.4rem;padding:.4rem .6rem">';
+    html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markAllRead()" style="flex:1"><i class="bi bi-check-all"></i> Mark read</button>';
+    html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()" style="flex:1"><i class="bi bi-trash3"></i> Dismiss all</button></div>';
+    html+='<div class="notif-group-header">Latest</div>';
+    var groups={};
+    for(var i=0;i<list.length;i++){
+      var n=list[i];
+      var gk=notifGroupKey(n);
+      if(!groups[gk])groups[gk]=[];
+      groups[gk].push(n);
+    }
+    var sortedGroups=Object.keys(groups).sort(function(a,b){return groups[b][0].id-groups[a][0].id;});
+    for(var gi=0;gi<sortedGroups.length;gi++){
+      var gk=sortedGroups[gi];
+      var items=groups[gk];
+      var first=items[0];
+      var isUnread=!first.read;
+      if(items.length>1){
+        html+='<div class="notif-item'+(isUnread?' unread':'')+'">';
+        html+='<div class="notif-icon '+(first.type||'info')+'">'+(first.type==='error'?'!':first.type==='warn'?'\u26a0':'\u2713')+'</div>';
+        html+='<div class="notif-body">';
+        html+='<div class="notif-title">'+_esc(first.title)+'</div>';
+        html+='<div class="notif-msg">'+items.length+'x</div>';
+        html+='<div class="notif-time">'+new Date(first.time).toLocaleString()+'</div>';
+        html+='</div>';
+        html+='<div class="notif-count-badge" style="background:var(--primary);color:#000;border-radius:10px;padding:0 6px;font-size:.65rem;font-weight:700;line-height:18px;min-width:18px;text-align:center;margin-top:4px;flex-shrink:0">'+items.length+'</div>';
+        html+='<button class="notif-dismiss" onclick="dismissNotif('+first.id+')" title="Dismiss">\u2715</button>';
+        html+='</div>';
+      }else{
+        html+='<div class="notif-item'+(isUnread?' unread':'')+'">';
+        html+='<div class="notif-icon '+(first.type||'info')+'">'+(first.type==='error'?'!':first.type==='warn'?'\u26a0':'\u2713')+'</div>';
+        html+='<div class="notif-body">';
+        html+='<div class="notif-title">'+_esc(first.title)+'</div>';
+        html+=(first.message?'<div class="notif-msg">'+_esc(first.message)+'</div>':'');
+        html+='<div class="notif-time">'+new Date(first.time).toLocaleString()+'</div>';
+        html+='</div>';
+        html+='<button class="notif-dismiss" onclick="dismissNotif('+first.id+')" title="Dismiss">\u2715</button>';
+        html+='</div>';
+      }
+    }
+    con.innerHTML=html;
+  }catch(e){console.error('loadNotifications',e);}
+}
+function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function dismissNotif(id){try{await apiPost('/api/notifications/dismiss',{id});loadNotifications();}catch(e){}}
+async function dismissAllNotif(){try{await apiPost('/api/notifications/dismiss-all',{});loadNotifications();}catch(e){}}
+async function markAllRead(){try{await apiPost('/api/notifications/mark-read',{});loadNotifications();}catch(e){}}
 function handleAuthStatus(r){if(r.status===401){window.location.href='/login';throw new Error('Unauthorized');}return r;}
 async function apiGet(p){const r=handleAuthStatus(await fetch(p));if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 async function apiPost(p,b){const h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=handleAuthStatus(await fetch(p,{method:'POST',headers:h,body:JSON.stringify(b)}));if(!r.ok){let msg='HTTP '+r.status;try{const e=await r.json();if(e.message)msg=e.message;}catch{}throw new Error(msg);}return r.json();}
