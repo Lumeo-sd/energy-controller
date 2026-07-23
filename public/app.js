@@ -47,7 +47,7 @@ function playNotifSound(){
 function notifGroupKey(n){return n.title+'|'+n.type;}
 async function loadNotifications(){
   try{
-    var r=await apiGet('/api/notifications?all=1');
+    var r=await apiGet('/api/notifications');
     if(!r.success)return;
     var list=r.notifications||[];
     var unread=r.unread||0;
@@ -1092,4 +1092,4 @@ setInterval(()=>loadHistory(),60000);
 setInterval(()=>loadSocketHistory(),60000);
 setInterval(()=>loadOtherHistory(),60000);
 setInterval(loadTuyaDevices,30000);
-if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=5').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=6').catch(()=>{});}
