@@ -516,3 +516,441 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   transform: scale(1.1);
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
 }
+
+
+/* ====== Quiet Panel theme ====== */
+[data-theme="quiet"] {
+  --card: transparent;
+  --card-solid: #141312;
+  --border: transparent;
+  --separator: #242220;
+  --sidebar: rgba(14,13,12,.96);
+}
+[data-theme="quiet"] body {
+  background: var(--bg) !important;
+}
+[data-theme="quiet"] .sidebar,
+[data-theme="quiet"] .hb-card,
+[data-theme="quiet"] .tile,
+[data-theme="quiet"] .entity-card,
+[data-theme="quiet"] .modal-backdrop,
+[data-theme="quiet"] .type-sheet-backdrop,
+[data-theme="quiet"] .page-header,
+[data-theme="quiet"] #restartOverlay {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Cards → flat, no border/shadow */
+[data-theme="quiet"] .hb-card,
+[data-theme="quiet"] .tile,
+[data-theme="quiet"] .entity-card {
+  border: none;
+  box-shadow: none;
+  background: none;
+}
+[data-theme="quiet"] .hb-card {
+  border-bottom: 1px solid var(--separator);
+  border-radius: 0;
+  margin-bottom: 0;
+}
+[data-theme="quiet"] .hb-card:last-child {
+  border-bottom: none;
+}
+[data-theme="quiet"] .hb-card-header {
+  border-bottom: none;
+  padding: .85rem 0;
+}
+[data-theme="quiet"] .hb-card-body {
+  padding: 0 0 .85rem;
+  background: none;
+}
+[data-theme="quiet"] .hb-card.collapsed .hb-card-body {
+  display: none;
+}
+/* Tiles → flat */
+[data-theme="quiet"] .tile {
+  padding: .8rem .4rem;
+  min-height: 80px;
+}
+[data-theme="quiet"] .tile .label {
+  color: var(--muted);
+}
+[data-theme="quiet"] .tile .value {
+  color: var(--text);
+}
+/* Sidebar */
+[data-theme="quiet"] .sidebar {
+  background: var(--sidebar);
+  border-right-color: var(--separator);
+}
+/* Page header + sticky */
+[data-theme="quiet"] .page-header {
+  background: none;
+  border-bottom-color: var(--separator);
+}
+/* Charts */
+[data-theme="quiet"] .chart-current {
+  padding: .35rem 0 .1rem;
+}
+[data-theme="quiet"] .chart-tabs {
+  margin-bottom: .5rem;
+}
+/* Terminal */
+[data-theme="quiet"] .terminal {
+  background: rgba(0,0,0,.25);
+}
+/* Notif list */
+[data-theme="quiet"] .notif-item {
+  background: none;
+  border-bottom: 1px solid var(--separator);
+  border-radius: 0;
+}
+/* Toast */
+[data-theme="quiet"] .hb-toast {
+  border-left-color: var(--primary);
+  background: var(--card-solid);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+/* Buttons */
+[data-theme="quiet"] .btn-hb-outline {
+  border-color: var(--separator);
+}
+/* Form inputs */
+[data-theme="quiet"] .form-hb {
+  background: rgba(255,255,255,.04);
+  border-color: var(--separator);
+}
+/* Automation card */
+[data-theme="quiet"] .automation-card.is-active {
+  border-left: 2px solid var(--primary);
+}
+/* Device group header */
+[data-theme="quiet"] .device-group-header {
+  border-bottom-color: var(--separator);
+}
+/* Modal */
+[data-theme="quiet"] .modal-box {
+  background: var(--card-solid) !important;
+  border: 1px solid var(--separator) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Type sheet */
+[data-theme="quiet"] .type-sheet {
+  background: var(--card-solid);
+  border: none;
+}
+[data-theme="quiet"] .type-tile {
+  border-color: var(--separator);
+}
+/* Rule sentence */
+[data-theme="quiet"] .rule-sentence {
+  border-color: var(--separator);
+  background: rgba(255,255,255,.02);
+}
+[data-theme="quiet"] .tile-edit-item {
+  border-color: var(--separator);
+}
+/* Toast undo */
+[data-theme="quiet"] .toast-actions .btn-hb {
+  border-color: var(--separator);
+}
+/* Flow SVG */
+[data-theme="quiet"] .flow-svg-wrap svg {
+  background: none;
+}
+/* Device card */
+[data-theme="quiet"] .device-card.is-on {
+  border-left: 2px solid var(--primary);
+}
+/* Switch */
+[data-theme="quiet"] .sw-slider {
+  background: rgba(255,255,255,.18);
+}
+[data-theme="quiet"] .sw input:checked + .sw-slider {
+  background: var(--primary);
+}
+
+/* ====== Quiet Panel — mobile overrides ====== */
+@media (max-width: 768px) {
+  [data-theme="quiet"] .sidebar {
+    background: transparent;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none;
+  }
+  /* Replace pill with dot */
+  [data-theme="quiet"] .menu-item.active::before {
+    background: none;
+  }
+  [data-theme="quiet"] .menu-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 4px var(--primary);
+  }
+  /* Hide text labels under icons */
+  [data-theme="quiet"] .menu-item span:not(.badge-hb) {
+    display: none;
+  }
+  /* Adjust menu item sizing for icon-only */
+  [data-theme="quiet"] .menu-item {
+    padding: .28rem .15rem .28rem;
+    gap: 0;
+  }
+  [data-theme="quiet"] .menu-item i {
+    font-size: 1.35rem;
+  }
+  [data-theme="quiet"] .menu-item .badge-hb {
+    transform: translate(12px, -14px);
+  }
+  /* Hide Server and Notifications from bottom nav */
+  [data-theme="quiet"] .menu-item[data-tab="server"],
+  [data-theme="quiet"] .menu-item[data-tab="notifications"] {
+    display: none;
+  }
+  /* Toast closer to bottom */
+  [data-theme="quiet"] .hb-toast {
+    bottom: calc(.8rem + var(--safe-b));
+    border-left-width: 3px;
+  }
+  /* Page header simpler */
+  [data-theme="quiet"] .page-header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--bg);
+    border-bottom-color: var(--separator);
+  }
+  /* Chart sections hidden when quiet on mobile (shown via sparkline) */
+  [data-theme="quiet"] .chart-section,
+  [data-theme="quiet"] .flow-section,
+  [data-theme="quiet"] #debug-grid {
+    display: none;
+  }
+  /* Hide tiles (hero replaces them) */
+  [data-theme="quiet"] .tiles-container {
+    display: none;
+  }
+  /* Sidebar brand hidden on mobile anyway, but ensure */
+  [data-theme="quiet"] .sidebar-brand {
+    display: none;
+  }
+  [data-theme="quiet"] .sidebar-toggle {
+    display: none;
+  }
+}
+
+
+/* ====== Quiet Hero section (mobile only, hidden in comfortable) ====== */
+.quiet-hero {
+  display: none;
+}
+@media (max-width: 768px) {
+  [data-theme="quiet"] .quiet-hero {
+    display: block;
+  }
+}
+
+.quiet-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 .6rem;
+}
+.quiet-time {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: .02em;
+}
+.quiet-bell {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  position: relative;
+  padding: 4px;
+  line-height: 1;
+}
+.quiet-bell .badge-hb {
+  position: absolute;
+  top: -2px;
+  right: -6px;
+  font-size: .5rem;
+  padding: .04rem .28rem;
+  min-width: 14px;
+  line-height: 1.1;
+}
+
+.hero-area {
+  padding: 0 0 .9rem;
+}
+.hero-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: .15rem;
+}
+.hero-value {
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.hero-value .hero-unit {
+  font-size: 16px;
+  color: var(--muted);
+  font-weight: 400;
+}
+.hero-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: .5rem;
+  flex-wrap: wrap;
+}
+.hero-stats .hs-item {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.hero-stats .hs-item i {
+  font-size: 12px;
+}
+.hero-stats .hs-item.accent {
+  color: var(--primary);
+}
+
+.quiet-divider {
+  height: 1px;
+  background: var(--separator);
+  margin: 0;
+}
+
+.mini-chart {
+  display: flex;
+  gap: 3px;
+  height: 40px;
+  align-items: flex-end;
+  padding: .8rem 0;
+  cursor: pointer;
+}
+.mini-chart .bar {
+  flex: 1;
+  background: var(--separator);
+  border-radius: 2px;
+  transition: background .2s;
+  min-height: 4px;
+}
+.mini-chart .bar.peak {
+  background: var(--primary);
+}
+.mini-chart:hover .bar {
+  background: var(--muted);
+}
+.mini-chart:hover .bar.peak {
+  background: var(--primary-light);
+}
+
+.quiet-section-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .7rem 0 .3rem;
+  font-weight: 600;
+}
+
+.quiet-devices {
+  padding: 0;
+}
+.quiet-devices .device-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .6rem 0;
+  border-bottom: 1px solid var(--separator);
+}
+.quiet-devices .device-row:last-child {
+  border-bottom: none;
+}
+.quiet-devices .device-row .dr-left {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  min-width: 0;
+  flex: 1;
+}
+.quiet-devices .device-row .dr-left i {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.quiet-devices .device-row .dr-left i.on { color: var(--primary); }
+.quiet-devices .device-row .dr-left i.off { color: var(--muted); }
+.quiet-devices .device-row .dr-name {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.quiet-devices .device-row .dr-name.off {
+  color: var(--muted);
+}
+
+/* Quiet toggle switch (smaller than .sw) */
+.quiet-switch {
+  width: 34px;
+  height: 20px;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.quiet-switch.on { background: var(--primary); }
+.quiet-switch.off { background: var(--separator); }
+.quiet-switch .qk {
+  position: absolute;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: left .18s;
+  background: var(--bg);
+}
+.quiet-switch.on .qk { left: 16px; }
+.quiet-switch.off .qk { left: 2px; }
+
+/* Theme mode toggle buttons */
+.theme-mode-btn {
+  padding: .4rem .85rem;
+  border-radius: 980px;
+  font-size: .78rem;
+  font-weight: 600;
+  border: 1px solid var(--separator);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  min-height: 36px;
+}
+.theme-mode-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.theme-mode-btn:hover:not(.active) {
+  border-color: var(--primary);
+  color: var(--text);
+}

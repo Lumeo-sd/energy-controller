@@ -51,6 +51,8 @@ const d=await apiGet('/api/status');
 if(d.csrfToken)_csrfToken=d.csrfToken;
 updateTiles(d,d.debug||{});
 window._lastData=d;renderEnergyFlow(d);
+var q=document.documentElement.dataset.theme==='quiet'&&window.innerWidth<=768;
+if(q)updateQuietHero(d);
 const dg=d.debug||{};
 const dgEl=document.getElementById('debug-grid');
 if(dgEl){
@@ -133,6 +135,8 @@ list.innerHTML='<div class="device-grid">'
 tuyaDevices=await apiGet('/api/tuya-devices');
 document.getElementById('device-count-badge').textContent=tuyaDevices.length;
 document.getElementById('sidebar-device-count').textContent=tuyaDevices.length;
+window._tuyaDevices=tuyaDevices;
+if(document.documentElement.dataset.theme==='quiet'&&window.innerWidth<=768)updateQuietDevices();
 if(tuyaDevices.length===0){list.innerHTML='<div class="empty-state"><i class="bi bi-inbox"></i><p>No devices synced yet.</p></div>';populateDeviceSelects();return;}
 const groups={};
 for(const d of tuyaDevices){const g=d.group||'';if(!groups[g])groups[g]=[];groups[g].push(d);}
@@ -508,14 +512,93 @@ function escHtml(s){if(!s)return '';const d=document.createElement('div');d.text
 function haptic(p){try{if(navigator.vibrate)navigator.vibrate(typeof p==='number'?p:10);}catch(e){}}
 var ACCENTS=['purple','blue','green','orange','pink','cyan'];
 function loadAccent(){try{var a=localStorage.getItem('ecmAccent')||'purple';setAccent(a,true);}catch(e){}}
+function setTheme(m){
+document.documentElement.dataset.theme=m;
+document.querySelectorAll('.theme-mode-btn').forEach(function(b){b.classList.toggle('active',b.dataset.mode===m);});
+try{localStorage.setItem('ecmTheme',m);haptic(8);}catch(e){}
+if(m==='quiet'&&window.innerWidth<=768){setAccent(document.documentElement.dataset.accent||'purple',true);}
+updateQuietUI();
+}
+function loadTheme(){
+try{var t=localStorage.getItem('ecmTheme')||'comfortable';setTheme(t,true);}catch(e){}
+}
+function updateQuietUI(){
+var q=document.documentElement.dataset.theme==='quiet'&&window.innerWidth<=768;
+var hero=document.getElementById('quietHero');
+if(hero)hero.style.display=q?'block':'none';
+if(q&&window._lastData)updateQuietHero(window._lastData);
+}
+function updateQuietHero(d){
+var numEl=document.getElementById('quietHeroNum');
+var unitEl=document.getElementById('quietHeroUnit');
+if(!numEl)return;
+var w=parseFloat(d.inverterPower);
+if(w>=1000){numEl.textContent=(w/1000).toFixed(1);unitEl.textContent='кВт';}
+else{numEl.textContent=Math.round(w);unitEl.textContent='Вт';}
+updateQuietStats(d);
+updateQuietMiniChart(d);
+updateQuietDevices(d);
+}
+function updateQuietStats(d){
+var el=document.getElementById('quietHeroStats');
+if(!el)return;
+var solar=d.pv1Power+d.pv2Power;
+var bat=Math.round(d.batterySOC||0);
+var grid=parseFloat(d.gridPower)||0;
+el.innerHTML='<span class="hs-item accent"><i class="bi bi-sun"></i> '+Math.round(solar)+'Вт</span>'
++'<span class="hs-item"><i class="bi bi-battery-2"></i> '+bat+'%</span>'
++'<span class="hs-item'+(grid>=0?'':' accent')+'"><i class="bi bi-plug"></i> '+(grid>=0?'+':'')+grid.toFixed(1)+'Вт</span>';
+}
+function updateQuietMiniChart(d){
+}
+async function updateQuietDevices(d){
+var el=document.getElementById('quietDeviceStrip');
+if(!el)return;
+var devs=window._tuyaDevices||tuyaDevices||[];
+if(!devs.length){el.innerHTML='<div class="empty-state" style="padding:.5rem 0"><p style="font-size:.75rem;color:var(--muted)">No devices</p></div>';return;}
+var max=4;
+var html='';
+for(var i=0;i<Math.min(devs.length,max);i++){
+var dev=devs[i];
+var isOn=dev.switch===true;
+var iconClass=(dev.online===false)?'bi-plug':(isOn?'bi-activity':'bi-power');
+var stateClass=isOn?'on':'off';
+html+='<div class="device-row">'
++'<div class="dr-left"><i class="bi '+iconClass+' '+stateClass+'"></i><span class="dr-name'+(dev.switch===false?' off':'')+'">'+escHtml(dev.name)+'</span></div>'
++'<div class="quiet-switch '+(isOn?'on':'off')+'" onclick="quickToggleDevice(''+escHtml(dev.id)+'',this)"><div class="qk"></div></div>'
++'</div>';
+}
+if(devs.length>max){
+html+='<div style="padding:.6rem 0;text-align:center"><button class="btn-hb btn-hb-sm btn-hb-outline" onclick="switchTab('devices')">Show all devices ('+devs.length+')</button></div>';
+}
+el.innerHTML=html;
+}
+function quickToggleDevice(id,el){
+var isOn=el.classList.contains('on');
+el.classList.toggle('on',!isOn);
+el.classList.toggle('off',isOn);
+haptic(15);
+var dev=tuyaDevices.find(function(d){return d.id===id;});
+if(dev)dev.switch=!isOn;
+controlDevice(id,!isOn,el);
+}
+function switchTab(tab){
+var item=document.querySelector('.menu-item[data-tab="'+tab+'"]');
+if(item)item.click();
+}
+
 function setAccent(a,silent){
 document.documentElement.setAttribute('data-accent',a);
 document.querySelectorAll('.accent-swatch').forEach(function(s){s.classList.toggle('active',s.dataset.accent===a);});
 document.getElementById('sidebar-version').style.display='';
 if(!silent){try{localStorage.setItem('ecmAccent',a);haptic(10);}catch(e){}}
 }
-// Load saved accent on DOM ready
-if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadAccent);}else{loadAccent();}
+// Load saved accent + theme on DOM ready
+function loadStoredTheme(){
+loadAccent();
+loadTheme();
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadStoredTheme);}else{loadStoredTheme();}
 async function logout(){try{await apiPost('/api/logout',{});}catch(e){}window.location.href='/login';}
 function resetRestartOverlay(){const ov=document.getElementById('restartOverlay');ov.classList.remove('show');const sp=ov.querySelector('.restart-spinner');if(sp)sp.style.display='';const ci=ov.querySelector('.check-icon');if(ci)ci.remove();ov.querySelector('h3').innerHTML='Restarting<span class="restart-dots"></span>';ov.querySelector('p').textContent='Waiting for server to come back online';}
 async function restartApp(){
@@ -531,6 +614,49 @@ async function restartApp(){
 }
 function toggleSidebar(){if(window.innerWidth<=768)return;const s=document.querySelector('.sidebar');const isOpen=s.classList.contains('open');s.classList.toggle('open');localStorage.setItem('sidebarOpen',isOpen?'0':'1');const btn=document.querySelector('.sidebar-toggle i');if(btn)btn.className=isOpen?'bi bi-chevron-right':'bi bi-chevron-left';}
 
+
+// ============================================================
+// SPARK SHEET (quiet theme detail chart)
+// ============================================================
+var sparkChart=null;
+var sparkPeriod='day';
+function openSparkSheet(){
+document.getElementById('sparkSheet').classList.add('show');
+loadSparkChart(sparkPeriod);
+}
+function closeSparkSheet(){
+document.getElementById('sparkSheet').classList.remove('show');
+if(sparkChart){sparkChart.destroy();sparkChart=null;}
+}
+document.querySelectorAll('#sparkTabs .chart-tab').forEach(function(tab){
+tab.addEventListener('click',function(){
+document.querySelectorAll('#sparkTabs .chart-tab').forEach(function(t){t.classList.remove('active');});
+this.classList.add('active');
+sparkPeriod=this.dataset.period;
+loadSparkChart(sparkPeriod);
+});
+});
+async function loadSparkChart(period){
+try{
+var r=await fetch('/api/history?period='+period);
+var d=await r.json();
+if(!d.success||!d.points||!d.points.length){if(sparkChart){sparkChart.destroy();sparkChart=null;}return;}
+var labels=d.points.map(function(p){var dt=new Date(p.ts);if(period==='day'||period==='1h'||period==='3h'||period==='6h')return dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(period==='week')return dt.toLocaleDateString([],{weekday:'short',hour:'2-digit'});if(period==='month')return dt.toLocaleDateString([],{day:'numeric'});return dt.toLocaleDateString([],{month:'short',day:'numeric'});});
+var ctx=document.getElementById('sparkDetailChart');
+if(!ctx)return;
+if(sparkChart)sparkChart.destroy();
+sparkChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+{label:'Load',data:d.points.map(function(p){return p.load;}),borderColor:function(){var cs=getComputedStyle(document.documentElement);return cs.getPropertyValue('--primary').trim()||'#c98a4f';}(),backgroundColor:function(c){var g=c.chart.ctx.createLinearGradient(0,0,0,c.chart.height);g.addColorStop(0,'rgba(201,138,79,0.25)');g.addColorStop(1,'rgba(201,138,79,0)');return g;},fill:true,tension:0.3,pointRadius:0,borderWidth:2},
+{label:'Battery',data:d.points.map(function(p){return p.bat;}),borderColor:function(){var cs=getComputedStyle(document.documentElement);return cs.getPropertyValue('--success').trim()||'#30d158';}(),fill:false,tension:0.3,pointRadius:0,borderWidth:2,order:2}
+]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,30,0.95)',titleColor:'#f5f5f7',bodyColor:'#f5f5f7',borderColor:'rgba(255,255,255,0.09)',borderWidth:0.5,cornerRadius:10,padding:8,displayColors:true}},scales:{x:{ticks:{color:'#98989f',font:{size:9},maxTicksLimit:10,maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#98989f',font:{size:9},callback:function(v){return v+'W';}},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}catch(e){console.error('loadSparkChart',e);}
+}
+
+function toggleNotifPanel(){
+var item=document.querySelector('.menu-item[data-tab="notifications"]');
+if(item)item.click();
+}
+// ============================================================
 
 // ============================================================
 // HISTORY CHART

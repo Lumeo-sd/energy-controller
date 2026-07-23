@@ -35,6 +35,38 @@
 <div class="tab-pane active" id="tab-status">
 <div id="pull-indicator"><i class="bi bi-arrow-down"></i></div>
 <div class="page-header"><h1>Status</h1></div>
+<div class="quiet-hero" id="quietHero">
+<div class="quiet-topbar">
+  <span class="quiet-time" id="quietTime">—</span>
+  <button class="quiet-bell" id="quietBell" onclick="toggleNotifPanel()" title="Notifications">
+    <i class="bi bi-bell"></i>
+    <span class="badge-hb purple" id="quietNotifBadge" style="display:none">0</span>
+  </button>
+</div>
+<div class="hero-area" id="quietHeroArea">
+  <div class="hero-label" id="quietHeroLabel">Потужність зараз</div>
+  <div class="hero-value">
+    <span class="hero-num" id="quietHeroNum">—</span>
+    <span class="hero-unit" id="quietHeroUnit">Вт</span>
+  </div>
+  <div class="hero-stats" id="quietHeroStats"></div>
+</div>
+<div class="quiet-divider"></div>
+<div class="mini-chart" id="quietMiniChart" onclick="openSparkSheet()" title="Tap for detail">
+  <div class="bar" style="height:30%"></div>
+  <div class="bar" style="height:45%"></div>
+  <div class="bar" style="height:55%"></div>
+  <div class="bar" style="height:70%"></div>
+  <div class="bar" style="height:60%"></div>
+  <div class="bar" style="height:40%"></div>
+  <div class="bar" style="height:50%"></div>
+</div>
+<div class="quiet-divider"></div>
+<div class="quiet-section-label">Пристрої</div>
+<div class="quiet-devices" id="quietDeviceStrip">
+  <div class="empty-state" style="padding:.5rem 0"><p style="font-size:.75rem">Loading...</p></div>
+</div>
+</div>
 <div class="tiles-container" id="tilesContainer"></div>
 <div class="flow-section" id="flowSection"><div class="flow-metrics" id="flowMetrics"></div><div class="flow-svg-wrap"><svg id="energyFlow" viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
 <div class="hb-card chart-section collapsed" style="margin-bottom:.75rem">
@@ -192,6 +224,14 @@
 <div class="hb-card" style="margin-top:1rem">
 <div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-palette" style="margin-right:.5rem"></i>Theme</div></div>
 <div class="hb-card-body">
+<div style="margin-bottom:.75rem">
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="theme-mode-toggle">
+    <button class="theme-mode-btn active" data-mode="comfortable" onclick="setTheme('comfortable')">Comfortable</button>
+    <button class="theme-mode-btn" data-mode="quiet" onclick="setTheme('quiet')">Quiet Panel</button>
+  </div>
+  <p class="text-muted-hb" style="font-size:.68rem;margin-top:.35rem">"Quiet Panel" — minimal mobile view without cards/blur.</p>
+</div>
+<label class="text-muted-hb" style="font-size:.72rem;display:block;margin-bottom:.4rem">Accent</label>
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem" id="accent-picker">
 <div class="accent-swatch active" data-accent="purple" style="background:#bf5af2" onclick="setAccent('purple')" title="Purple"></div>
 <div class="accent-swatch" data-accent="blue" style="background:#0a84ff" onclick="setAccent('blue')" title="Blue"></div>
@@ -200,7 +240,7 @@
 <div class="accent-swatch" data-accent="pink" style="background:#ff375f" onclick="setAccent('pink')" title="Pink"></div>
 <div class="accent-swatch" data-accent="cyan" style="background:#00c7be" onclick="setAccent('cyan')" title="Cyan"></div>
 </div>
-<p class="text-muted-hb" style="font-size:.72rem">Choose an accent color for the UI. Saved locally.</p>
+<p class="text-muted-hb" style="font-size:.72rem">Choose an accent color. Saved locally.</p>
 </div>
 </div>
 
@@ -269,6 +309,24 @@
 <div id="tileDetailStats" style="display:flex;gap:.8rem;margin-bottom:.8rem;font-size:.78rem;color:#a1a1a6"></div>
 <div style="height:180px"><canvas id="tileDetailChart"></canvas></div>
 </div></div>
+<div class="type-sheet-backdrop" id="sparkSheet" onclick="if(event.target===this)closeSparkSheet()">
+<div class="type-sheet" style="max-height:80vh">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+  <h4 style="margin:0;font-size:.95rem;color:var(--text)">Power Detail</h4>
+  <button class="btn-hb btn-hb-sm btn-hb-icon btn-hb-outline" onclick="closeSparkSheet()"><i class="bi bi-x"></i></button>
+</div>
+<div class="chart-tabs" id="sparkTabs">
+  <div class="chart-tab" data-period="1h">1h</div>
+  <div class="chart-tab" data-period="3h">3h</div>
+  <div class="chart-tab" data-period="6h">6h</div>
+  <div class="chart-tab active" data-period="day">Day</div>
+  <div class="chart-tab" data-period="week">Week</div>
+  <div class="chart-tab" data-period="month">Month</div>
+  <div class="chart-tab" data-period="year">Year</div>
+</div>
+<div style="height:200px"><canvas id="sparkDetailChart"></canvas></div>
+</div>
+</div>
 </main>
 <script src="/app.js"></script>
 </body>
