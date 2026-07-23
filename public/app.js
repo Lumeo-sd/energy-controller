@@ -66,9 +66,7 @@ async function loadNotifications(){
       con.innerHTML='<div class="notif-empty">No notifications</div>';
       return;
     }
-    var html='<div style="display:flex;gap:.4rem;padding:.4rem .6rem">';
-    html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markAllRead()" style="flex:1"><i class="bi bi-check-all"></i> Read all</button>';
-    html+='<button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()" style="flex:1"><i class="bi bi-trash3"></i> Dismiss all</button></div>';
+    var html='';
     html+='<div class="notif-group-header">Latest</div>';
     var groups={};
     for(var i=0;i<list.length;i++){
@@ -98,8 +96,9 @@ async function loadNotifications(){
         html+='<button class="btn-hb btn-hb-outline btn-hb-sm" data-nft="'+_escAttr(first.title)+'" data-nftype="'+_escAttr(first.type||'info')+'" onclick="event.stopPropagation();dismissNotifGroup(this.dataset.nft,this.dataset.nftype)" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss</button>';
         html+='</div>';
         html+='<div class="notif-sub-list" style="display:none;width:100%;padding-top:4px;border-top:1px solid rgba(255,255,255,.05);margin-top:4px">';
-        for(var si=0;si<items.length;si++){
-          var sn=items[si];
+        var unreadItems=items.filter(function(x){return !x.read;});
+        for(var si=0;si<unreadItems.length;si++){
+          var sn=unreadItems[si];
           html+='<div class="notif-sub-item'+(sn.read?'':' notif-sub-unread')+'">';
           html+='<div class="notif-sub-time">'+new Date(sn.time).toLocaleString()+'</div>';
           html+=(sn.message?'<div class="notif-sub-msg">'+_esc(sn.message)+'</div>':'');
@@ -107,7 +106,7 @@ async function loadNotifications(){
         }
         html+='</div>';
         html+='</div>';
-      }else{      }else{
+      }else{
         html+='<div class="notif-item'+(groupUnread?' unread':'')+'">';
         html+='<div class="notif-icon '+(first.type||'info')+'">'+(first.type==='error'?'!':first.type==='warn'?'\u26a0':'\u2713')+'</div>';
         html+='<div class="notif-body">';
