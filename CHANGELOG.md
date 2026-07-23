@@ -1,3 +1,21 @@
+## v0.5.0 — 2026-07-23
+### Added
+- "Quiet Panel" theme — minimal mobile UI without glass cards/blur
+- `tokens.css` — shared CSS variables shared between main app and login page
+- Hero section with single power number + solar/battery/grid stats
+- Mini sparkline chart (7 bars) — tap opens bottom-sheet with full Chart.js
+- Device strip — first 4 devices as flat rows with quick toggle
+- Theme toggle in Settings: Comfortable (default) / Quiet Panel
+- Bottom nav on mobile: 4 icons with dot indicator (no pill/badge background)
+- Server and Notifications moved out of bottom nav (bell in topbar, Server in Settings)
+- `data-theme="quiet"` attribute toggles CSS overrides + loads copper accent (#c98a4f)
+- Login page now respects chosen accent + theme via tokens.css
+### Fixed
+- `var(--primary)` in Chart.js datasets resolved via getComputedStyle
+### Changed
+- `loadStatus()` updates hero values in quiet mode
+- `loadTuyaDevices()` populates device strip
+
 ## v0.3.11 — 2026-07-23
 ### Added
 - Theme/color switcher in Settings tab
