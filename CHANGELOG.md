@@ -1,3 +1,11 @@
+## v0.3.11 — 2026-07-23
+### Added
+- Theme/color switcher in Settings tab
+- 6 accent color palettes: Purple (default), Blue, Green, Orange, Pink, Cyan
+- Color swatches with active indicator
+- Preference persisted in localStorage (`ecmAccent`)
+- `data-accent` attribute on `<html>` with CSS variable overrides
+
 ## v0.3.10 — 2026-07-23
 ### Added
 - Haptic feedback (vibration): device toggle, scene run, toast, pull-to-refresh, swipe
