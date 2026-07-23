@@ -1,3 +1,11 @@
+## v0.3.12 — 2026-07-23
+### Added
+- Server health monitoring: checks disk, CPU temp, CPU load, memory every 5 min
+- Configurable thresholds in Settings → Notifications → Server health monitoring
+- Push notifications + external alerts (ntfy/Telegram) on threshold breach
+- Deduplication with hysteresis: 1 hour cooldown per metric, resets on recovery
+- Theme card collapsed behavior fixed (now matches other cards)
+
 ## v0.5.0 — 2026-07-23
 ### Added
 - "Quiet Panel" theme — minimal mobile UI without glass cards/blur
