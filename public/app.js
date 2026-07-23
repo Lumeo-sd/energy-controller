@@ -133,22 +133,57 @@ tuyaDevices=await apiGet('/api/tuya-devices');
 document.getElementById('device-count-badge').textContent=tuyaDevices.length;
 document.getElementById('sidebar-device-count').textContent=tuyaDevices.length;
 if(tuyaDevices.length===0){list.innerHTML='<div class="empty-state"><i class="bi bi-inbox"></i><p>No devices synced yet.</p></div>';populateDeviceSelects();return;}
-list.innerHTML='<div class="device-grid">'+tuyaDevices.map(d=>{
+const groups={};
+for(const d of tuyaDevices){const g=d.group||'';if(!groups[g])groups[g]=[];groups[g].push(d);}
+const groupKeys=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+let html='';
+for(const gk of groupKeys){
+const devs=groups[gk];
+if(gk){
+html+='<div class="device-group-header"><span class="device-group-icon"><i class="bi bi-folder2"></i></span><span class="device-group-name">'+escHtml(gk)+'</span><span class="badge-hb purple">'+devs.length+'</span></div>';
+}else{
+html+='<div class="device-group-header"><span class="device-group-icon"><i class="bi bi-inbox"></i></span><span class="device-group-name">Other</span><span class="badge-hb purple">'+devs.length+'</span></div>';
+}
+html+='<div class="device-grid">'+devs.map(d=>{
 const onlineBadge=d.online?'<span class="badge-hb online">Online</span>':'<span class="badge-hb offline">Offline</span>';
 const iconClass=d.switch===true?'on':(d.switch===false?'off':'unknown');
 const activeOn=d.switch===true?' active':'';
 const activeOff=d.switch===false?' active':'';
 const idSafe=escHtml(d.id);
+const gSafe=escHtml(d.group||'');
 return '<div class="entity-card device-card'+(d.switch===true?' is-on':'')+'">'
-+'<div class="device-card-top"><span class="device-icon '+iconClass+'"></span><span class="device-name">'+escHtml(d.name)+'</span>'+onlineBadge+'</div>'
++'<div class="device-card-top"><span class="device-icon '+iconClass+'"></span><span class="device-name">'+escHtml(d.name)+'</span>'+onlineBadge+'<button class="btn-hb btn-hb-sm btn-hb-icon device-group-btn" onclick="editDeviceGroup(\''+idSafe+'\',this)" title="Edit group"><i class="bi bi-pencil"></i></button></div>'
 +'<div class="device-info">ID: '+idSafe+'</div>'
++'<div class="device-info"><span class="device-group-lbl">Group: </span><span class="device-group-val" data-device-id="'+idSafe+'">'+escHtml(gSafe||'\u2014')+'</span></div>'
 +'<div class="device-toggle-group">'
 +'<button class="device-toggle-btn on'+activeOn+'" onclick="controlDevice(\''+idSafe+'\',true,this)"><i class="bi bi-power"></i> ON</button>'
 +'<button class="device-toggle-btn off'+activeOff+'" onclick="controlDevice(\''+idSafe+'\',false,this)"><i class="bi bi-power"></i> OFF</button>'
 +'</div></div>';
 }).join('')+'</div>';
+}
+list.innerHTML=html;
 populateDeviceSelects();
 }catch(e){console.error('loadTuyaDevices',e);}
+}
+async function editDeviceGroup(id,btn){
+const curGroup=tuyaDevices.find(d=>d.id===id)?.group||'';
+const groups=new Set();
+for(const d of tuyaDevices){if(d.group)groups.add(d.group);}
+const sorted=[...groups].sort();
+const newGroup=prompt('Enter group name for this device:'+(sorted.length?'\n\nExisting groups:\n'+sorted.join('\n'):''),curGroup);
+if(newGroup===null)return;
+const trimmed=newGroup.trim();
+if(trimmed===curGroup)return;
+try{
+const r=await apiPatch('/api/tuya-devices/'+encodeURIComponent(id)+'/group',{group:trimmed});
+if(r.success){
+const dev=tuyaDevices.find(d=>d.id===id);
+if(dev)dev.group=trimmed;
+loadTuyaDevices();
+showToast('Group updated','Device moved to "'+(trimmed||'Other')+'"');
+}else showToast('Error',r.message||'Failed',true);
+}catch(e){showToast('Error',e.message,true);
+}
 }
 async function controlDevice(id,value,btnEl){
 const card=btnEl?btnEl.closest('.device-card'):null;
