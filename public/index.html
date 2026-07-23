@@ -156,7 +156,6 @@
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">MAC Address</label><input type="text" id="cfg-inverter-mac" class="form-hb" placeholder="72:4F:56:8E:BB:40" style="text-transform:uppercase" /></div>
 <div class="mb-3" style="display:flex;align-items:center;gap:.5rem"><input type="checkbox" id="cfg-inverter-autoResolve" style="accent-color:var(--primary);width:16px;height:16px" /><label class="text-muted-hb" style="font-size:.8rem;cursor:pointer" for="cfg-inverter-autoResolve">Auto-resolve IP when offline (uses ping sweep)</label></div>
 <div class="mb-3" id="resolveAfterFails-row" style="display:none"><label class="text-muted-hb" style="font-size:.8rem">Consecutive fails to trigger resolve</label><input type="number" id="cfg-inverter-resolveAfterFails" class="form-hb" value="10" min="3" max="100" /></div>
-<script src="/app.js"></script>
 <div style="margin-top:.5rem"><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="scanInverterNetwork()" id="btn-scan-inv"><i class="bi bi-wifi"></i> Scan Network</button><span id="scan-status" style="margin-left:.5rem;font-size:.75rem;color:var(--muted)"></span></div>
 </div>
 </div>

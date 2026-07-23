@@ -565,11 +565,11 @@ var iconClass=(dev.online===false)?'bi-plug':(isOn?'bi-activity':'bi-power');
 var stateClass=isOn?'on':'off';
 html+='<div class="device-row">'
 +'<div class="dr-left"><i class="bi '+iconClass+' '+stateClass+'"></i><span class="dr-name'+(dev.switch===false?' off':'')+'">'+escHtml(dev.name)+'</span></div>'
-+'<div class="quiet-switch '+(isOn?'on':'off')+'" onclick="quickToggleDevice(''+escHtml(dev.id)+'',this)"><div class="qk"></div></div>'
++'<div class="quiet-switch '+(isOn?'on':'off')+'" onclick="quickToggleDevice(\x27+escHtml(dev.id)+\x27,this)"><div class="qk"></div></div>'
 +'</div>';
 }
 if(devs.length>max){
-html+='<div style="padding:.6rem 0;text-align:center"><button class="btn-hb btn-hb-sm btn-hb-outline" onclick="switchTab('devices')">Show all devices ('+devs.length+')</button></div>';
+html+='<div style="padding:.6rem 0;text-align:center"><button class="btn-hb btn-hb-sm btn-hb-outline" onclick="switchTab(\x27devices\x27)">Show all devices ('+devs.length+')</button></div>';
 }
 el.innerHTML=html;
 }
