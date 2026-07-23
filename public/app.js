@@ -506,6 +506,16 @@ loadScenes();
 }
 function escHtml(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function haptic(p){try{if(navigator.vibrate)navigator.vibrate(typeof p==='number'?p:10);}catch(e){}}
+var ACCENTS=['purple','blue','green','orange','pink','cyan'];
+function loadAccent(){try{var a=localStorage.getItem('ecmAccent')||'purple';setAccent(a,true);}catch(e){}}
+function setAccent(a,silent){
+document.documentElement.setAttribute('data-accent',a);
+document.querySelectorAll('.accent-swatch').forEach(function(s){s.classList.toggle('active',s.dataset.accent===a);});
+document.getElementById('sidebar-version').style.display='';
+if(!silent){try{localStorage.setItem('ecmAccent',a);haptic(10);}catch(e){}}
+}
+// Load saved accent on DOM ready
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadAccent);}else{loadAccent();}
 async function logout(){try{await apiPost('/api/logout',{});}catch(e){}window.location.href='/login';}
 function resetRestartOverlay(){const ov=document.getElementById('restartOverlay');ov.classList.remove('show');const sp=ov.querySelector('.restart-spinner');if(sp)sp.style.display='';const ci=ov.querySelector('.check-icon');if(ci)ci.remove();ov.querySelector('h3').innerHTML='Restarting<span class="restart-dots"></span>';ov.querySelector('p').textContent='Waiting for server to come back online';}
 async function restartApp(){

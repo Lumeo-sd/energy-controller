@@ -188,6 +188,21 @@
 <div id="tariff-status" style="margin-top:.4rem;font-size:.8rem;display:none"></div>
 </div>
 </div>
+<div class="hb-card" style="margin-top:1rem">
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-palette" style="margin-right:.5rem"></i>Theme</div></div>
+<div class="hb-card-body">
+<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem" id="accent-picker">
+<div class="accent-swatch active" data-accent="purple" style="background:#bf5af2" onclick="setAccent('purple')" title="Purple"></div>
+<div class="accent-swatch" data-accent="blue" style="background:#0a84ff" onclick="setAccent('blue')" title="Blue"></div>
+<div class="accent-swatch" data-accent="green" style="background:#30d158" onclick="setAccent('green')" title="Green"></div>
+<div class="accent-swatch" data-accent="orange" style="background:#ff9f0a" onclick="setAccent('orange')" title="Orange"></div>
+<div class="accent-swatch" data-accent="pink" style="background:#ff375f" onclick="setAccent('pink')" title="Pink"></div>
+<div class="accent-swatch" data-accent="cyan" style="background:#00c7be" onclick="setAccent('cyan')" title="Cyan"></div>
+</div>
+<p class="text-muted-hb" style="font-size:.72rem">Choose an accent color for the UI. Saved locally.</p>
+</div>
+</div>
+
 <div class="hb-card collapsed" style="margin-top:1rem">
 <div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-hdd-network" style="margin-right:.5rem"></i>Integrations</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();savePluginConfig()"><i class="bi bi-save"></i> Save</button></span></div>
 <div class="hb-card-body">

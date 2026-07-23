@@ -506,3 +506,30 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   color: var(--primary-light);
   background: rgba(191,90,242,.15);
 }
+
+
+/* ====== Accent color themes ====== */
+html[data-accent="purple"]{--primary:#bf5af2;--primary-dark:#a742d6;--primary-light:#d18ffb}
+html[data-accent="blue"]{--primary:#0a84ff;--primary-dark:#0060c0;--primary-light:#40a9ff}
+html[data-accent="green"]{--primary:#30d158;--primary-dark:#1a9e3e;--primary-light:#5be87a}
+html[data-accent="orange"]{--primary:#ff9f0a;--primary-dark:#cc7a00;--primary-light:#ffb340}
+html[data-accent="pink"]{--primary:#ff375f;--primary-dark:#cc0030;--primary-light:#ff6b85}
+html[data-accent="cyan"]{--primary:#00c7be;--primary-dark:#009e97;--primary-light:#33e0d8}
+
+.accent-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: border-color .15s, transform .15s;
+  flex-shrink: 0;
+}
+.accent-swatch:hover {
+  transform: scale(1.1);
+}
+.accent-swatch.active {
+  border-color: var(--text);
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
+}
