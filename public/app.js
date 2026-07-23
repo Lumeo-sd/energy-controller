@@ -55,11 +55,7 @@ async function loadNotifications(){
     if(newCount>0)playNotifSound();
     if(list.length)_lastNotifId=list[0].id;
     _unreadNotifCount=unread;
-    var badElTotal=document.getElementById('sidebar-notif-count');
     var badElUnread=document.getElementById('sidebar-notif-unread');
-    if(badElTotal){
-      badElTotal.textContent=list.length;
-      badElTotal.style.display=list.length?'':'none';
     }
     if(badElUnread){
       badElUnread.textContent=unread;
@@ -115,7 +111,8 @@ async function loadNotifications(){
   }catch(e){console.error('loadNotifications',e);}
 }
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-async function dismissNotif(id){try{await apiPost('/api/notifications/dismiss',{id});loadNotifications();}catch(e){}}
+async function dismissNotifGroup(title,type){try{await apiPost('/api/notifications/dismiss',{title:title,type:type||'info'});loadNotifications();}catch(e){}}
+async function markNotifGroup(title,type){try{await apiPost('/api/notifications/mark-read',{title:title,type:type||'info'});loadNotifications();}catch(e){}}
 async function dismissAllNotif(){try{await apiPost('/api/notifications/dismiss-all',{});loadNotifications();}catch(e){}}
 async function markAllRead(){try{await apiPost('/api/notifications/mark-read',{});loadNotifications();}catch(e){}}
 function handleAuthStatus(r){if(r.status===401){window.location.href='/login';throw new Error('Unauthorized');}return r;}

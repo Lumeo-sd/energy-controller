@@ -224,6 +224,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 .notif-item .notif-time{font-size:.62rem;color:var(--muted);margin-top:1px}
 .notif-item .notif-dismiss{flex-shrink:0;width:22px;height:22px;border:none;background:none;color:var(--muted);cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem;margin-top:3px}
 .notif-item .notif-dismiss:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.notif-item .notif-actions{flex-shrink:0;display:flex;gap:.3rem;align-items:center;margin-top:2px}
 .notif-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.85rem}
 .hb-toast{position:fixed;bottom:calc(2rem + var(--safe-b));right:2rem;background:var(--card-solid);
   -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:.5px solid var(--border);
