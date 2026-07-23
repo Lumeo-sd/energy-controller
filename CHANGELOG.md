@@ -1,3 +1,12 @@
+## v0.3.13 — 2026-07-23
+### Added
+- Notification center: sound on new critical/warn notification (Web Audio API)
+- Unread count badge (orange pill) in sidebar, separate from total count
+- "Mark read" button in notification panel + "Mark all read" API
+- Notification grouping by title+type (collapses duplicates with count badge)
+- Unread highlight (left accent border, bold title) on notification items
+- Side-by-side "Mark read" / "Dismiss all" buttons in notification card
+
 ## v0.3.12 — 2026-07-23
 ### Added
 - Server health monitoring: checks disk, CPU temp, CPU load, memory every 5 min
