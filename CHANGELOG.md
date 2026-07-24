@@ -1,3 +1,24 @@
+## v0.6.0 — 2026-07-24
+### Added
+- iOS-style Settings redesign: grouped sections with border-radius, colored icon badges, inset dividers, chevron indicators, auto-save toggles, inline inputs
+- Settings groups: Inverter, Tuya Cloud, Integrations, Notifications, Tariff, Appearance, System
+- Accent color picker redesigned with circular swatches in Appearance section
+- Status Tiles, Change Password, Update, Backup sections collapsible inline
+- Admin user management section (shown for admin users only)
+
+### Fixed
+- SVG energy flow animation on iOS Safari: replaced `innerHTML` with `createElementNS` for proper SVG namespace
+- `animateMotion` replaced with `requestAnimationFrame` cubic-bezier dot animation (works on iOS)
+- Chart line labels plugin removed (labels drawn directly on lines)
+
+### Changed
+- Chart Y-axis ticks: compact `1k`/`-1k` formatting for values ≥1000, smaller font (9px), max 5 ticks
+- Chart X-axis: 24h time format (no AM/PM), adaptive `maxTicksLimit` per period
+- Mobile tile sizes reduced: padding, min-height, icon/value/label font sizes
+- Chart section mobile layout: flex-wrap header, scrollable tabs, smaller tab padding
+- Pull-to-refresh removed (data updates in real-time via polling)
+- Swipe-to-change-tab gesture removed
+
 ## v0.3.13 — 2026-07-23
 ### Added
 - Notification center: sound on new critical/warn notification (Web Audio API)
