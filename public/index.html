@@ -112,13 +112,13 @@
   <div class="settings-group-title" style="padding-top:0">CONNECTION</div>
   <div class="settings-group">
     <div class="settings-row settings-row-link" onclick="openSettingsPage('page-inverter')">
-      <div class="settings-icon" style="background:#ff9500"><i class="bi bi-plug"></i></div>
+      <div class="settings-icon"><i class="bi bi-plug"></i></div>
       <div class="settings-body"><div class="settings-label">Inverter</div><div class="settings-desc">IP, serial, Modbus config</div></div>
       <span class="settings-chevron">›</span>
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row settings-row-link" onclick="openSettingsPage('page-tuya')">
-      <div class="settings-icon" style="background:#00c7be"><i class="bi bi-cloud"></i></div>
+      <div class="settings-icon"><i class="bi bi-cloud"></i></div>
       <div class="settings-body"><div class="settings-label">Tuya Cloud</div><div class="settings-desc">API keys, country, credentials</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -127,13 +127,13 @@
   <div class="settings-group-title">SERVICES</div>
   <div class="settings-group">
     <div class="settings-row settings-row-link" onclick="openSettingsPage('page-integrations')">
-      <div class="settings-icon" style="background:#30d158"><i class="bi bi-puzzle"></i></div>
+      <div class="settings-icon"><i class="bi bi-puzzle"></i></div>
       <div class="settings-body"><div class="settings-label">Integrations</div><div class="settings-desc">ntfy, Telegram, NetBird</div></div>
       <span class="settings-chevron">›</span>
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row settings-row-link" onclick="openSettingsPage('page-notifications')">
-      <div class="settings-icon" style="background:#ff375f"><i class="bi bi-bell"></i></div>
+      <div class="settings-icon"><i class="bi bi-bell"></i></div>
       <div class="settings-body"><div class="settings-label">Notifications</div><div class="settings-desc">Alerts, health monitoring, grouping</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -142,7 +142,7 @@
   <div class="settings-group-title">ENERGY</div>
   <div class="settings-group">
     <div class="settings-row settings-row-link" onclick="openSettingsPage('page-tariff')">
-      <div class="settings-icon" style="background:#ff9f0a"><i class="bi bi-cash-coin"></i></div>
+      <div class="settings-icon"><i class="bi bi-cash-coin"></i></div>
       <div class="settings-body"><div class="settings-label">Tariff &amp; Cost</div><div class="settings-desc">Rates, currency, day/night</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -151,7 +151,7 @@
   <div class="settings-group-title">INTERFACE</div>
   <div class="settings-group">
     <div class="settings-row settings-row-link" onclick="openSettingsPage('page-appearance')">
-      <div class="settings-icon" style="background:#ff375f"><i class="bi bi-palette"></i></div>
+      <div class="settings-icon"><i class="bi bi-palette"></i></div>
       <div class="settings-body"><div class="settings-label">Appearance</div><div class="settings-desc">Accent color</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -160,7 +160,7 @@
   <div class="settings-group-title">DEVICE</div>
   <div class="settings-group">
     <div class="settings-row settings-row-link" onclick="openSettingsPage('page-system')">
-      <div class="settings-icon" style="background:#8e8e93"><i class="bi bi-gear"></i></div>
+      <div class="settings-icon"><i class="bi bi-gear"></i></div>
       <div class="settings-body"><div class="settings-label">System</div><div class="settings-desc">Tiles, password, update, backup, restart</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -170,7 +170,7 @@
     <div class="settings-group-title">ADMIN</div>
     <div class="settings-group">
       <div class="settings-row settings-row-link" onclick="openSettingsPage('page-admin')">
-        <div class="settings-icon" style="background:#ff375f"><i class="bi bi-shield-lock"></i></div>
+        <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
         <div class="settings-body"><div class="settings-label">User Management</div></div>
         <span class="settings-chevron">›</span>
       </div>
@@ -190,31 +190,31 @@
   <div class="settings-group-title" style="padding-top:0">INVERTER</div>
   <div class="settings-group">
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9500"><i class="bi bi-plug"></i></div>
+      <div class="settings-icon"><i class="bi bi-plug"></i></div>
       <div class="settings-body"><div class="settings-label">IP Address</div></div>
       <input type="text" id="cfg-inverter-ip" class="settings-input" style="width:140px;text-align:right" placeholder="192.168.0.116" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9500;opacity:0"><i class="bi bi-hash"></i></div>
+      <div class="settings-icon"><i class="bi bi-hash"></i></div>
       <div class="settings-body"><div class="settings-label">Serial Number</div></div>
       <input type="text" id="cfg-inverter-serial" class="settings-input" style="width:140px;text-align:right" placeholder="2317564280" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9500;opacity:0"><i class="bi bi-hash"></i></div>
+      <div class="settings-icon"><i class="bi bi-hash"></i></div>
       <div class="settings-body"><div class="settings-label">Modbus Port</div></div>
       <input type="number" id="cfg-inverter-port" class="settings-input" style="width:80px;text-align:right" value="8899" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9500;opacity:0"><i class="bi bi-hash"></i></div>
+      <div class="settings-icon"><i class="bi bi-hash"></i></div>
       <div class="settings-body"><div class="settings-label">MAC Address</div></div>
       <input type="text" id="cfg-inverter-mac" class="settings-input" style="width:150px;text-align:right;text-transform:uppercase" placeholder="72:4F:56:8E:BB:40" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#ff9500;opacity:0"><i class="bi bi-wifi"></i></div>
+      <div class="settings-icon"><i class="bi bi-wifi"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">Auto-resolve IP</div>
         <div class="settings-toggle-desc">Ping sweep when offline</div>
@@ -223,7 +223,7 @@
     </div>
     <div class="settings-divider"></div>
     <div class="settings-action-row" onclick="scanInverterNetwork()">
-      <div class="settings-icon" style="background:#ff9500;opacity:0"><i class="bi bi-wifi"></i></div>
+      <div class="settings-icon"><i class="bi bi-wifi"></i></div>
       <div class="settings-body"><div class="settings-action-label">Scan Network</div></div>
       <span id="scan-status" style="font-size:.75rem;color:var(--muted)"></span>
       <span class="settings-chevron">›</span>
@@ -241,37 +241,37 @@
   <div class="settings-group-title" style="padding-top:0">TUYA CLOUD</div>
   <div class="settings-group">
     <div class="settings-row">
-      <div class="settings-icon" style="background:#00c7be"><i class="bi bi-cloud"></i></div>
+      <div class="settings-icon"><i class="bi bi-cloud"></i></div>
       <div class="settings-body"><div class="settings-label">Access ID</div></div>
       <input type="text" id="cfg-tuya-accessId" class="settings-input" style="width:160px;text-align:right" placeholder="Enter ID" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#00c7be;opacity:0"><i class="bi bi-key"></i></div>
+      <div class="settings-icon"><i class="bi bi-key"></i></div>
       <div class="settings-body"><div class="settings-label">Access Key</div></div>
       <input type="password" id="cfg-tuya-accessKey" class="settings-input" style="width:160px;text-align:right" placeholder="Enter Key" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#00c7be;opacity:0"><i class="bi bi-globe"></i></div>
+      <div class="settings-icon"><i class="bi bi-globe"></i></div>
       <div class="settings-body"><div class="settings-label">Country Code</div></div>
       <input type="number" id="cfg-tuya-countryCode" class="settings-input" style="width:80px;text-align:right" value="48" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#00c7be;opacity:0"><i class="bi bi-person"></i></div>
+      <div class="settings-icon"><i class="bi bi-person"></i></div>
       <div class="settings-body"><div class="settings-label">Username / Email</div></div>
       <input type="text" id="cfg-tuya-username" class="settings-input" style="width:160px;text-align:right" placeholder="user@example.com" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#00c7be;opacity:0"><i class="bi bi-lock"></i></div>
+      <div class="settings-icon"><i class="bi bi-lock"></i></div>
       <div class="settings-body"><div class="settings-label">Password</div></div>
       <input type="password" id="cfg-tuya-password" class="settings-input" style="width:160px;text-align:right" placeholder="••••••••" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#00c7be;opacity:0"><i class="bi bi-grid"></i></div>
+      <div class="settings-icon"><i class="bi bi-grid"></i></div>
       <div class="settings-body"><div class="settings-label">App Schema</div></div>
       <select id="cfg-tuya-appSchema" class="settings-select" style="width:130px;text-align:right">
         <option value="tuyaSmart">Tuya Smart</option>
@@ -291,28 +291,44 @@
   <div class="settings-group-title" style="padding-top:0">INTEGRATIONS</div>
   <div class="settings-group">
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#30d158"><i class="bi bi-bell"></i></div>
+      <div class="settings-icon"><i class="bi bi-bell"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">ntfy.sh</div>
       </div>
-      <label class="sw"><input type="checkbox" id="cfg-ntfy-enabled"><span class="sw-slider"></span></label>
+      <label class="sw"><input type="checkbox" id="cfg-ntfy-enabled" onchange="document.getElementById('ntfy-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
+    </div>
+    <div id="ntfy-fields" style="padding:.3rem 1rem .6rem 3.5rem;display:none;flex-direction:column;gap:.4rem">
+      <input type="text" id="cfg-ntfy-topic" class="settings-input" placeholder="Topic" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#30d158;opacity:0"><i class="bi bi-telegram"></i></div>
+      <div class="settings-icon"><i class="bi bi-telegram"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">Telegram</div>
       </div>
-      <label class="sw"><input type="checkbox" id="cfg-tg-enabled"><span class="sw-slider"></span></label>
+      <label class="sw"><input type="checkbox" id="cfg-tg-enabled" onchange="document.getElementById('tg-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
+    </div>
+    <div id="tg-fields" style="padding:.3rem 1rem .6rem 3.5rem;display:none;flex-direction:column;gap:.4rem">
+      <input type="password" id="cfg-tg-token" class="settings-input" placeholder="Bot Token" />
+      <input type="text" id="cfg-tg-chat" class="settings-input" placeholder="Chat ID" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#8e8e93"><i class="bi bi-wifi"></i></div>
+      <div class="settings-icon"><i class="bi bi-wifi"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">NetBird Mesh</div>
         <div class="settings-toggle-desc">Secure remote access</div>
       </div>
-      <label class="sw"><input type="checkbox" id="cfg-netbird-enabled"><span class="sw-slider"></span></label>
+      <label class="sw"><input type="checkbox" id="cfg-netbird-enabled" onchange="document.getElementById('netbird-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
+    </div>
+    <div id="netbird-fields" style="padding:.3rem 1rem .6rem 3.5rem;display:none;flex-direction:column;gap:.4rem">
+      <input type="password" id="cfg-netbird-setupKey" class="settings-input" placeholder="Setup Key" />
+      <input type="text" id="cfg-netbird-managementUrl" class="settings-input" placeholder="Management URL" />
+      <div style="display:flex;gap:.5rem;margin-top:.3rem">
+        <button class="settings-btn" onclick="netbirdUp()"><i class="bi bi-wifi"></i> Connect</button>
+        <button class="settings-btn" onclick="netbirdDown()"><i class="bi bi-wifi-off"></i> Disconnect</button>
+      </div>
+      <div id="netbird-status" style="font-size:.78rem;display:none;margin-top:.3rem"></div>
     </div>
   </div>
 </div>
@@ -326,7 +342,7 @@
   <div class="settings-group-title" style="padding-top:0">NOTIFICATIONS</div>
   <div class="settings-group">
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#ff375f"><i class="bi bi-bell"></i></div>
+      <div class="settings-icon"><i class="bi bi-bell"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">Enable Notifications</div>
       </div>
@@ -336,7 +352,7 @@
   <div id="notif-sub-page">
   <div class="settings-group" style="margin-top:0">
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#ff375f;opacity:0"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="settings-icon"><i class="bi bi-exclamation-triangle"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">Critical Alerts</div>
       </div>
@@ -344,7 +360,7 @@
     </div>
     <div class="settings-divider"></div>
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#ff375f;opacity:0"><i class="bi bi-lightning"></i></div>
+      <div class="settings-icon"><i class="bi bi-lightning"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">Grid Outage Report</div>
       </div>
@@ -352,15 +368,21 @@
     </div>
     <div class="settings-divider"></div>
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#ff375f;opacity:0"><i class="bi bi-cpu"></i></div>
+      <div class="settings-icon"><i class="bi bi-cpu"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">Server Health Monitoring</div>
       </div>
-      <label class="sw"><input type="checkbox" id="cfg-health-enabled"><span class="sw-slider"></span></label>
+      <label class="sw"><input type="checkbox" id="cfg-health-enabled" onchange="document.getElementById('health-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
+    </div>
+    <div id="health-fields" style="padding:0 1rem .6rem 3.5rem;display:none;flex-direction:column;gap:.4rem">
+      <input type="number" id="cfg-health-disk" class="settings-input" placeholder="Disk free threshold (%)" min="1" max="99" />
+      <input type="number" id="cfg-health-cpu-temp" class="settings-input" placeholder="CPU temp threshold (°C)" min="40" max="100" />
+      <input type="number" step="0.5" id="cfg-health-cpu-load" class="settings-input" placeholder="CPU load threshold (1min avg)" min="0" max="50" />
+      <input type="number" id="cfg-health-mem" class="settings-input" placeholder="Memory free threshold (%)" min="1" max="99" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-toggle-row">
-      <div class="settings-icon" style="background:#ff375f;opacity:0"><i class="bi bi-diagram-3"></i></div>
+      <div class="settings-icon"><i class="bi bi-diagram-3"></i></div>
       <div class="settings-toggle-body">
         <div class="settings-toggle-label">Group Notifications</div>
         <div class="settings-toggle-desc">Collapse similar alerts</div>
@@ -369,7 +391,7 @@
     </div>
     <div class="settings-divider"></div>
     <div class="settings-action-row" onclick="testNotification()">
-      <div class="settings-icon" style="background:#ff375f;opacity:0"><i class="bi bi-send"></i></div>
+      <div class="settings-icon"><i class="bi bi-send"></i></div>
       <div class="settings-body"><div class="settings-action-label">Send Test Notification</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -386,13 +408,13 @@
   <div class="settings-group-title" style="padding-top:0">TARIFF &amp; COST</div>
   <div class="settings-group">
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9f0a"><i class="bi bi-cash-coin"></i></div>
+      <div class="settings-icon"><i class="bi bi-cash-coin"></i></div>
       <div class="settings-body"><div class="settings-label">Currency</div></div>
       <input type="text" id="cfg-tariff-currency" class="settings-input" style="width:80px;text-align:right" placeholder="UAH" maxlength="8" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9f0a;opacity:0"><i class="bi bi-bar-chart"></i></div>
+      <div class="settings-icon"><i class="bi bi-bar-chart"></i></div>
       <div class="settings-body"><div class="settings-label">Tariff Type</div></div>
       <select id="cfg-tariff-type" class="settings-select" style="width:140px;text-align:right" onchange="toggleTariffFields()">
         <option value="flat">Flat Rate</option>
@@ -402,7 +424,7 @@
     <div class="settings-divider"></div>
     <div id="tariff-flat-fields">
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9f0a;opacity:0"><i class="bi bi-coin"></i></div>
+      <div class="settings-icon"><i class="bi bi-coin"></i></div>
       <div class="settings-body"><div class="settings-label">Rate (per kWh)</div></div>
       <input type="number" step="0.01" min="0" id="cfg-tariff-flat-rate" class="settings-input" style="width:100px;text-align:right" placeholder="0" />
     </div>
@@ -410,13 +432,13 @@
     <div id="tariff-daynight-fields">
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9f0a;opacity:0"><i class="bi bi-sun"></i></div>
+      <div class="settings-icon"><i class="bi bi-sun"></i></div>
       <div class="settings-body"><div class="settings-label">Day Rate</div></div>
       <input type="number" step="0.01" min="0" id="cfg-tariff-day-rate" class="settings-input" style="width:100px;text-align:right" placeholder="0" />
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff9f0a;opacity:0"><i class="bi bi-moon"></i></div>
+      <div class="settings-icon"><i class="bi bi-moon"></i></div>
       <div class="settings-body"><div class="settings-label">Night Rate</div></div>
       <input type="number" step="0.01" min="0" id="cfg-tariff-night-rate" class="settings-input" style="width:100px;text-align:right" placeholder="0" />
     </div>
@@ -437,7 +459,7 @@
   <div class="settings-group-title" style="padding-top:0">APPEARANCE</div>
   <div class="settings-group">
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff375f"><i class="bi bi-palette"></i></div>
+      <div class="settings-icon"><i class="bi bi-palette"></i></div>
       <div class="settings-body">
         <div class="settings-label">Accent Color</div>
       </div>
@@ -465,7 +487,7 @@
   <div class="settings-group-title" style="padding-top:0">SYSTEM</div>
   <div class="settings-group">
     <div class="settings-row" onclick="document.getElementById('tile-edit-inline').classList.toggle('open')">
-      <div class="settings-icon" style="background:#8e8e93"><i class="bi bi-pencil-square"></i></div>
+      <div class="settings-icon"><i class="bi bi-pencil-square"></i></div>
       <div class="settings-body"><div class="settings-label">Status Tiles</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -477,13 +499,13 @@
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#8e8e93;opacity:0"><i class="bi bi-arrow-clockwise"></i></div>
+      <div class="settings-icon"><i class="bi bi-arrow-clockwise"></i></div>
       <div class="settings-body"><div class="settings-label">Restart UI</div></div>
       <span style="margin-left:auto"><button class="settings-btn" onclick="location.reload()" style="font-size:.75rem">Reload</button></span>
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#8e8e93;opacity:0"><i class="bi bi-cloud-download"></i></div>
+      <div class="settings-icon"><i class="bi bi-cloud-download"></i></div>
       <div class="settings-body">
         <div class="settings-label">Application Update</div>
       </div>
@@ -498,7 +520,7 @@
     <div id="update-status" style="padding:0 1rem .5rem 3.5rem;font-size:.75rem;display:none"></div>
     <div class="settings-divider"></div>
     <div class="settings-row">
-      <div class="settings-icon" style="background:#8e8e93;opacity:0"><i class="bi bi-archive"></i></div>
+      <div class="settings-icon"><i class="bi bi-archive"></i></div>
       <div class="settings-body"><div class="settings-label">Backup &amp; Restore</div></div>
       <span style="margin-left:auto;display:flex;gap:.3rem">
         <button class="settings-btn" onclick="createBackup()"><i class="bi bi-download"></i> Backup</button>
@@ -508,8 +530,8 @@
     </div>
     <div id="backup-status" style="padding:.3rem 1rem .5rem 3.5rem;font-size:.78rem;display:none"></div>
     <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon" style="background:#8e8e93;opacity:0"><i class="bi bi-shield-lock"></i></div>
+    <div class="settings-row settings-row-link" onclick="document.getElementById('password-inline-fields').classList.toggle('open')">
+      <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
       <div class="settings-body"><div class="settings-label">Change Password</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -526,13 +548,13 @@
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row" onclick="document.getElementById('restartModal').classList.add('show')">
-      <div class="settings-icon" style="background:#8e8e93;opacity:0"><i class="bi bi-arrow-repeat"></i></div>
+      <div class="settings-icon"><i class="bi bi-arrow-repeat"></i></div>
       <div class="settings-body"><div class="settings-label">Restart App</div></div>
       <span class="settings-chevron">›</span>
     </div>
     <div class="settings-divider"></div>
     <div class="settings-row" onclick="logout()" style="cursor:pointer">
-      <div class="settings-icon" style="background:#8e8e93;opacity:0"><i class="bi bi-box-arrow-right"></i></div>
+      <div class="settings-icon"><i class="bi bi-box-arrow-right"></i></div>
       <div class="settings-body"><div class="settings-label" style="color:#ff453a">Log Out</div></div>
       <span class="settings-chevron">›</span>
     </div>
@@ -548,7 +570,7 @@
   <div class="settings-group-title" style="padding-top:0">ADMIN</div>
   <div class="settings-group">
     <div class="settings-row">
-      <div class="settings-icon" style="background:#ff375f"><i class="bi bi-shield-lock"></i></div>
+      <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
       <div class="settings-body"><div class="settings-label">User Management</div></div>
     </div>
   </div>
