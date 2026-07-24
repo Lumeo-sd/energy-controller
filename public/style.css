@@ -593,3 +593,19 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 
 
 
+
+/* ====== Settings sub-page navigation ====== */
+.settings-page{display:none;animation:settingsSlideIn .3s cubic-bezier(.4,0,.2,1)}
+.settings-page.open{display:block}
+.settings-page-header{display:flex;align-items:center;gap:.5rem;padding:.5rem 0 .75rem;cursor:pointer;color:var(--primary);font-size:.95rem;font-weight:500;-webkit-user-select:none;user-select:none;position:sticky;top:0;background:var(--bg);z-index:10}
+.settings-page-header i{font-size:1.1rem;font-weight:700}
+.settings-page-header:active{opacity:.6}
+@keyframes settingsSlideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+#settings-menu{animation:settingsFadeIn .25s ease}
+#settings-pages{position:relative}
+@keyframes settingsFadeIn{from{opacity:0}to{opacity:1}}
+
+/* Password fields / tile editor collapse */
+#password-inline-fields.open{display:block}
+#tile-edit-inline{display:none}
+#tile-edit-inline.open{display:block}

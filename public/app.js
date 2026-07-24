@@ -1024,7 +1024,7 @@ function saveTilePrefs(p){localStorage.setItem('tileVis',JSON.stringify(p));sync
 function loadTileOrder(serverOrder){if(serverOrder){saveTileOrder(serverOrder);return serverOrder;}try{const o=JSON.parse(localStorage.getItem('tileOrder')||'null');if(Array.isArray(o)){const ids=TILE_IDS.filter(id=>o.includes(id));TILE_IDS.forEach(id=>{if(!ids.includes(id))ids.push(id);});return ids;}}catch{}return[...TILE_IDS];}
 function saveTileOrder(o){localStorage.setItem('tileOrder',JSON.stringify(o));syncTilePrefsToServer();}
 function syncTilePrefsToServer(){try{const p={tileVis:loadTilePrefs(),tileOrder:loadTileOrder(),accent:localStorage.getItem('ecmAccent')||'purple',notifGroup:localStorage.getItem('ecmNotifGroup')!=='0'};var h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;fetch('/api/user-prefs',{method:'POST',headers:h,body:JSON.stringify({prefs:p})}).catch(function(){});}catch(e){}}
-async function loadUserPrefsFromServer(){try{const r=await apiGet('/api/user-prefs');if(!r.success||!r.prefs)return;_currentUser=r.username||null;_currentRole=r.role||null;if(_currentRole==='admin'){var ae=document.getElementById('admin-section');if(ae)ae.style.display='block';loadUsersList();}const p=r.prefs;if(p.accent){localStorage.setItem('ecmAccent',p.accent);setAccent(p.accent,false);}if(p.notifGroup!==undefined){localStorage.setItem('ecmNotifGroup',p.notifGroup?'1':'0');_notifGrouping=p.notifGroup;var cb=document.querySelector('.notif-group-toggle');if(cb)cb.checked=p.notifGroup;loadNotifications();}if(p.tileVis&&Object.keys(p.tileVis).length){var existing=loadTilePrefs();var merged={};TILE_IDS.forEach(function(id){merged[id]=p.tileVis[id]!==undefined?p.tileVis[id]:existing[id]!==undefined?existing[id]:true;});saveTilePrefs(merged);}if(p.tileOrder&&p.tileOrder.length){loadTileOrder(p.tileOrder);}}catch(e){}}
+async function loadUserPrefsFromServer(){try{const r=await apiGet('/api/user-prefs');if(!r.success||!r.prefs)return;_currentUser=r.username||null;_currentRole=r.role||null;if(_currentRole==='admin'){var ae=document.getElementById('admin-section-title');if(ae)ae.style.display='block';loadUsersList();}const p=r.prefs;if(p.accent){localStorage.setItem('ecmAccent',p.accent);setAccent(p.accent,false);}if(p.notifGroup!==undefined){localStorage.setItem('ecmNotifGroup',p.notifGroup?'1':'0');_notifGrouping=p.notifGroup;var cb=document.querySelector('.notif-group-toggle');if(cb)cb.checked=p.notifGroup;loadNotifications();}if(p.tileVis&&Object.keys(p.tileVis).length){var existing=loadTilePrefs();var merged={};TILE_IDS.forEach(function(id){merged[id]=p.tileVis[id]!==undefined?p.tileVis[id]:existing[id]!==undefined?existing[id]:true;});saveTilePrefs(merged);}if(p.tileOrder&&p.tileOrder.length){loadTileOrder(p.tileOrder);}}catch(e){}}
 async function loadUsersList(){try{var r=await apiGet('/api/users');if(!r.success||!r.users)return;var el=document.getElementById('users-list');if(!el)return;var html='';for(var name in r.users){var u=r.users[name];html+='<div class="user-row" style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .6rem;border-radius:8px;background:rgba(255,255,255,.04);margin-bottom:.3rem"><div><strong>'+_esc(name)+'</strong><span style="font-size:.75rem;color:var(--muted);margin-left:.5rem">'+_esc(u.role||'')+'</span></div>'+(name!=='admin'?'<button class="btn-hb btn-hb-sm btn-hb-outline" onclick="deleteUser(\''+name+'\')" style="color:#ef4444;border-color:rgba(239,68,68,.3)"><i class="bi bi-trash"></i></button>':'')+'</div>';}el.innerHTML=html;}catch(e){}}
 async function createUser(){var un=document.getElementById('new-user-name');var pw=document.getElementById('new-user-pass');var role=document.getElementById('new-user-role');var st=document.getElementById('user-create-status');if(!un.value.trim()||!pw.value||pw.value.length<4){st.textContent='Username and min. 4 char password required';st.style.display='block';return;}st.style.display='none';try{var r=await apiPost('/api/users',{username:un.value.trim(),password:pw.value,role:role.value});if(r.success){un.value='';pw.value='';loadUsersList();showToast('User created',un.value.trim()+' added',false);}else{st.textContent=r.message||'Error';st.style.display='block';}}catch(e){st.textContent=e.message;st.style.display='block';}}
 async function deleteUser(name){if(!confirm('Delete user "'+name+'"?'))return;try{var r=await apiDelete('/api/users/'+encodeURIComponent(name));if(r.success){loadUsersList();showToast('Deleted',name+' removed',false);}}catch(e){showToast('Error',e.message,true);}}
@@ -1162,3 +1162,29 @@ setInterval(()=>loadSocketHistory(),60000);
 setInterval(()=>loadOtherHistory(),60000);
 setInterval(loadTuyaDevices,30000);
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=6').catch(()=>{});}
+
+// Settings page navigation
+function openSettingsPage(id){
+  document.getElementById('settings-menu').style.display='none';
+  document.querySelectorAll('.settings-page').forEach(p=>p.classList.remove('open'));
+  var page=document.getElementById(id);
+  if(page){
+    page.classList.add('open');
+    page.style.display='block';
+  }
+  // Load page-specific data
+  if(id==='page-system'){
+    buildTileEditor();
+    checkForUpdates();
+  }
+  if(id==='page-tuya'||id==='page-inverter'){
+    loadPluginConfig();
+  }
+}
+function closeSettingsPage(){
+  document.getElementById('settings-menu').style.display='block';
+  document.querySelectorAll('.settings-page').forEach(p=>{
+    p.classList.remove('open');
+    p.style.display='none';
+  });
+}
