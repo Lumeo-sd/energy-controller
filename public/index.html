@@ -183,9 +183,15 @@
 
 <!-- PAGE: INVERTER -->
 <div class="settings-page" id="page-inverter">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
+  <div class="settings-top-bar">
+    <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    <div class="settings-top-spacer"></div>
+    <button class="settings-back-btn settings-save-btn" onclick="savePluginConfig()">
+      <i class="bi bi-check-lg"></i> Save
+    </button>
+  </div>
   <div class="settings-group-title" style="padding-top:0">INVERTER</div>
   <div class="settings-group">
     <div class="settings-row">
@@ -228,14 +234,20 @@
       <span class="settings-chevron">›</span>
     </div>
   </div>
-  <div style="padding:0 1rem 1rem"><button class="settings-btn settings-btn-primary" onclick="savePluginConfig()" style="width:100%"><i class="bi bi-check-lg"></i> Save Inverter</button></div>
+
 </div>
 
 <!-- PAGE: TUYA CLOUD -->
 <div class="settings-page" id="page-tuya">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
+  <div class="settings-top-bar">
+    <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    <div class="settings-top-spacer"></div>
+    <button class="settings-back-btn settings-save-btn" onclick="savePluginConfig()">
+      <i class="bi bi-check-lg"></i> Save
+    </button>
+  </div>
   <div class="settings-group-title" style="padding-top:0">TUYA CLOUD</div>
   <div class="settings-group">
     <div class="settings-row">
@@ -277,7 +289,7 @@
       </select>
     </div>
   </div>
-  <div style="padding:0 1rem 1rem"><button class="settings-btn settings-btn-primary" onclick="savePluginConfig()" style="width:100%"><i class="bi bi-check-lg"></i> Save Tuya</button></div>
+
 </div>
 
 <!-- PAGE: INTEGRATIONS -->
@@ -397,9 +409,16 @@
 
 <!-- PAGE: TARIFF -->
 <div class="settings-page" id="page-tariff">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
+  <div class="settings-top-bar">
+    <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    <div class="settings-top-spacer"></div>
+    <span id="tariff-status" style="font-size:.75rem;color:var(--muted);display:none"></span>
+    <button class="settings-back-btn settings-save-btn" onclick="saveTariffConfig()">
+      <i class="bi bi-check-lg"></i> Save
+    </button>
+  </div>
   <div class="settings-group-title" style="padding-top:0">TARIFF &amp; COST</div>
   <div class="settings-group">
     <div class="settings-row">
@@ -451,10 +470,7 @@
     </div>
     </div>
   </div>
-  <div style="padding:0 1rem 1rem;display:flex;align-items:center;gap:.5rem">
-    <button class="settings-btn settings-btn-primary" onclick="saveTariffConfig()"><i class="bi bi-check-lg"></i> Save Tariff</button>
-    <span id="tariff-status" style="font-size:.75rem;color:var(--muted);display:none"></span>
-  </div>
+
 </div>
 
 <!-- PAGE: APPEARANCE -->
