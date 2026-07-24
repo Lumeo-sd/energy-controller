@@ -109,7 +109,19 @@
 
 <!-- MAIN MENU -->
 <div id="settings-menu">
-  <div class="settings-group-title" style="padding-top:0">CONNECTION</div>
+  <div class="settings-group-title" style="padding-top:0">PROFILE</div>
+  <div class="settings-group">
+    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-profile')">
+      <div class="settings-icon" style="width:44px;height:44px;border-radius:22px;background:var(--primary);color:#fff"><i class="bi bi-person-fill" style="font-size:1.15rem"></i></div>
+      <div class="settings-body">
+        <div class="settings-label" style="font-size:1rem"><span id="profile-username">admin</span></div>
+        <div class="settings-desc" id="profile-role-label">Administrator</div>
+      </div>
+      <span class="settings-chevron">›</span>
+    </div>
+  </div>
+
+  <div class="settings-group-title">CONNECTION</div>
   <div class="settings-group">
     <div class="settings-row settings-row-link" onclick="openSettingsPage('page-inverter')">
       <div class="settings-icon"><i class="bi bi-plug"></i></div>
@@ -537,23 +549,7 @@
       </span>
     </div>
     <div id="backup-status" style="padding:.3rem 1rem .5rem 3.5rem;font-size:.78rem;display:none"></div>
-    <div class="settings-divider"></div>
-    <div class="settings-row settings-row-link" onclick="document.getElementById('password-inline-fields').classList.toggle('open')">
-      <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
-      <div class="settings-body"><div class="settings-label">Change Password</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-    <div id="password-inline-fields" style="display:none">
-    <div class="settings-divider"></div>
-    <div style="padding:.3rem 1rem .3rem 3.5rem;display:flex;flex-direction:column;gap:.4rem">
-      <input type="password" id="cp-current" class="settings-input" placeholder="Current password" autocomplete="current-password" />
-      <input type="password" id="cp-new" class="settings-input" placeholder="New password" autocomplete="new-password" />
-      <input type="password" id="cp-confirm" class="settings-input" placeholder="Confirm new password" autocomplete="new-password" />
-    </div>
-    <div style="padding:.3rem 1rem .6rem 3.5rem">
-      <button class="settings-btn settings-btn-primary" onclick="changePassword()"><i class="bi bi-key"></i> Change Password</button>
-    </div>
-    </div>
+
     <div class="settings-divider"></div>
     <div class="settings-row" onclick="restartApp()">
       <div class="settings-icon"><i class="bi bi-arrow-repeat"></i></div>
@@ -601,6 +597,47 @@
   </div>
 </div>
 
+
+<!-- PAGE: PROFILE -->
+<div class="settings-page" id="page-profile" style="display:none">
+  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
+    <i class="bi bi-chevron-left"></i>
+  </button>
+  <div class="settings-group-title" style="padding-top:0">PROFILE</div>
+  <div class="settings-group">
+    <div class="settings-row">
+      <div class="settings-icon" style="width:44px;height:44px;border-radius:22px;background:var(--primary);color:#fff"><i class="bi bi-person-fill" style="font-size:1.15rem"></i></div>
+      <div class="settings-body">
+        <div class="settings-label" style="font-size:1rem"><span id="profile-username-page">admin</span></div>
+        <div class="settings-desc" id="profile-role-page">Administrator</div>
+      </div>
+    </div>
+  </div>
+  <div class="settings-group" style="margin-top:0">
+    <div class="settings-row" onclick="document.getElementById('profile-pw-fields').classList.toggle('open')">
+      <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
+      <div class="settings-body"><div class="settings-label">Change Password</div></div>
+      <span class="settings-chevron">›</span>
+    </div>
+    <div id="profile-pw-fields" style="display:none">
+    <div class="settings-divider"></div>
+    <div style="padding:.3rem 1rem .3rem 3.5rem;display:flex;flex-direction:column;gap:.4rem">
+      <input type="password" id="cp-current" class="settings-input" placeholder="Current password" autocomplete="current-password" />
+      <input type="password" id="cp-new" class="settings-input" placeholder="New password" autocomplete="new-password" />
+      <input type="password" id="cp-confirm" class="settings-input" placeholder="Confirm new password" autocomplete="new-password" />
+    </div>
+    <div style="padding:.3rem 1rem .6rem 3.5rem">
+      <button class="settings-btn settings-btn-primary" onclick="changePassword()"><i class="bi bi-key"></i> Change Password</button>
+    </div>
+    </div>
+    <div class="settings-divider" id="profile-admin-divider" style="display:none"></div>
+    <div class="settings-row settings-row-link" id="profile-admin-row" onclick="openSettingsPage('page-admin')" style="display:none">
+      <div class="settings-icon"><i class="bi bi-people"></i></div>
+      <div class="settings-body"><div class="settings-label">User Management</div><div class="settings-desc">Create or remove users</div></div>
+      <span class="settings-chevron">›</span>
+    </div>
+  </div>
+</div>
 
 <!-- backward-compat hidden fields for loadPluginConfig -->
 <div style="display:none">
