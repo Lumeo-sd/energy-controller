@@ -1,6 +1,6 @@
 {
   "name": "energy-controller",
-  "version": "1.0.0",
+  "version": "0.6.0",
   "type": "module",
   "description": "Standalone energy conservation controller",
   "main": "index.js",

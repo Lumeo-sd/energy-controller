@@ -109,11 +109,6 @@ a{color:inherit}
 .tile-edit-item input{accent-color:var(--primary)}
 .tile-edit-item.hidden-tile{opacity:.4}
 .tile-edit-cat{grid-column:1/-1;font-size:.7rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;padding:.6rem 0 .2rem;border-bottom:1px solid var(--border);margin-top:.3rem}
-#pull-indicator{position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-60px);width:40px;height:40px;border-radius:50%;background:rgba(30,30,32,.9);border:.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:transform .25s ease;z-index:200;pointer-events:none}
-#pull-indicator.show{transform:translateX(-50%) translateY(20px)}
-#pull-indicator.pulling{transform:translateX(-50%) translateY(40px)}
-#pull-indicator i{color:var(--primary);font-size:1.1rem;transition:transform .25s}
-#pull-indicator.refreshing i{animation:spin .8s linear infinite}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .terminal{background:rgba(0,0,0,.55);border-radius:var(--radius-sm);padding:.6rem .8rem;
   font-family:'SF Mono','Menlo','Courier New',monospace;font-size:.74rem;color:var(--text);
@@ -327,7 +322,13 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   .page-header{margin:0 -1rem 1rem;padding:0 1rem .75rem;border-bottom:.5px solid var(--separator)}
   .page-header h1{font-size:1.5rem}
   .tiles-container .tile{flex:0 0 calc(50% - .375rem)}
-  .tile{min-height:100px}
+  .tile{padding:.4rem .3rem;min-height:54px}
+  .tile .icon{font-size:.85rem;margin-bottom:0}
+  .tile .value{font-size:.9rem}
+  .tile .label{font-size:.55rem;margin-bottom:.05rem}
+  .tile .sub{font-size:.6rem}
+  .tiles-container{gap:.4rem}
+  .tiles-container .tile{flex:0 0 calc(50% - .2rem)}
   .device-grid{grid-template-columns:1fr;gap:.75rem}
   .device-card{padding:.9rem;min-width:0;overflow:hidden}
   .device-card-top{gap:.5rem}
@@ -347,6 +348,9 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
   .device-controls .btn-hb{flex:1}
   .hb-toast{left:1rem;right:1rem;bottom:calc(var(--tabbar-h) + var(--safe-b) + 1.2rem);max-width:none}
   .btn-hb-primary.w-100{position:sticky;bottom:0}
+  .chart-section .hb-card-header{flex-wrap:wrap;gap:.5rem}
+  .chart-tabs{overflow-x:auto;flex-wrap:nowrap;width:100%;padding-bottom:.25rem;-webkit-overflow-scrolling:touch}
+  .chart-tab{flex-shrink:0;padding:.35rem .65rem;font-size:.7rem}
 }
 @media(max-width:380px){
   .tiles-container .tile{flex:0 0 calc(50% - .375rem)}
@@ -537,6 +541,45 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 
 
 
+
+
+/* ====== iOS-style Settings ====== */
+.settings-group{margin-bottom:1rem;border-radius:var(--radius-lg);overflow:hidden;border:.5px solid var(--border);background:var(--card)}
+.settings-group-title{padding:.6rem 1rem .35rem;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.settings-row{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;min-height:44px;cursor:default;transition:background .12s}
+.settings-row:active{background:rgba(255,255,255,.04)}
+.settings-row.settings-row-link{cursor:pointer}
+.settings-row.settings-row-link:active{background:rgba(255,255,255,.06)}
+.settings-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.settings-icon i{color:#fff;font-size:.95rem}
+.settings-body{flex:1;min-width:0}
+.settings-label{font-size:.88rem;font-weight:500;color:var(--text)}
+.settings-desc{font-size:.7rem;color:var(--muted);margin-top:1px}
+.settings-value{font-size:.88rem;color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;flex-shrink:0}
+.settings-chevron{color:rgba(255,255,255,.2);font-size:.75rem;margin-left:.1rem;flex-shrink:0}
+.settings-divider{margin-left:3.5rem;margin-right:1rem;height:.5px;background:var(--separator)}
+.settings-row + .settings-divider:last-child{display:none}
+.settings-input{background:rgba(255,255,255,.06);border:.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:.5rem .65rem;width:100%;font-size:15px;min-height:36px}
+.settings-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(var(--primary-rgb),.15)}
+.settings-select{background:var(--card-solid);border:.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:.5rem .65rem;font-size:15px;min-height:36px;width:100%;cursor:pointer}
+.settings-toggle-row{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;min-height:44px}
+.settings-toggle-body{flex:1;min-width:0}
+.settings-toggle-label{font-size:.88rem;font-weight:500;color:var(--text)}
+.settings-toggle-desc{font-size:.7rem;color:var(--muted);margin-top:1px}
+.settings-toggle-sub{padding:.25rem 1rem .6rem 3.5rem;display:none}
+.settings-toggle-sub.open{display:block}
+.settings-action-row{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;min-height:44px;cursor:pointer;transition:background .12s}
+.settings-action-row:active{background:rgba(255,255,255,.06)}
+.settings-action-label{font-size:.88rem;font-weight:500;color:var(--primary)}
+.settings-colors{display:flex;gap:.5rem;flex-wrap:wrap}
+.settings-color{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s,transform .15s}
+.settings-color:hover{transform:scale(1.12)}
+.settings-color.active{border-color:var(--text);transform:scale(1.12);box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--text)}
+.settings-btn-row{padding:.5rem 1rem .75rem 3.5rem}
+.settings-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .9rem;border-radius:980px;font-weight:600;font-size:.78rem;border:.5px solid var(--border);cursor:pointer;background:rgba(255,255,255,.05);color:var(--text);min-height:34px;transition:transform .1s}
+.settings-btn:active{transform:scale(.96)}
+.settings-btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.settings-status{font-size:.75rem;color:var(--muted);margin-top:.4rem;display:none}
 
 /* Quiet bottom navbar */
 
