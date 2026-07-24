@@ -442,11 +442,23 @@
       <div class="settings-body"><div class="settings-label">Night Rate</div></div>
       <input type="number" step="0.01" min="0" id="cfg-tariff-night-rate" class="settings-input" style="width:100px;text-align:right" placeholder="0" />
     </div>
+    <div class="settings-divider"></div>
+    <div class="settings-row">
+      <div class="settings-icon"><i class="bi bi-sunrise"></i></div>
+      <div class="settings-body"><div class="settings-label">Day Starts At</div></div>
+      <input type="time" id="cfg-tariff-day-start" class="settings-input" style="width:100px;text-align:right" value="07:00" />
+    </div>
+    <div class="settings-divider"></div>
+    <div class="settings-row">
+      <div class="settings-icon"><i class="bi bi-moon"></i></div>
+      <div class="settings-body"><div class="settings-label">Night Starts At</div></div>
+      <input type="time" id="cfg-tariff-night-start" class="settings-input" style="width:100px;text-align:right" value="23:00" />
+    </div>
     </div>
   </div>
   <div style="padding:0 1rem 1rem;display:flex;align-items:center;gap:.5rem">
     <button class="settings-btn settings-btn-primary" onclick="saveTariffConfig()"><i class="bi bi-check-lg"></i> Save Tariff</button>
-    <span style="font-size:.7rem;color:var(--muted)">Estimate only</span>
+    <span id="tariff-status" style="font-size:.75rem;color:var(--muted);display:none"></span>
   </div>
 </div>
 
@@ -594,6 +606,26 @@
   </div>
 </div>
 
+
+<!-- backward-compat hidden fields for loadPluginConfig -->
+<div style="display:none">
+  <input type="number" id="cfg-inverter-resolveAfterFails" value="10" />
+  <div id="resolveAfterFails-row"></div>
+  <input type="number" id="cfg-webPort" value="8583" />
+  <input type="checkbox" id="cfg-ntfy-notif-enabled" checked />
+  <input type="checkbox" id="cfg-tg-notif-enabled" checked />
+  <div id="notif-ntfy-row" style="display:flex"></div>
+  <div id="notif-tg-row" style="display:flex"></div>
+  <input type="number" id="cfg-soc-alert" value="20" />
+  <input type="number" id="cfg-conn-timeout" value="10" />
+  <div id="critical-fields"></div>
+  <div id="notif-status" style="display:none"></div>
+  <div id="tariff-status" style="display:none"></div>
+  <input type="time" id="cfg-tariff-day-start" value="07:00" />
+  <input type="time" id="cfg-tariff-night-start" value="23:00" />
+  <input type="number" id="cfg-tariff-day-rate-backup" />
+  <input type="number" id="cfg-tariff-night-rate-backup" />
+</div>
 </div><!-- /settings-pages -->
 
 </div>
