@@ -815,10 +815,8 @@ async function changePassword(){
 async function changeUsername(){
 const curPass=document.getElementById('cu-current-pass').value;
 const newUser=document.getElementById('cu-new-username').value.trim();
-const confPass=document.getElementById('cu-confirm-pass').value;
-if(!curPass||!newUser||!confPass){showToast('Error','Fill in all fields.',true);return;}
+if(!curPass||!newUser){showToast('Error','Fill in all fields.',true);return;}
 if(newUser.length<2){showToast('Error','Username must be at least 2 characters.',true);return;}
-if(curPass!==confPass){showToast('Error','Passwords do not match.',true);return;}
 const btn=document.querySelector('[onclick="changeUsername()"]');
 if(btn){btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';}
 try{const h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=await fetch('/api/change-username',{method:'POST',headers:h,body:JSON.stringify({currentPassword:curPass,newUsername:newUser})});const d=await r.json();if(d.success){resetRestartOverlay();const ov=document.getElementById('restartOverlay');ov.querySelector('.restart-spinner').style.display='none';const ci=document.createElement('div');ci.className='check-icon';ci.innerHTML='<i class="bi bi-check-lg"></i>';ov.querySelector('.restart-spinner').parentNode.insertBefore(ci,ov.querySelector('h3'));ov.querySelector('h3').textContent='Username changed';ov.querySelector('p').textContent='Please log in with your new username';ov.classList.add('show');setTimeout(()=>{window.location.href='/login';},2500);}else{showToast('Error',d.message||'Failed.',true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-person-check"></i> Change Username';}}}
