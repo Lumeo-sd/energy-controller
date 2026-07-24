@@ -3,7 +3,6 @@ document.getElementById('cfg-inverter-autoResolve').addEventListener('change',fu
 
 let tuyaDevices=[];
 let _csrfToken=null;
-async function _ensureCsrf(){if(!_csrfToken){try{const r=await fetch('/api/status');const d=await r.json();if(d.csrfToken)_csrfToken=d.csrfToken;}catch(e){}}}
 var _currentUser=null,_currentRole=null;
 document.querySelectorAll('.menu-item').forEach(item=>{
 item.addEventListener('click',function(){
@@ -812,29 +811,45 @@ loadOtherHistory(this.dataset.period);
 });
 
 async function changePassword(){
+var btn$=document.querySelector('[onclick="changePassword()"]');
+if(btn$){btn$.disabled=true;btn$.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';}
+try{
+if(!_csrfToken){try{var cr=await fetch('/api/status');var cd=await cr.json();if(cd.csrfToken)_csrfToken=cd.csrfToken;}catch(ce){}}
+var cur=document.getElementById('cp-current').value;
+var nw=document.getElementById('cp-new').value;
+var cf=document.getElementById('cp-confirm').value;
+if(!cur||!nw){showToast('Error','Fill in all fields.',true);if(btn$){btn$.disabled=false;btn$.innerHTML='<i class="bi bi-shield-lock"></i> Change Password';}return;}
+if(nw.length<6){showToast('Error','New password must be at least 6 characters.',true);if(btn$){btn$.disabled=false;btn$.innerHTML='<i class="bi bi-shield-lock"></i> Change Password';}return;}
+if(nw!==cf){showToast('Error','Passwords do not match.',true);if(btn$){btn$.disabled=false;btn$.innerHTML='<i class="bi bi-shield-lock"></i> Change Password';}return;}
+var h={'Content-Type':'application/json'};
+if(_csrfToken)h['X-CSRF-Token']=_csrfToken;
+var r=await fetch('/api/change-password',{method:'POST',headers:h,body:JSON.stringify({currentPassword:cur,newPassword:nw})});
+var d=await r.json();
+if(d.success){document.getElementById('profile-pw-fields').classList.remove('open');resetRestartOverlay();var ov=document.getElementById('restartOverlay');ov.querySelector('.restart-spinner').style.display='none';var ci=document.createElement('div');ci.className='check-icon';ci.innerHTML='<i class="bi bi-check-lg"></i>';ov.querySelector('.restart-spinner').parentNode.insertBefore(ci,ov.querySelector('h3'));ov.querySelector('h3').textContent='Password changed';ov.querySelector('p').textContent='Please log in with your new password';ov.classList.add('show');setTimeout(function(){window.location.href='/login';},2500);}
+else{showToast('Error',d.message||'Failed.',true);if(btn$){btn$.disabled=false;btn$.innerHTML='<i class="bi bi-shield-lock"></i> Change Password';}}
+}
+catch(e){showToast('Error',e.message||'Unknown error',true);if(btn$){btn$.disabled=false;btn$.innerHTML='<i class="bi bi-shield-lock"></i> Change Password';}}
+}
 
 async function changeUsername(){
-await _ensureCsrf();
-const curPass=document.getElementById('cu-current-pass').value;
-const newUser=document.getElementById('cu-new-username').value.trim();
-if(!curPass||!newUser){showToast('Error','Fill in all fields.',true);return;}
-if(newUser.length<2){showToast('Error','Username must be at least 2 characters.',true);return;}
-const btn=document.querySelector('[onclick="changeUsername()"]');
+var btn=document.querySelector('[onclick="changeUsername()"]');
 if(btn){btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';}
-try{const h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=await fetch('/api/change-username',{method:'POST',headers:h,body:JSON.stringify({currentPassword:curPass,newUsername:newUser})});const d=await r.json();if(d.success){document.getElementById('profile-username-fields').classList.remove('open');resetRestartOverlay();const ov=document.getElementById('restartOverlay');ov.querySelector('.restart-spinner').style.display='none';const ci=document.createElement('div');ci.className='check-icon';ci.innerHTML='<i class="bi bi-check-lg"></i>';ov.querySelector('.restart-spinner').parentNode.insertBefore(ci,ov.querySelector('h3'));ov.querySelector('h3').textContent='Username changed';ov.querySelector('p').textContent='Please log in with your new username';ov.classList.add('show');setTimeout(()=>{window.location.href='/login';},2500);}else{showToast('Error',d.message||'Failed.',true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-person-check"></i> Change Username';}}}
-catch(e){showToast('Error',e.message,true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-person-check"></i> Change Username';}}
+try{
+if(!_csrfToken){try{var cr=await fetch('/api/status');var cd=await cr.json();if(cd.csrfToken)_csrfToken=cd.csrfToken;}catch(ce){}}
+var curPass=document.getElementById('cu-current-pass').value;
+var newUser=document.getElementById('cu-new-username').value.trim();
+if(!curPass||!newUser){showToast('Error','Fill in all fields.',true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-person-check"></i> Change Username';}return;}
+if(newUser.length<2){showToast('Error','Username must be at least 2 characters.',true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-person-check"></i> Change Username';}return;}
+var h={'Content-Type':'application/json'};
+if(_csrfToken)h['X-CSRF-Token']=_csrfToken;
+var r=await fetch('/api/change-username',{method:'POST',headers:h,body:JSON.stringify({currentPassword:curPass,newUsername:newUser})});
+var d=await r.json();
+if(d.success){document.getElementById('profile-username-fields').classList.remove('open');resetRestartOverlay();var ov=document.getElementById('restartOverlay');ov.querySelector('.restart-spinner').style.display='none';var ci=document.createElement('div');ci.className='check-icon';ci.innerHTML='<i class="bi bi-check-lg"></i>';ov.querySelector('.restart-spinner').parentNode.insertBefore(ci,ov.querySelector('h3'));ov.querySelector('h3').textContent='Username changed';ov.querySelector('p').textContent='Please log in with your new username';ov.classList.add('show');setTimeout(function(){window.location.href='/login';},2500);}
+else{showToast('Error',d.message||'Failed.',true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-person-check"></i> Change Username';}}
 }
-const cur=document.getElementById('cp-current').value;
-const nw=document.getElementById('cp-new').value;
-const cf=document.getElementById('cp-confirm').value;
-if(!cur||!nw){showToast('Error','Fill in all fields.',true);return;}
-if(nw.length<6){showToast('Error','New password must be at least 6 characters.',true);return;}
-if(nw!==cf){showToast('Error','Passwords do not match.',true);return;}
-const btn=document.querySelector('[onclick="changePassword()"]');
-if(btn){btn.disabled=true;btn.innerHTML='<i class="bi bi-hourglass-split"></i> Saving...';}
-try{const h={'Content-Type':'application/json'};if(_csrfToken)h['X-CSRF-Token']=_csrfToken;const r=await fetch('/api/change-password',{method:'POST',headers:h,body:JSON.stringify({currentPassword:cur,newPassword:nw})});const d=await r.json();if(d.success){document.getElementById('profile-pw-fields').classList.remove('open');resetRestartOverlay();const ov=document.getElementById('restartOverlay');ov.querySelector('.restart-spinner').style.display='none';const ci=document.createElement('div');ci.className='check-icon';ci.innerHTML='<i class="bi bi-check-lg"></i>';ov.querySelector('.restart-spinner').parentNode.insertBefore(ci,ov.querySelector('h3'));ov.querySelector('h3').textContent='Password changed';ov.querySelector('p').textContent='Please log in with your new password';ov.classList.add('show');setTimeout(()=>{window.location.href='/login';},2500);}else{showToast('Error',d.message||'Failed.',true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-shield-lock"></i> Change Password';}}}
-catch(e){showToast('Error',e.message,true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-shield-lock"></i> Change Password';}}
+catch(e){showToast('Error',e.message||'Unknown error',true);if(btn){btn.disabled=false;btn.innerHTML='<i class="bi bi-person-check"></i> Change Username';}}
 }
+
 async function loadPluginConfig(){
 try{
 const d=await apiGet('/api/plugin-config');
