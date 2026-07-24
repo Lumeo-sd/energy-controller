@@ -619,5 +619,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 #password-inline-fields.open{display:block}
 #profile-pw-fields:not(.open){display:none}
 #profile-pw-fields.open{display:block}
+#profile-username-fields:not(.open){display:none}
+#profile-username-fields.open{display:block}
 #tile-edit-inline{display:none}
 #tile-edit-inline.open{display:block}
