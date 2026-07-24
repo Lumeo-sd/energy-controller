@@ -25,6 +25,7 @@ const CERT_FILE = path.join(DATA_DIR, 'cert.pem');
 const KEY_FILE = path.join(DATA_DIR, 'key.pem');
 const SECRET_FILE = path.join(DATA_DIR, 'secret.key');
 const NOTIF_FILE = path.join(DATA_DIR, 'notifications.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -48,7 +49,7 @@ const { loadConfig, saveConfig, netbirdExec } = createConfig(DATA_DIR, { MASTER_
 const rrd = createRrd(DATA_DIR);
 const { RRD_POWER, RRD_SOCKET, RRD_PENDING, RRD_SOCKET_PENDING, RRD_FLUSH_MS, rrdInit, rrdFlush, rrdGetPower, rrdGetSocket, rrdPickLevel } = rrd;
 const auth = createAuth(DATA_DIR, { loadConfig, saveConfig });
-const { loadSessions, hashPassword, verifyPassword, ensureAuth, ensureMetricsToken, loadAuthFile, createSession, getSessionCsrf, isSessionValid, destroySession, parseCookies, loginAttempts, sessions, clearSessions } = auth;
+const { loadSessions, hashPassword, verifyPassword, ensureAuth, ensureMetricsToken, loadAuthFile, createSession, getSessionCsrf, getSessionUser, isSessionValid, destroySession, parseCookies, loginAttempts, sessions, clearSessions } = auth;
 const notif = createNotifications(DATA_DIR, loadConfig);
 const { pushNotification, sendNotification, _sendExtNotification, _notifHistory, saveNotifHistory } = notif;
 const app = createAppState(DATA_DIR, loadConfig, saveConfig, decryptSecret, pushNotification);
@@ -56,7 +57,7 @@ const {
   inverterData, pollInverter, connectToInverter, injectDemoData,
   loadDailyRecords, finalizeDay, costState, dailyRecords,
   tuyaDevices, controlDevice, fetchDeviceStatuses, syncDeviceNamesFromCloud,
-  initTuya, loadDevicesFromDisk, scenes, loadScenes, saveScenes, checkScenes,
+  initTuya, loadDevicesFromDisk, scenes, loadScenes, saveScenes, checkScenes, loadSceneTimers, saveSceneTimers,
   sceneTraces, deviceName, resolveInverterIP, saveDevices, resetInverterConnection,
   _pollingInverter, _inverterConsecutiveFails, pushSceneTrace,
 } = app;
@@ -81,16 +82,16 @@ const ctx = {
   pushNotification, sendNotification, _notifHistory, saveNotifHistory,
   inverterData, costState, dailyRecords, tuyaDevices, scenes, sceneTraces,
   controlDevice, fetchDeviceStatuses, syncDeviceNamesFromCloud, initTuya,
-  loadScenes, saveScenes, checkScenes,
+  loadScenes, saveScenes, checkScenes, loadSceneTimers, saveSceneTimers,
   deviceName, resolveInverterIP, saveDevices, resetInverterConnection,
   _inverterConsecutiveFails, pushSceneTrace,
-  loadAuthFile, verifyPassword, hashPassword, createSession,
+  loadAuthFile, verifyPassword, hashPassword, createSession, getSessionUser,
   getSessionCsrf, isSessionValid, destroySession, parseCookies,
   loginAttempts, sessions, clearSessions,
   log, logBuffer,
   rrdPickLevel, rrdGetPower, rrdGetSocket,
   fs, path, exec, execFile, os, __dirname,
-  CONFIG_FILE, AUTH_FILE, SCENES_FILE, DEVICES_FILE, SESSIONS_FILE, DATA_DIR,
+  CONFIG_FILE, AUTH_FILE, SCENES_FILE, DEVICES_FILE, SESSIONS_FILE, DATA_DIR, USERS_FILE,
   getLoginPage, getWebUI,
 };
 registerRoutes(ctx);
@@ -104,9 +105,24 @@ async function main() {
   await ensureAuth();
   await ensureMetricsToken();
   await loadSessions();
+
+  // Ensure users.json exists with admin user
+  if (!fs.existsSync(USERS_FILE)) {
+    await fs.promises.writeFile(USERS_FILE, JSON.stringify({ admin: { role: 'admin', createdAt: Date.now() } }, null, 2), { mode: 0o600 });
+    log.info('Users file created with admin user');
+  }
+  // Ensure admin prefs directory
+  const adminPrefsDir = path.join(DATA_DIR, 'admin');
+  if (!fs.existsSync(adminPrefsDir)) {
+    await fs.promises.mkdir(adminPrefsDir, { recursive: true });
+    await fs.promises.writeFile(path.join(adminPrefsDir, 'prefs.json'), JSON.stringify({ tileVis: {}, tileOrder: [], accent: 'purple', notifGroup: true }, null, 2), { mode: 0o600 });
+    log.info('Admin prefs created');
+  }
+
   await loadDailyRecords();
   await rrdInit();
   await loadScenes();
+  loadSceneTimers();
   const cfg = await loadConfig();
   const port = cfg.webPort || WEB_PORT_DEFAULT;
 

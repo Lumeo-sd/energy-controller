@@ -22,7 +22,6 @@
 <li class="menu-item active" data-tab="status"><i class="bi bi-speedometer2"></i><span>Status</span></li>
 <li class="menu-item" data-tab="devices"><i class="bi bi-cpu"></i><span>Devices</span><span class="badge-hb purple" id="sidebar-device-count">0</span></li>
 <li class="menu-item" data-tab="automations"><i class="bi bi-diagram-3"></i><span>Automations</span><span class="badge-hb purple" id="sidebar-scene-count">0</span></li>
-<li class="menu-item" data-tab="server"><i class="bi bi-server"></i><span>Server</span></li>
 </ul>
 <ul class="sidebar-menu sidebar-menu-bottom">
 <li class="menu-item" data-tab="notifications"><i class="bi bi-bell"></i><span>Notifications</span><span class="badge-hb unread" id="sidebar-notif-unread" style="display:none">0</span></li>
@@ -61,6 +60,12 @@
 <div class="hb-card-header"><div class="hb-card-title">Logs</div></div>
 <div class="hb-card-body" style="padding:.5rem"><div class="terminal" id="log-container">Loading logs...</div></div>
 </div>
+<div class="hb-card chart-section">
+<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cpu"></i> System Resources</div></div>
+<div class="hb-card-body" id="server-info-body">
+<div style="text-align:center;padding:1rem"><i class="bi bi-hourglass-split"></i> Loading...</div>
+</div>
+</div>
 </div>
 <div class="tab-pane" id="tab-devices">
 <div class="page-header"><h1>Devices</h1></div>
@@ -98,16 +103,8 @@
 <div class="hb-card-body" id="scenes-list"><div class="empty-state"><i class="bi bi-diagram-3"></i><p>No automations yet.</p></div></div>
 </div>
 </div>
-<div class="tab-pane" id="tab-server">
-<div class="page-header"><h1>Server</h1></div>
-<div class="hb-card">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cpu"></i> System Resources</div></div>
-<div class="hb-card-body" id="server-info-body">
-<div style="text-align:center;padding:1rem"><i class="bi bi-hourglass-split"></i> Loading...</div>
-</div>
-</div>
-</div>
-<div class="tab-pane" id="tab-notifications"><div class="page-header"><h1>Notifications</h1></div><div class="hb-card"><div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span style="display:flex;gap:.3rem"><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="markAllRead()" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-check-all"></i> Read all</button><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss all</button></span></div><div id="notif-list" class="notif-list"><div class="notif-empty">No notifications</div></div></div></div>
+
+<div class="tab-pane" id="tab-notifications"><div class="page-header"><h1>Notifications</h1></div><div class="hb-card"><div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span style="display:flex;gap:.3rem"><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss all</button></span></div><div id="notif-list" class="notif-list"><div class="notif-empty">No notifications</div></div></div></div>
 <div class="tab-pane" id="tab-settings">
 <div class="page-header"><h1>Settings</h1></div>
 <div class="hb-card collapsed">
@@ -175,6 +172,7 @@
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">CPU load threshold (1min avg)</label><input type="number" step="0.5" id="cfg-health-cpu-load" class="form-hb" min="0" max="50" /></div>
 <div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Memory free threshold (%)</label><input type="number" id="cfg-health-mem" class="form-hb" min="1" max="99" /></div>
 </div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:.6rem 0;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.04)"><span style="font-size:.85rem"><i class="bi bi-diagram-3" style="margin-right:.4rem"></i>Group notifications in center</span><label class="sw"><input type="checkbox" id="cfg-notif-grouping"><span class="sw-slider"></span></label></div>
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="testNotification()" style="width:100%"><i class="bi bi-send"></i> Send Test</button>
 <div id="notif-status" style="margin-top:.6rem;font-size:.8rem;display:none"></div>
 </div>
@@ -267,6 +265,27 @@
 <button class="btn-hb btn-hb-outline w-100" onclick="event.stopPropagation();location.reload()"><i class="bi bi-arrow-clockwise"></i> Restart UI</button>
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="event.stopPropagation();document.getElementById('restartModal').classList.add('show')"><i class="bi bi-arrow-repeat"></i> Restart App</button>
 <button class="btn-hb btn-hb-outline btn-hb-sm" onclick="event.stopPropagation();logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
+</div>
+</div>
+</div>
+
+<div class="hb-card collapsed" style="margin-top:1rem;display:none" id="admin-section">
+<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-shield-lock" style="margin-right:.5rem"></i>Admin</div></div>
+<div class="hb-card-body">
+<div id="users-list" style="margin-bottom:.75rem"></div>
+<div style="border-top:1px solid var(--border);padding-top:.75rem">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem">
+<div><input type="text" id="new-user-name" class="form-hb" placeholder="Username" /></div>
+<div><input type="password" id="new-user-pass" class="form-hb" placeholder="Password" /></div>
+</div>
+<div style="display:flex;gap:.5rem;align-items:center">
+<select id="new-user-role" class="form-hb" style="flex:1">
+<option value="admin">Admin</option>
+<option value="viewer" selected>Viewer</option>
+</select>
+<button class="btn-hb btn-hb-primary btn-hb-sm" onclick="createUser()" style="white-space:nowrap"><i class="bi bi-plus-lg"></i> Add</button>
+</div>
+<div id="user-create-status" style="margin-top:.5rem;font-size:.8rem;color:#ef4444;display:none"></div>
 </div>
 </div>
 </div>
