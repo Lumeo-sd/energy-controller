@@ -555,7 +555,7 @@
     </div>
     </div>
     <div class="settings-divider"></div>
-    <div class="settings-row" onclick="document.getElementById('restartModal').classList.add('show')">
+    <div class="settings-row" onclick="restartApp()">
       <div class="settings-icon"><i class="bi bi-arrow-repeat"></i></div>
       <div class="settings-body"><div class="settings-label">Restart App</div></div>
       <span class="settings-chevron">›</span>
@@ -625,7 +625,6 @@
 
 </div>
 <div class="hb-toast" id="toast"><div class="toast-title" id="toastTitle">Success</div><div class="toast-body" id="toastBody">Done.</div><div class="toast-actions" id="toastActions" style="display:none"><button class="btn-hb btn-hb-outline btn-hb-sm" id="toastUndoBtn">Undo</button></div></div>
-<div class="modal-backdrop" id="restartModal" style="background:#000!important"><div class="modal-box" style="background:#1c1c1e!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:14px!important;padding:1.8rem 1.5rem!important;max-width:340px;width:90%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,.7)!important"><div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="bi bi-arrow-repeat" style="font-size:1.3rem;color:var(--primary)"></i></div><h3 style="margin:0 0 .5rem;font-size:1.05rem;color:#f5f5f7!important">Restart now?</h3><p style="margin:0 0 1.2rem;font-size:.85rem;color:#a1a1a6!important">Changes will be applied after restart.</p><div style="display:flex;gap:.6rem;justify-content:center"><button class="btn-hb btn-hb-primary btn-hb-sm" onclick="restartApp()" style="flex:1;max-width:160px"><i class="bi bi-arrow-repeat"></i> Restart</button><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="document.getElementById('restartModal').classList.remove('show')" style="flex:1;max-width:160px">Later</button></div></div></div>
 <div id="restartOverlay"><div class="restart-spinner"></div><h3>Restarting<span class="restart-dots"></span></h3><p>Waiting for server to come back online</p></div>
 <div class="modal-backdrop" id="tileDetailModal" style="background:rgba(0,0,0,.6)!important" onclick="if(event.target===this)closeTileDetail()"><div class="modal-box" style="background:#1c1c1e!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:14px!important;padding:1.2rem!important;max-width:420px;width:92%;box-shadow:0 12px 48px rgba(0,0,0,.7)!important">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem"><h3 id="tileDetailTitle" style="margin:0;font-size:1rem;color:#f5f5f7!important">\u2014</h3><button class="btn-hb btn-hb-sm btn-hb-icon btn-hb-outline" onclick="closeTileDetail()"><i class="bi bi-x"></i></button></div>

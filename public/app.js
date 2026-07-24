@@ -890,7 +890,7 @@ netbird:{setupKey:document.getElementById('cfg-netbird-setupKey').value,manageme
 notifications:{ntfyEnabled:document.getElementById('cfg-ntfy-enabled').checked,ntfyNotifEnabled:document.getElementById('cfg-ntfy-notif-enabled').checked,ntfyTopic:document.getElementById('cfg-ntfy-topic').value.trim(),telegramEnabled:document.getElementById('cfg-tg-enabled').checked,telegramNotifEnabled:document.getElementById('cfg-tg-notif-enabled').checked,telegramToken:document.getElementById('cfg-tg-token').value,telegramChatId:document.getElementById('cfg-tg-chat').value.trim(),criticalEnabled:document.getElementById('cfg-notif-critical-enabled').checked,lowSocAlert:parseInt(document.getElementById('cfg-soc-alert').value)||20,connTimeout:parseInt(document.getElementById('cfg-conn-timeout').value)||10,gridOutageReport:document.getElementById('cfg-notif-grid-outage').checked}
 };
 const r=await apiPost('/api/plugin-config',{config:cfg});
-if(r.success){if(_autoSaving){_autoSaving=false;}else document.getElementById('restartModal').classList.add('show');}else showToast('Error',r.message||'Save failed',true);
+if(r.success){_autoSaving=false;try{fetch('/api/notifications/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Settings Changed','message':'Some changes need a restart to take effect. Restart now to apply, or they will apply on next restart.','type':'warn'})});}catch(e){};}else showToast('Error',r.message||'Save failed',true);
 }catch(e){showToast('Error',e.message,true);}
 }
 async function saveNotifConfig(){
@@ -1175,7 +1175,7 @@ var _autoSaving=false,_settingsDirty=false;
 function autoSave(){
   if(!_autoSaving)_autoSaving=true;
   clearTimeout(autoSaveTimer);
-  autoSaveTimer=setTimeout(function(){_autoSaving=false;savePluginConfig();},400);
+  autoSaveTimer=setTimeout(function(){savePluginConfig();},400);
 }
 function autoSaveNow(){
   _autoSaving=true;
