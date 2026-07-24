@@ -3,6 +3,7 @@ document.getElementById('cfg-inverter-autoResolve').addEventListener('change',fu
 
 let tuyaDevices=[];
 let _csrfToken=null;
+async function _ensureCsrf(){if(!_csrfToken){try{const r=await fetch('/api/status');const d=await r.json();if(d.csrfToken)_csrfToken=d.csrfToken;}catch(e){}}}
 var _currentUser=null,_currentRole=null;
 document.querySelectorAll('.menu-item').forEach(item=>{
 item.addEventListener('click',function(){
@@ -813,6 +814,7 @@ loadOtherHistory(this.dataset.period);
 async function changePassword(){
 
 async function changeUsername(){
+await _ensureCsrf();
 const curPass=document.getElementById('cu-current-pass').value;
 const newUser=document.getElementById('cu-new-username').value.trim();
 if(!curPass||!newUser){showToast('Error','Fill in all fields.',true);return;}
