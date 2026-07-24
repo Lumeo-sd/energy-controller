@@ -178,16 +178,7 @@
     </div>
   </div>
 
-  <div id="admin-section-title" style="display:none">
-    <div class="settings-group-title">ADMIN</div>
-    <div class="settings-group">
-      <div class="settings-row settings-row-link" onclick="openSettingsPage('page-admin')">
-        <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
-        <div class="settings-body"><div class="settings-label">User Management</div></div>
-        <span class="settings-chevron">›</span>
-      </div>
-    </div>
-  </div>
+
 </div>
 
 <!-- SETTINGS SUB-PAGES -->
@@ -614,6 +605,23 @@
     </div>
   </div>
   <div class="settings-group" style="margin-top:0">
+    <div class="settings-row" onclick="document.getElementById('profile-username-fields').classList.toggle('open')">
+      <div class="settings-icon"><i class="bi bi-person-gear"></i></div>
+      <div class="settings-body"><div class="settings-label">Change Username</div></div>
+      <span class="settings-chevron">›</span>
+    </div>
+    <div id="profile-username-fields">
+    <div class="settings-divider"></div>
+    <div style="padding:.3rem 1rem .3rem 3.5rem;display:flex;flex-direction:column;gap:.4rem">
+      <input type="password" id="cu-current-pass" class="settings-input" placeholder="Current password" autocomplete="current-password" />
+      <input type="text" id="cu-new-username" class="settings-input" placeholder="New username" autocomplete="username" />
+      <input type="password" id="cu-confirm-pass" class="settings-input" placeholder="Confirm password" autocomplete="new-password" />
+    </div>
+    <div style="padding:.3rem 1rem .6rem 3.5rem">
+      <button class="settings-btn settings-btn-primary" onclick="changeUsername()"><i class="bi bi-person-check"></i> Change Username</button>
+    </div>
+    </div>
+    <div class="settings-divider"></div>
     <div class="settings-row" onclick="document.getElementById('profile-pw-fields').classList.toggle('open')">
       <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
       <div class="settings-body"><div class="settings-label">Change Password</div></div>

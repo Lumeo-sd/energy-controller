@@ -617,5 +617,7 @@ select.form-hb option:checked,select.form-hb option:hover{background-color:var(-
 
 /* Password fields / tile editor collapse */
 #password-inline-fields.open{display:block}
+#profile-pw-fields:not(.open){display:none}
+#profile-pw-fields.open{display:block}
 #tile-edit-inline{display:none}
 #tile-edit-inline.open{display:block}
