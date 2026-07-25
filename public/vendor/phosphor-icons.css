@@ -1,0 +1,4597 @@
+@font-face{font-family:"Phosphor";src:url("./fonts/Phosphor.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:block}
+@font-face{font-family:"Phosphor-Fill";src:url("./fonts/Phosphor-Fill.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:block}
+@font-face{font-family:"Phosphor-Bold";src:url("./fonts/Phosphor-Bold.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:block}
+.ph,.ph-fill,.ph-bold{font-style:normal;font-weight:normal;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1;letter-spacing:0;text-transform:none;display:inline-block}
+.ph{font-family:"Phosphor"!important}
+.ph-fill{font-family:"Phosphor-Fill"!important}
+.ph-bold{font-family:"Phosphor-Bold"!important}
+  .ph.ph-acorn:before {
+  .ph.ph-address-book:before {
+  .ph.ph-address-book-tabs:before {
+  .ph.ph-air-traffic-control:before {
+  .ph.ph-airplane:before {
+  .ph.ph-airplane-in-flight:before {
+  .ph.ph-airplane-landing:before {
+  .ph.ph-airplane-takeoff:before {
+  .ph.ph-airplane-taxiing:before {
+  .ph.ph-airplane-tilt:before {
+  .ph.ph-airplay:before {
+  .ph.ph-alarm:before {
+  .ph.ph-alien:before {
+  .ph.ph-align-bottom:before {
+  .ph.ph-align-bottom-simple:before {
+  .ph.ph-align-center-horizontal:before {
+  .ph.ph-align-center-horizontal-simple:before {
+  .ph.ph-align-center-vertical:before {
+  .ph.ph-align-center-vertical-simple:before {
+  .ph.ph-align-left:before {
+  .ph.ph-align-left-simple:before {
+  .ph.ph-align-right:before {
+  .ph.ph-align-right-simple:before {
+  .ph.ph-align-top:before {
+  .ph.ph-align-top-simple:before {
+  .ph.ph-amazon-logo:before {
+  .ph.ph-ambulance:before {
+  .ph.ph-anchor:before {
+  .ph.ph-anchor-simple:before {
+  .ph.ph-android-logo:before {
+  .ph.ph-angle:before {
+  .ph.ph-angular-logo:before {
+  .ph.ph-aperture:before {
+  .ph.ph-app-store-logo:before {
+  .ph.ph-app-window:before {
+  .ph.ph-apple-logo:before {
+  .ph.ph-apple-podcasts-logo:before {
+  .ph.ph-approximate-equals:before {
+  .ph.ph-archive:before {
+  .ph.ph-armchair:before {
+  .ph.ph-arrow-arc-left:before {
+  .ph.ph-arrow-arc-right:before {
+  .ph.ph-arrow-bend-double-up-left:before {
+  .ph.ph-arrow-bend-double-up-right:before {
+  .ph.ph-arrow-bend-down-left:before {
+  .ph.ph-arrow-bend-down-right:before {
+  .ph.ph-arrow-bend-left-down:before {
+  .ph.ph-arrow-bend-left-up:before {
+  .ph.ph-arrow-bend-right-down:before {
+  .ph.ph-arrow-bend-right-up:before {
+  .ph.ph-arrow-bend-up-left:before {
+  .ph.ph-arrow-bend-up-right:before {
+  .ph.ph-arrow-circle-down:before {
+  .ph.ph-arrow-circle-down-left:before {
+  .ph.ph-arrow-circle-down-right:before {
+  .ph.ph-arrow-circle-left:before {
+  .ph.ph-arrow-circle-right:before {
+  .ph.ph-arrow-circle-up:before {
+  .ph.ph-arrow-circle-up-left:before {
+  .ph.ph-arrow-circle-up-right:before {
+  .ph.ph-arrow-clockwise:before {
+  .ph.ph-arrow-counter-clockwise:before {
+  .ph.ph-arrow-down:before {
+  .ph.ph-arrow-down-left:before {
+  .ph.ph-arrow-down-right:before {
+  .ph.ph-arrow-elbow-down-left:before {
+  .ph.ph-arrow-elbow-down-right:before {
+  .ph.ph-arrow-elbow-left:before {
+  .ph.ph-arrow-elbow-left-down:before {
+  .ph.ph-arrow-elbow-left-up:before {
+  .ph.ph-arrow-elbow-right:before {
+  .ph.ph-arrow-elbow-right-down:before {
+  .ph.ph-arrow-elbow-right-up:before {
+  .ph.ph-arrow-elbow-up-left:before {
+  .ph.ph-arrow-elbow-up-right:before {
+  .ph.ph-arrow-fat-down:before {
+  .ph.ph-arrow-fat-left:before {
+  .ph.ph-arrow-fat-line-down:before {
+  .ph.ph-arrow-fat-line-left:before {
+  .ph.ph-arrow-fat-line-right:before {
+  .ph.ph-arrow-fat-line-up:before {
+  .ph.ph-arrow-fat-lines-down:before {
+  .ph.ph-arrow-fat-lines-left:before {
+  .ph.ph-arrow-fat-lines-right:before {
+  .ph.ph-arrow-fat-lines-up:before {
+  .ph.ph-arrow-fat-right:before {
+  .ph.ph-arrow-fat-up:before {
+  .ph.ph-arrow-left:before {
+  .ph.ph-arrow-line-down:before {
+  .ph.ph-arrow-line-down-left:before {
+  .ph.ph-arrow-line-down-right:before {
+  .ph.ph-arrow-line-left:before {
+  .ph.ph-arrow-line-right:before {
+  .ph.ph-arrow-line-up:before {
+  .ph.ph-arrow-line-up-left:before {
+  .ph.ph-arrow-line-up-right:before {
+  .ph.ph-arrow-right:before {
+  .ph.ph-arrow-square-down:before {
+  .ph.ph-arrow-square-down-left:before {
+  .ph.ph-arrow-square-down-right:before {
+  .ph.ph-arrow-square-in:before {
+  .ph.ph-arrow-square-left:before {
+  .ph.ph-arrow-square-out:before {
+  .ph.ph-arrow-square-right:before {
+  .ph.ph-arrow-square-up:before {
+  .ph.ph-arrow-square-up-left:before {
+  .ph.ph-arrow-square-up-right:before {
+  .ph.ph-arrow-u-down-left:before {
+  .ph.ph-arrow-u-down-right:before {
+  .ph.ph-arrow-u-left-down:before {
+  .ph.ph-arrow-u-left-up:before {
+  .ph.ph-arrow-u-right-down:before {
+  .ph.ph-arrow-u-right-up:before {
+  .ph.ph-arrow-u-up-left:before {
+  .ph.ph-arrow-u-up-right:before {
+  .ph.ph-arrow-up:before {
+  .ph.ph-arrow-up-left:before {
+  .ph.ph-arrow-up-right:before {
+  .ph.ph-arrows-clockwise:before {
+  .ph.ph-arrows-counter-clockwise:before {
+  .ph.ph-arrows-down-up:before {
+  .ph.ph-arrows-horizontal:before {
+  .ph.ph-arrows-in:before {
+  .ph.ph-arrows-in-cardinal:before {
+  .ph.ph-arrows-in-line-horizontal:before {
+  .ph.ph-arrows-in-line-vertical:before {
+  .ph.ph-arrows-in-simple:before {
+  .ph.ph-arrows-left-right:before {
+  .ph.ph-arrows-merge:before {
+  .ph.ph-arrows-out:before {
+  .ph.ph-arrows-out-cardinal:before {
+  .ph.ph-arrows-out-line-horizontal:before {
+  .ph.ph-arrows-out-line-vertical:before {
+  .ph.ph-arrows-out-simple:before {
+  .ph.ph-arrows-split:before {
+  .ph.ph-arrows-vertical:before {
+  .ph.ph-article:before {
+  .ph.ph-article-medium:before {
+  .ph.ph-article-ny-times:before {
+  .ph.ph-asclepius:before {
+  .ph.ph-caduceus:before {
+  .ph.ph-asterisk:before {
+  .ph.ph-asterisk-simple:before {
+  .ph.ph-at:before {
+  .ph.ph-atom:before {
+  .ph.ph-avocado:before {
+  .ph.ph-axe:before {
+  .ph.ph-baby:before {
+  .ph.ph-baby-carriage:before {
+  .ph.ph-backpack:before {
+  .ph.ph-backspace:before {
+  .ph.ph-bag:before {
+  .ph.ph-bag-simple:before {
+  .ph.ph-balloon:before {
+  .ph.ph-bandaids:before {
+  .ph.ph-bank:before {
+  .ph.ph-barbell:before {
+  .ph.ph-barcode:before {
+  .ph.ph-barn:before {
+  .ph.ph-barricade:before {
+  .ph.ph-baseball:before {
+  .ph.ph-baseball-cap:before {
+  .ph.ph-baseball-helmet:before {
+  .ph.ph-basket:before {
+  .ph.ph-basketball:before {
+  .ph.ph-bathtub:before {
+  .ph.ph-battery-charging:before {
+  .ph.ph-battery-charging-vertical:before {
+  .ph.ph-battery-empty:before {
+  .ph.ph-battery-full:before {
+  .ph.ph-battery-high:before {
+  .ph.ph-battery-low:before {
+  .ph.ph-battery-medium:before {
+  .ph.ph-battery-plus:before {
+  .ph.ph-battery-plus-vertical:before {
+  .ph.ph-battery-vertical-empty:before {
+  .ph.ph-battery-vertical-full:before {
+  .ph.ph-battery-vertical-high:before {
+  .ph.ph-battery-vertical-low:before {
+  .ph.ph-battery-vertical-medium:before {
+  .ph.ph-battery-warning:before {
+  .ph.ph-battery-warning-vertical:before {
+  .ph.ph-beach-ball:before {
+  .ph.ph-beanie:before {
+  .ph.ph-bed:before {
+  .ph.ph-beer-bottle:before {
+  .ph.ph-beer-stein:before {
+  .ph.ph-behance-logo:before {
+  .ph.ph-bell:before {
+  .ph.ph-bell-ringing:before {
+  .ph.ph-bell-simple:before {
+  .ph.ph-bell-simple-ringing:before {
+  .ph.ph-bell-simple-slash:before {
+  .ph.ph-bell-simple-z:before {
+  .ph.ph-bell-slash:before {
+  .ph.ph-bell-z:before {
+  .ph.ph-belt:before {
+  .ph.ph-bezier-curve:before {
+  .ph.ph-bicycle:before {
+  .ph.ph-binary:before {
+  .ph.ph-binoculars:before {
+  .ph.ph-biohazard:before {
+  .ph.ph-bird:before {
+  .ph.ph-blueprint:before {
+  .ph.ph-bluetooth:before {
+  .ph.ph-bluetooth-connected:before {
+  .ph.ph-bluetooth-slash:before {
+  .ph.ph-bluetooth-x:before {
+  .ph.ph-boat:before {
+  .ph.ph-bomb:before {
+  .ph.ph-bone:before {
+  .ph.ph-book:before {
+  .ph.ph-book-bookmark:before {
+  .ph.ph-book-open:before {
+  .ph.ph-book-open-text:before {
+  .ph.ph-book-open-user:before {
+  .ph.ph-bookmark:before {
+  .ph.ph-bookmark-simple:before {
+  .ph.ph-bookmarks:before {
+  .ph.ph-bookmarks-simple:before {
+  .ph.ph-books:before {
+  .ph.ph-boot:before {
+  .ph.ph-boules:before {
+  .ph.ph-bounding-box:before {
+  .ph.ph-bowl-food:before {
+  .ph.ph-bowl-steam:before {
+  .ph.ph-bowling-ball:before {
+  .ph.ph-box-arrow-down:before {
+  .ph.ph-archive-box:before {
+  .ph.ph-box-arrow-up:before {
+  .ph.ph-boxing-glove:before {
+  .ph.ph-brackets-angle:before {
+  .ph.ph-brackets-curly:before {
+  .ph.ph-brackets-round:before {
+  .ph.ph-brackets-square:before {
+  .ph.ph-brain:before {
+  .ph.ph-brandy:before {
+  .ph.ph-bread:before {
+  .ph.ph-bridge:before {
+  .ph.ph-briefcase:before {
+  .ph.ph-briefcase-metal:before {
+  .ph.ph-broadcast:before {
+  .ph.ph-broom:before {
+  .ph.ph-browser:before {
+  .ph.ph-browsers:before {
+  .ph.ph-bug:before {
+  .ph.ph-bug-beetle:before {
+  .ph.ph-bug-droid:before {
+  .ph.ph-building:before {
+  .ph.ph-building-apartment:before {
+  .ph.ph-building-office:before {
+  .ph.ph-buildings:before {
+  .ph.ph-bulldozer:before {
+  .ph.ph-bus:before {
+  .ph.ph-butterfly:before {
+  .ph.ph-cable-car:before {
+  .ph.ph-cactus:before {
+  .ph.ph-cake:before {
+  .ph.ph-calculator:before {
+  .ph.ph-calendar:before {
+  .ph.ph-calendar-blank:before {
+  .ph.ph-calendar-check:before {
+  .ph.ph-calendar-dot:before {
+  .ph.ph-calendar-dots:before {
+  .ph.ph-calendar-heart:before {
+  .ph.ph-calendar-minus:before {
+  .ph.ph-calendar-plus:before {
+  .ph.ph-calendar-slash:before {
+  .ph.ph-calendar-star:before {
+  .ph.ph-calendar-x:before {
+  .ph.ph-call-bell:before {
+  .ph.ph-camera:before {
+  .ph.ph-camera-plus:before {
+  .ph.ph-camera-rotate:before {
+  .ph.ph-camera-slash:before {
+  .ph.ph-campfire:before {
+  .ph.ph-car:before {
+  .ph.ph-car-battery:before {
+  .ph.ph-car-profile:before {
+  .ph.ph-car-simple:before {
+  .ph.ph-cardholder:before {
+  .ph.ph-cards:before {
+  .ph.ph-cards-three:before {
+  .ph.ph-caret-circle-double-down:before {
+  .ph.ph-caret-circle-double-left:before {
+  .ph.ph-caret-circle-double-right:before {
+  .ph.ph-caret-circle-double-up:before {
+  .ph.ph-caret-circle-down:before {
+  .ph.ph-caret-circle-left:before {
+  .ph.ph-caret-circle-right:before {
+  .ph.ph-caret-circle-up:before {
+  .ph.ph-caret-circle-up-down:before {
+  .ph.ph-caret-double-down:before {
+  .ph.ph-caret-double-left:before {
+  .ph.ph-caret-double-right:before {
+  .ph.ph-caret-double-up:before {
+  .ph.ph-caret-down:before {
+  .ph.ph-caret-left:before {
+  .ph.ph-caret-line-down:before {
+  .ph.ph-caret-line-left:before {
+  .ph.ph-caret-line-right:before {
+  .ph.ph-caret-line-up:before {
+  .ph.ph-caret-right:before {
+  .ph.ph-caret-up:before {
+  .ph.ph-caret-up-down:before {
+  .ph.ph-carrot:before {
+  .ph.ph-cash-register:before {
+  .ph.ph-cassette-tape:before {
+  .ph.ph-castle-turret:before {
+  .ph.ph-cat:before {
+  .ph.ph-cell-signal-full:before {
+  .ph.ph-cell-signal-high:before {
+  .ph.ph-cell-signal-low:before {
+  .ph.ph-cell-signal-medium:before {
+  .ph.ph-cell-signal-none:before {
+  .ph.ph-cell-signal-slash:before {
+  .ph.ph-cell-signal-x:before {
+  .ph.ph-cell-tower:before {
+  .ph.ph-certificate:before {
+  .ph.ph-chair:before {
+  .ph.ph-chalkboard:before {
+  .ph.ph-chalkboard-simple:before {
+  .ph.ph-chalkboard-teacher:before {
+  .ph.ph-champagne:before {
+  .ph.ph-charging-station:before {
+  .ph.ph-chart-bar:before {
+  .ph.ph-chart-bar-horizontal:before {
+  .ph.ph-chart-donut:before {
+  .ph.ph-chart-line:before {
+  .ph.ph-chart-line-down:before {
+  .ph.ph-chart-line-up:before {
+  .ph.ph-chart-pie:before {
+  .ph.ph-chart-pie-slice:before {
+  .ph.ph-chart-polar:before {
+  .ph.ph-chart-scatter:before {
+  .ph.ph-chat:before {
+  .ph.ph-chat-centered:before {
+  .ph.ph-chat-centered-dots:before {
+  .ph.ph-chat-centered-slash:before {
+  .ph.ph-chat-centered-text:before {
+  .ph.ph-chat-circle:before {
+  .ph.ph-chat-circle-dots:before {
+  .ph.ph-chat-circle-slash:before {
+  .ph.ph-chat-circle-text:before {
+  .ph.ph-chat-dots:before {
+  .ph.ph-chat-slash:before {
+  .ph.ph-chat-teardrop:before {
+  .ph.ph-chat-teardrop-dots:before {
+  .ph.ph-chat-teardrop-slash:before {
+  .ph.ph-chat-teardrop-text:before {
+  .ph.ph-chat-text:before {
+  .ph.ph-chats:before {
+  .ph.ph-chats-circle:before {
+  .ph.ph-chats-teardrop:before {
+  .ph.ph-check:before {
+  .ph.ph-check-circle:before {
+  .ph.ph-check-fat:before {
+  .ph.ph-check-square:before {
+  .ph.ph-check-square-offset:before {
+  .ph.ph-checkerboard:before {
+  .ph.ph-checks:before {
+  .ph.ph-cheers:before {
+  .ph.ph-cheese:before {
+  .ph.ph-chef-hat:before {
+  .ph.ph-cherries:before {
+  .ph.ph-church:before {
+  .ph.ph-cigarette:before {
+  .ph.ph-cigarette-slash:before {
+  .ph.ph-circle:before {
+  .ph.ph-circle-dashed:before {
+  .ph.ph-circle-half:before {
+  .ph.ph-circle-half-tilt:before {
+  .ph.ph-circle-notch:before {
+  .ph.ph-circles-four:before {
+  .ph.ph-circles-three:before {
+  .ph.ph-circles-three-plus:before {
+  .ph.ph-circuitry:before {
+  .ph.ph-city:before {
+  .ph.ph-clipboard:before {
+  .ph.ph-clipboard-text:before {
+  .ph.ph-clock:before {
+  .ph.ph-clock-afternoon:before {
+  .ph.ph-clock-clockwise:before {
+  .ph.ph-clock-countdown:before {
+  .ph.ph-clock-counter-clockwise:before {
+  .ph.ph-clock-user:before {
+  .ph.ph-closed-captioning:before {
+  .ph.ph-cloud:before {
+  .ph.ph-cloud-arrow-down:before {
+  .ph.ph-cloud-arrow-up:before {
+  .ph.ph-cloud-check:before {
+  .ph.ph-cloud-fog:before {
+  .ph.ph-cloud-lightning:before {
+  .ph.ph-cloud-moon:before {
+  .ph.ph-cloud-rain:before {
+  .ph.ph-cloud-slash:before {
+  .ph.ph-cloud-snow:before {
+  .ph.ph-cloud-sun:before {
+  .ph.ph-cloud-warning:before {
+  .ph.ph-cloud-x:before {
+  .ph.ph-clover:before {
+  .ph.ph-club:before {
+  .ph.ph-coat-hanger:before {
+  .ph.ph-coda-logo:before {
+  .ph.ph-code:before {
+  .ph.ph-code-block:before {
+  .ph.ph-code-simple:before {
+  .ph.ph-codepen-logo:before {
+  .ph.ph-codesandbox-logo:before {
+  .ph.ph-coffee:before {
+  .ph.ph-coffee-bean:before {
+  .ph.ph-coin:before {
+  .ph.ph-coin-vertical:before {
+  .ph.ph-coins:before {
+  .ph.ph-columns:before {
+  .ph.ph-columns-plus-left:before {
+  .ph.ph-columns-plus-right:before {
+  .ph.ph-command:before {
+  .ph.ph-compass:before {
+  .ph.ph-compass-rose:before {
+  .ph.ph-compass-tool:before {
+  .ph.ph-computer-tower:before {
+  .ph.ph-confetti:before {
+  .ph.ph-contactless-payment:before {
+  .ph.ph-control:before {
+  .ph.ph-cookie:before {
+  .ph.ph-cooking-pot:before {
+  .ph.ph-copy:before {
+  .ph.ph-copy-simple:before {
+  .ph.ph-copyleft:before {
+  .ph.ph-copyright:before {
+  .ph.ph-corners-in:before {
+  .ph.ph-corners-out:before {
+  .ph.ph-couch:before {
+  .ph.ph-court-basketball:before {
+  .ph.ph-cow:before {
+  .ph.ph-cowboy-hat:before {
+  .ph.ph-cpu:before {
+  .ph.ph-crane:before {
+  .ph.ph-crane-tower:before {
+  .ph.ph-credit-card:before {
+  .ph.ph-cricket:before {
+  .ph.ph-crop:before {
+  .ph.ph-cross:before {
+  .ph.ph-crosshair:before {
+  .ph.ph-crosshair-simple:before {
+  .ph.ph-crown:before {
+  .ph.ph-crown-cross:before {
+  .ph.ph-crown-simple:before {
+  .ph.ph-cube:before {
+  .ph.ph-cube-focus:before {
+  .ph.ph-cube-transparent:before {
+  .ph.ph-currency-btc:before {
+  .ph.ph-currency-circle-dollar:before {
+  .ph.ph-currency-cny:before {
+  .ph.ph-currency-dollar:before {
+  .ph.ph-currency-dollar-simple:before {
+  .ph.ph-currency-eth:before {
+  .ph.ph-currency-eur:before {
+  .ph.ph-currency-gbp:before {
+  .ph.ph-currency-inr:before {
+  .ph.ph-currency-jpy:before {
+  .ph.ph-currency-krw:before {
+  .ph.ph-currency-kzt:before {
+  .ph.ph-currency-ngn:before {
+  .ph.ph-currency-rub:before {
+  .ph.ph-cursor:before {
+  .ph.ph-cursor-click:before {
+  .ph.ph-cursor-text:before {
+  .ph.ph-cylinder:before {
+  .ph.ph-database:before {
+  .ph.ph-desk:before {
+  .ph.ph-desktop:before {
+  .ph.ph-desktop-tower:before {
+  .ph.ph-detective:before {
+  .ph.ph-dev-to-logo:before {
+  .ph.ph-device-mobile:before {
+  .ph.ph-device-mobile-camera:before {
+  .ph.ph-device-mobile-slash:before {
+  .ph.ph-device-mobile-speaker:before {
+  .ph.ph-device-rotate:before {
+  .ph.ph-device-tablet:before {
+  .ph.ph-device-tablet-camera:before {
+  .ph.ph-device-tablet-speaker:before {
+  .ph.ph-devices:before {
+  .ph.ph-diamond:before {
+  .ph.ph-diamonds-four:before {
+  .ph.ph-dice-five:before {
+  .ph.ph-dice-four:before {
+  .ph.ph-dice-one:before {
+  .ph.ph-dice-six:before {
+  .ph.ph-dice-three:before {
+  .ph.ph-dice-two:before {
+  .ph.ph-disc:before {
+  .ph.ph-disco-ball:before {
+  .ph.ph-discord-logo:before {
+  .ph.ph-divide:before {
+  .ph.ph-dna:before {
+  .ph.ph-dog:before {
+  .ph.ph-door:before {
+  .ph.ph-door-open:before {
+  .ph.ph-dot:before {
+  .ph.ph-dot-outline:before {
+  .ph.ph-dots-nine:before {
+  .ph.ph-dots-six:before {
+  .ph.ph-dots-six-vertical:before {
+  .ph.ph-dots-three:before {
+  .ph.ph-dots-three-circle:before {
+  .ph.ph-dots-three-circle-vertical:before {
+  .ph.ph-dots-three-outline:before {
+  .ph.ph-dots-three-outline-vertical:before {
+  .ph.ph-dots-three-vertical:before {
+  .ph.ph-download:before {
+  .ph.ph-download-simple:before {
+  .ph.ph-dress:before {
+  .ph.ph-dresser:before {
+  .ph.ph-dribbble-logo:before {
+  .ph.ph-drone:before {
+  .ph.ph-drop:before {
+  .ph.ph-drop-half:before {
+  .ph.ph-drop-half-bottom:before {
+  .ph.ph-drop-simple:before {
+  .ph.ph-drop-slash:before {
+  .ph.ph-dropbox-logo:before {
+  .ph.ph-ear:before {
+  .ph.ph-ear-slash:before {
+  .ph.ph-egg:before {
+  .ph.ph-egg-crack:before {
+  .ph.ph-eject:before {
+  .ph.ph-eject-simple:before {
+  .ph.ph-elevator:before {
+  .ph.ph-empty:before {
+  .ph.ph-engine:before {
+  .ph.ph-envelope:before {
+  .ph.ph-envelope-open:before {
+  .ph.ph-envelope-simple:before {
+  .ph.ph-envelope-simple-open:before {
+  .ph.ph-equalizer:before {
+  .ph.ph-equals:before {
+  .ph.ph-eraser:before {
+  .ph.ph-escalator-down:before {
+  .ph.ph-escalator-up:before {
+  .ph.ph-exam:before {
+  .ph.ph-exclamation-mark:before {
+  .ph.ph-exclude:before {
+  .ph.ph-exclude-square:before {
+  .ph.ph-export:before {
+  .ph.ph-eye:before {
+  .ph.ph-eye-closed:before {
+  .ph.ph-eye-slash:before {
+  .ph.ph-eyedropper:before {
+  .ph.ph-eyedropper-sample:before {
+  .ph.ph-eyeglasses:before {
+  .ph.ph-eyes:before {
+  .ph.ph-face-mask:before {
+  .ph.ph-facebook-logo:before {
+  .ph.ph-factory:before {
+  .ph.ph-faders:before {
+  .ph.ph-faders-horizontal:before {
+  .ph.ph-fallout-shelter:before {
+  .ph.ph-fan:before {
+  .ph.ph-farm:before {
+  .ph.ph-fast-forward:before {
+  .ph.ph-fast-forward-circle:before {
+  .ph.ph-feather:before {
+  .ph.ph-fediverse-logo:before {
+  .ph.ph-figma-logo:before {
+  .ph.ph-file:before {
+  .ph.ph-file-archive:before {
+  .ph.ph-file-arrow-down:before {
+  .ph.ph-file-arrow-up:before {
+  .ph.ph-file-audio:before {
+  .ph.ph-file-c:before {
+  .ph.ph-file-c-sharp:before {
+  .ph.ph-file-cloud:before {
+  .ph.ph-file-code:before {
+  .ph.ph-file-cpp:before {
+  .ph.ph-file-css:before {
+  .ph.ph-file-csv:before {
+  .ph.ph-file-dashed:before {
+  .ph.ph-file-dotted:before {
+  .ph.ph-file-doc:before {
+  .ph.ph-file-html:before {
+  .ph.ph-file-image:before {
+  .ph.ph-file-ini:before {
+  .ph.ph-file-jpg:before {
+  .ph.ph-file-js:before {
+  .ph.ph-file-jsx:before {
+  .ph.ph-file-lock:before {
+  .ph.ph-file-magnifying-glass:before {
+  .ph.ph-file-search:before {
+  .ph.ph-file-md:before {
+  .ph.ph-file-minus:before {
+  .ph.ph-file-pdf:before {
+  .ph.ph-file-plus:before {
+  .ph.ph-file-png:before {
+  .ph.ph-file-ppt:before {
+  .ph.ph-file-py:before {
+  .ph.ph-file-rs:before {
+  .ph.ph-file-sql:before {
+  .ph.ph-file-svg:before {
+  .ph.ph-file-text:before {
+  .ph.ph-file-ts:before {
+  .ph.ph-file-tsx:before {
+  .ph.ph-file-txt:before {
+  .ph.ph-file-video:before {
+  .ph.ph-file-vue:before {
+  .ph.ph-file-x:before {
+  .ph.ph-file-xls:before {
+  .ph.ph-file-zip:before {
+  .ph.ph-files:before {
+  .ph.ph-film-reel:before {
+  .ph.ph-film-script:before {
+  .ph.ph-film-slate:before {
+  .ph.ph-film-strip:before {
+  .ph.ph-fingerprint:before {
+  .ph.ph-fingerprint-simple:before {
+  .ph.ph-finn-the-human:before {
+  .ph.ph-fire:before {
+  .ph.ph-fire-extinguisher:before {
+  .ph.ph-fire-simple:before {
+  .ph.ph-fire-truck:before {
+  .ph.ph-first-aid:before {
+  .ph.ph-first-aid-kit:before {
+  .ph.ph-fish:before {
+  .ph.ph-fish-simple:before {
+  .ph.ph-flag:before {
+  .ph.ph-flag-banner:before {
+  .ph.ph-flag-banner-fold:before {
+  .ph.ph-flag-checkered:before {
+  .ph.ph-flag-pennant:before {
+  .ph.ph-flame:before {
+  .ph.ph-flashlight:before {
+  .ph.ph-flask:before {
+  .ph.ph-flip-horizontal:before {
+  .ph.ph-flip-vertical:before {
+  .ph.ph-floppy-disk:before {
+  .ph.ph-floppy-disk-back:before {
+  .ph.ph-flow-arrow:before {
+  .ph.ph-flower:before {
+  .ph.ph-flower-lotus:before {
+  .ph.ph-flower-tulip:before {
+  .ph.ph-flying-saucer:before {
+  .ph.ph-folder:before {
+  .ph.ph-folder-notch:before {
+  .ph.ph-folder-dashed:before {
+  .ph.ph-folder-dotted:before {
+  .ph.ph-folder-lock:before {
+  .ph.ph-folder-minus:before {
+  .ph.ph-folder-notch-minus:before {
+  .ph.ph-folder-open:before {
+  .ph.ph-folder-notch-open:before {
+  .ph.ph-folder-plus:before {
+  .ph.ph-folder-notch-plus:before {
+  .ph.ph-folder-simple:before {
+  .ph.ph-folder-simple-dashed:before {
+  .ph.ph-folder-simple-dotted:before {
+  .ph.ph-folder-simple-lock:before {
+  .ph.ph-folder-simple-minus:before {
+  .ph.ph-folder-simple-plus:before {
+  .ph.ph-folder-simple-star:before {
+  .ph.ph-folder-simple-user:before {
+  .ph.ph-folder-star:before {
+  .ph.ph-folder-user:before {
+  .ph.ph-folders:before {
+  .ph.ph-football:before {
+  .ph.ph-football-helmet:before {
+  .ph.ph-footprints:before {
+  .ph.ph-fork-knife:before {
+  .ph.ph-four-k:before {
+  .ph.ph-frame-corners:before {
+  .ph.ph-framer-logo:before {
+  .ph.ph-function:before {
+  .ph.ph-funnel:before {
+  .ph.ph-funnel-simple:before {
+  .ph.ph-funnel-simple-x:before {
+  .ph.ph-funnel-x:before {
+  .ph.ph-game-controller:before {
+  .ph.ph-garage:before {
+  .ph.ph-gas-can:before {
+  .ph.ph-gas-pump:before {
+  .ph.ph-gauge:before {
+  .ph.ph-gavel:before {
+  .ph.ph-gear:before {
+  .ph.ph-gear-fine:before {
+  .ph.ph-gear-six:before {
+  .ph.ph-gender-female:before {
+  .ph.ph-gender-intersex:before {
+  .ph.ph-gender-male:before {
+  .ph.ph-gender-neuter:before {
+  .ph.ph-gender-nonbinary:before {
+  .ph.ph-gender-transgender:before {
+  .ph.ph-ghost:before {
+  .ph.ph-gif:before {
+  .ph.ph-gift:before {
+  .ph.ph-git-branch:before {
+  .ph.ph-git-commit:before {
+  .ph.ph-git-diff:before {
+  .ph.ph-git-fork:before {
+  .ph.ph-git-merge:before {
+  .ph.ph-git-pull-request:before {
+  .ph.ph-github-logo:before {
+  .ph.ph-gitlab-logo:before {
+  .ph.ph-gitlab-logo-simple:before {
+  .ph.ph-globe:before {
+  .ph.ph-globe-hemisphere-east:before {
+  .ph.ph-globe-hemisphere-west:before {
+  .ph.ph-globe-simple:before {
+  .ph.ph-globe-simple-x:before {
+  .ph.ph-globe-stand:before {
+  .ph.ph-globe-x:before {
+  .ph.ph-goggles:before {
+  .ph.ph-golf:before {
+  .ph.ph-goodreads-logo:before {
+  .ph.ph-google-cardboard-logo:before {
+  .ph.ph-google-chrome-logo:before {
+  .ph.ph-google-drive-logo:before {
+  .ph.ph-google-logo:before {
+  .ph.ph-google-photos-logo:before {
+  .ph.ph-google-play-logo:before {
+  .ph.ph-google-podcasts-logo:before {
+  .ph.ph-gps:before {
+  .ph.ph-gps-fix:before {
+  .ph.ph-gps-slash:before {
+  .ph.ph-gradient:before {
+  .ph.ph-graduation-cap:before {
+  .ph.ph-grains:before {
+  .ph.ph-grains-slash:before {
+  .ph.ph-graph:before {
+  .ph.ph-graphics-card:before {
+  .ph.ph-greater-than:before {
+  .ph.ph-greater-than-or-equal:before {
+  .ph.ph-grid-four:before {
+  .ph.ph-grid-nine:before {
+  .ph.ph-guitar:before {
+  .ph.ph-hair-dryer:before {
+  .ph.ph-hamburger:before {
+  .ph.ph-hammer:before {
+  .ph.ph-hand:before {
+  .ph.ph-hand-arrow-down:before {
+  .ph.ph-hand-arrow-up:before {
+  .ph.ph-hand-coins:before {
+  .ph.ph-hand-deposit:before {
+  .ph.ph-hand-eye:before {
+  .ph.ph-hand-fist:before {
+  .ph.ph-hand-grabbing:before {
+  .ph.ph-hand-heart:before {
+  .ph.ph-hand-palm:before {
+  .ph.ph-hand-peace:before {
+  .ph.ph-hand-pointing:before {
+  .ph.ph-hand-soap:before {
+  .ph.ph-hand-swipe-left:before {
+  .ph.ph-hand-swipe-right:before {
+  .ph.ph-hand-tap:before {
+  .ph.ph-hand-waving:before {
+  .ph.ph-hand-withdraw:before {
+  .ph.ph-handbag:before {
+  .ph.ph-handbag-simple:before {
+  .ph.ph-hands-clapping:before {
+  .ph.ph-hands-praying:before {
+  .ph.ph-handshake:before {
+  .ph.ph-hard-drive:before {
+  .ph.ph-hard-drives:before {
+  .ph.ph-hard-hat:before {
+  .ph.ph-hash:before {
+  .ph.ph-hash-straight:before {
+  .ph.ph-head-circuit:before {
+  .ph.ph-headlights:before {
+  .ph.ph-headphones:before {
+  .ph.ph-headset:before {
+  .ph.ph-heart:before {
+  .ph.ph-heart-break:before {
+  .ph.ph-heart-half:before {
+  .ph.ph-heart-straight:before {
+  .ph.ph-heart-straight-break:before {
+  .ph.ph-heartbeat:before {
+  .ph.ph-hexagon:before {
+  .ph.ph-high-definition:before {
+  .ph.ph-high-heel:before {
+  .ph.ph-highlighter:before {
+  .ph.ph-highlighter-circle:before {
+  .ph.ph-hockey:before {
+  .ph.ph-hoodie:before {
+  .ph.ph-horse:before {
+  .ph.ph-hospital:before {
+  .ph.ph-hourglass:before {
+  .ph.ph-hourglass-high:before {
+  .ph.ph-hourglass-low:before {
+  .ph.ph-hourglass-medium:before {
+  .ph.ph-hourglass-simple:before {
+  .ph.ph-hourglass-simple-high:before {
+  .ph.ph-hourglass-simple-low:before {
+  .ph.ph-hourglass-simple-medium:before {
+  .ph.ph-house:before {
+  .ph.ph-house-line:before {
+  .ph.ph-house-simple:before {
+  .ph.ph-hurricane:before {
+  .ph.ph-ice-cream:before {
+  .ph.ph-identification-badge:before {
+  .ph.ph-identification-card:before {
+  .ph.ph-image:before {
+  .ph.ph-image-broken:before {
+  .ph.ph-image-square:before {
+  .ph.ph-images:before {
+  .ph.ph-images-square:before {
+  .ph.ph-infinity:before {
+  .ph.ph-lemniscate:before {
+  .ph.ph-info:before {
+  .ph.ph-instagram-logo:before {
+  .ph.ph-intersect:before {
+  .ph.ph-intersect-square:before {
+  .ph.ph-intersect-three:before {
+  .ph.ph-intersection:before {
+  .ph.ph-invoice:before {
+  .ph.ph-island:before {
+  .ph.ph-jar:before {
+  .ph.ph-jar-label:before {
+  .ph.ph-jeep:before {
+  .ph.ph-joystick:before {
+  .ph.ph-kanban:before {
+  .ph.ph-key:before {
+  .ph.ph-key-return:before {
+  .ph.ph-keyboard:before {
+  .ph.ph-keyhole:before {
+  .ph.ph-knife:before {
+  .ph.ph-ladder:before {
+  .ph.ph-ladder-simple:before {
+  .ph.ph-lamp:before {
+  .ph.ph-lamp-pendant:before {
+  .ph.ph-laptop:before {
+  .ph.ph-lasso:before {
+  .ph.ph-lastfm-logo:before {
+  .ph.ph-layout:before {
+  .ph.ph-leaf:before {
+  .ph.ph-lectern:before {
+  .ph.ph-lego:before {
+  .ph.ph-lego-smiley:before {
+  .ph.ph-less-than:before {
+  .ph.ph-less-than-or-equal:before {
+  .ph.ph-letter-circle-h:before {
+  .ph.ph-letter-circle-p:before {
+  .ph.ph-letter-circle-v:before {
+  .ph.ph-lifebuoy:before {
+  .ph.ph-lightbulb:before {
+  .ph.ph-lightbulb-filament:before {
+  .ph.ph-lighthouse:before {
+  .ph.ph-lightning:before {
+  .ph.ph-lightning-a:before {
+  .ph.ph-lightning-slash:before {
+  .ph.ph-line-segment:before {
+  .ph.ph-line-segments:before {
+  .ph.ph-line-vertical:before {
+  .ph.ph-link:before {
+  .ph.ph-link-break:before {
+  .ph.ph-link-simple:before {
+  .ph.ph-link-simple-break:before {
+  .ph.ph-link-simple-horizontal:before {
+  .ph.ph-link-simple-horizontal-break:before {
+  .ph.ph-linkedin-logo:before {
+  .ph.ph-linktree-logo:before {
+  .ph.ph-linux-logo:before {
+  .ph.ph-list:before {
+  .ph.ph-list-bullets:before {
+  .ph.ph-list-checks:before {
+  .ph.ph-list-dashes:before {
+  .ph.ph-list-heart:before {
+  .ph.ph-list-magnifying-glass:before {
+  .ph.ph-list-numbers:before {
+  .ph.ph-list-plus:before {
+  .ph.ph-list-star:before {
+  .ph.ph-lock:before {
+  .ph.ph-lock-key:before {
+  .ph.ph-lock-key-open:before {
+  .ph.ph-lock-laminated:before {
+  .ph.ph-lock-laminated-open:before {
+  .ph.ph-lock-open:before {
+  .ph.ph-lock-simple:before {
+  .ph.ph-lock-simple-open:before {
+  .ph.ph-lockers:before {
+  .ph.ph-log:before {
+  .ph.ph-magic-wand:before {
+  .ph.ph-magnet:before {
+  .ph.ph-magnet-straight:before {
+  .ph.ph-magnifying-glass:before {
+  .ph.ph-magnifying-glass-minus:before {
+  .ph.ph-magnifying-glass-plus:before {
+  .ph.ph-mailbox:before {
+  .ph.ph-map-pin:before {
+  .ph.ph-map-pin-area:before {
+  .ph.ph-map-pin-line:before {
+  .ph.ph-map-pin-plus:before {
+  .ph.ph-map-pin-simple:before {
+  .ph.ph-map-pin-simple-area:before {
+  .ph.ph-map-pin-simple-line:before {
+  .ph.ph-map-trifold:before {
+  .ph.ph-markdown-logo:before {
+  .ph.ph-marker-circle:before {
+  .ph.ph-martini:before {
+  .ph.ph-mask-happy:before {
+  .ph.ph-mask-sad:before {
+  .ph.ph-mastodon-logo:before {
+  .ph.ph-math-operations:before {
+  .ph.ph-matrix-logo:before {
+  .ph.ph-medal:before {
+  .ph.ph-medal-military:before {
+  .ph.ph-medium-logo:before {
+  .ph.ph-megaphone:before {
+  .ph.ph-megaphone-simple:before {
+  .ph.ph-member-of:before {
+  .ph.ph-memory:before {
+  .ph.ph-messenger-logo:before {
+  .ph.ph-meta-logo:before {
+  .ph.ph-meteor:before {
+  .ph.ph-metronome:before {
+  .ph.ph-microphone:before {
+  .ph.ph-microphone-slash:before {
+  .ph.ph-microphone-stage:before {
+  .ph.ph-microscope:before {
+  .ph.ph-microsoft-excel-logo:before {
+  .ph.ph-microsoft-outlook-logo:before {
+  .ph.ph-microsoft-powerpoint-logo:before {
+  .ph.ph-microsoft-teams-logo:before {
+  .ph.ph-microsoft-word-logo:before {
+  .ph.ph-minus:before {
+  .ph.ph-minus-circle:before {
+  .ph.ph-minus-square:before {
+  .ph.ph-money:before {
+  .ph.ph-money-wavy:before {
+  .ph.ph-monitor:before {
+  .ph.ph-monitor-arrow-up:before {
+  .ph.ph-monitor-play:before {
+  .ph.ph-moon:before {
+  .ph.ph-moon-stars:before {
+  .ph.ph-moped:before {
+  .ph.ph-moped-front:before {
+  .ph.ph-mosque:before {
+  .ph.ph-motorcycle:before {
+  .ph.ph-mountains:before {
+  .ph.ph-mouse:before {
+  .ph.ph-mouse-left-click:before {
+  .ph.ph-mouse-middle-click:before {
+  .ph.ph-mouse-right-click:before {
+  .ph.ph-mouse-scroll:before {
+  .ph.ph-mouse-simple:before {
+  .ph.ph-music-note:before {
+  .ph.ph-music-note-simple:before {
+  .ph.ph-music-notes:before {
+  .ph.ph-music-notes-minus:before {
+  .ph.ph-music-notes-plus:before {
+  .ph.ph-music-notes-simple:before {
+  .ph.ph-navigation-arrow:before {
+  .ph.ph-needle:before {
+  .ph.ph-network:before {
+  .ph.ph-network-slash:before {
+  .ph.ph-network-x:before {
+  .ph.ph-newspaper:before {
+  .ph.ph-newspaper-clipping:before {
+  .ph.ph-not-equals:before {
+  .ph.ph-not-member-of:before {
+  .ph.ph-not-subset-of:before {
+  .ph.ph-not-superset-of:before {
+  .ph.ph-notches:before {
+  .ph.ph-note:before {
+  .ph.ph-note-blank:before {
+  .ph.ph-note-pencil:before {
+  .ph.ph-notebook:before {
+  .ph.ph-notepad:before {
+  .ph.ph-notification:before {
+  .ph.ph-notion-logo:before {
+  .ph.ph-nuclear-plant:before {
+  .ph.ph-number-circle-eight:before {
+  .ph.ph-number-circle-five:before {
+  .ph.ph-number-circle-four:before {
+  .ph.ph-number-circle-nine:before {
+  .ph.ph-number-circle-one:before {
+  .ph.ph-number-circle-seven:before {
+  .ph.ph-number-circle-six:before {
+  .ph.ph-number-circle-three:before {
+  .ph.ph-number-circle-two:before {
+  .ph.ph-number-circle-zero:before {
+  .ph.ph-number-eight:before {
+  .ph.ph-number-five:before {
+  .ph.ph-number-four:before {
+  .ph.ph-number-nine:before {
+  .ph.ph-number-one:before {
+  .ph.ph-number-seven:before {
+  .ph.ph-number-six:before {
+  .ph.ph-number-square-eight:before {
+  .ph.ph-number-square-five:before {
+  .ph.ph-number-square-four:before {
+  .ph.ph-number-square-nine:before {
+  .ph.ph-number-square-one:before {
+  .ph.ph-number-square-seven:before {
+  .ph.ph-number-square-six:before {
+  .ph.ph-number-square-three:before {
+  .ph.ph-number-square-two:before {
+  .ph.ph-number-square-zero:before {
+  .ph.ph-number-three:before {
+  .ph.ph-number-two:before {
+  .ph.ph-number-zero:before {
+  .ph.ph-numpad:before {
+  .ph.ph-nut:before {
+  .ph.ph-ny-times-logo:before {
+  .ph.ph-octagon:before {
+  .ph.ph-office-chair:before {
+  .ph.ph-onigiri:before {
+  .ph.ph-open-ai-logo:before {
+  .ph.ph-option:before {
+  .ph.ph-orange:before {
+  .ph.ph-orange-slice:before {
+  .ph.ph-oven:before {
+  .ph.ph-package:before {
+  .ph.ph-paint-brush:before {
+  .ph.ph-paint-brush-broad:before {
+  .ph.ph-paint-brush-household:before {
+  .ph.ph-paint-bucket:before {
+  .ph.ph-paint-roller:before {
+  .ph.ph-palette:before {
+  .ph.ph-panorama:before {
+  .ph.ph-pants:before {
+  .ph.ph-paper-plane:before {
+  .ph.ph-paper-plane-right:before {
+  .ph.ph-paper-plane-tilt:before {
+  .ph.ph-paperclip:before {
+  .ph.ph-paperclip-horizontal:before {
+  .ph.ph-parachute:before {
+  .ph.ph-paragraph:before {
+  .ph.ph-parallelogram:before {
+  .ph.ph-park:before {
+  .ph.ph-password:before {
+  .ph.ph-path:before {
+  .ph.ph-patreon-logo:before {
+  .ph.ph-pause:before {
+  .ph.ph-pause-circle:before {
+  .ph.ph-paw-print:before {
+  .ph.ph-paypal-logo:before {
+  .ph.ph-peace:before {
+  .ph.ph-pen:before {
+  .ph.ph-pen-nib:before {
+  .ph.ph-pen-nib-straight:before {
+  .ph.ph-pencil:before {
+  .ph.ph-pencil-circle:before {
+  .ph.ph-pencil-line:before {
+  .ph.ph-pencil-ruler:before {
+  .ph.ph-pencil-simple:before {
+  .ph.ph-pencil-simple-line:before {
+  .ph.ph-pencil-simple-slash:before {
+  .ph.ph-pencil-slash:before {
+  .ph.ph-pentagon:before {
+  .ph.ph-pentagram:before {
+  .ph.ph-pepper:before {
+  .ph.ph-percent:before {
+  .ph.ph-person:before {
+  .ph.ph-person-arms-spread:before {
+  .ph.ph-person-simple:before {
+  .ph.ph-person-simple-bike:before {
+  .ph.ph-person-simple-circle:before {
+  .ph.ph-person-simple-hike:before {
+  .ph.ph-person-simple-run:before {
+  .ph.ph-person-simple-ski:before {
+  .ph.ph-person-simple-snowboard:before {
+  .ph.ph-person-simple-swim:before {
+  .ph.ph-person-simple-tai-chi:before {
+  .ph.ph-person-simple-throw:before {
+  .ph.ph-person-simple-walk:before {
+  .ph.ph-perspective:before {
+  .ph.ph-phone:before {
+  .ph.ph-phone-call:before {
+  .ph.ph-phone-disconnect:before {
+  .ph.ph-phone-incoming:before {
+  .ph.ph-phone-list:before {
+  .ph.ph-phone-outgoing:before {
+  .ph.ph-phone-pause:before {
+  .ph.ph-phone-plus:before {
+  .ph.ph-phone-slash:before {
+  .ph.ph-phone-transfer:before {
+  .ph.ph-phone-x:before {
+  .ph.ph-phosphor-logo:before {
+  .ph.ph-pi:before {
+  .ph.ph-piano-keys:before {
+  .ph.ph-picnic-table:before {
+  .ph.ph-picture-in-picture:before {
+  .ph.ph-piggy-bank:before {
+  .ph.ph-pill:before {
+  .ph.ph-ping-pong:before {
+  .ph.ph-pint-glass:before {
+  .ph.ph-pinterest-logo:before {
+  .ph.ph-pinwheel:before {
+  .ph.ph-pipe:before {
+  .ph.ph-pipe-wrench:before {
+  .ph.ph-pix-logo:before {
+  .ph.ph-pizza:before {
+  .ph.ph-placeholder:before {
+  .ph.ph-planet:before {
+  .ph.ph-plant:before {
+  .ph.ph-play:before {
+  .ph.ph-play-circle:before {
+  .ph.ph-play-pause:before {
+  .ph.ph-playlist:before {
+  .ph.ph-plug:before {
+  .ph.ph-plug-charging:before {
+  .ph.ph-plugs:before {
+  .ph.ph-plugs-connected:before {
+  .ph.ph-plus:before {
+  .ph.ph-plus-circle:before {
+  .ph.ph-plus-minus:before {
+  .ph.ph-plus-square:before {
+  .ph.ph-poker-chip:before {
+  .ph.ph-police-car:before {
+  .ph.ph-polygon:before {
+  .ph.ph-popcorn:before {
+  .ph.ph-popsicle:before {
+  .ph.ph-potted-plant:before {
+  .ph.ph-power:before {
+  .ph.ph-prescription:before {
+  .ph.ph-presentation:before {
+  .ph.ph-presentation-chart:before {
+  .ph.ph-printer:before {
+  .ph.ph-prohibit:before {
+  .ph.ph-prohibit-inset:before {
+  .ph.ph-projector-screen:before {
+  .ph.ph-projector-screen-chart:before {
+  .ph.ph-pulse:before {
+  .ph.ph-activity:before {
+  .ph.ph-push-pin:before {
+  .ph.ph-push-pin-simple:before {
+  .ph.ph-push-pin-simple-slash:before {
+  .ph.ph-push-pin-slash:before {
+  .ph.ph-puzzle-piece:before {
+  .ph.ph-qr-code:before {
+  .ph.ph-question:before {
+  .ph.ph-question-mark:before {
+  .ph.ph-queue:before {
+  .ph.ph-quotes:before {
+  .ph.ph-rabbit:before {
+  .ph.ph-racquet:before {
+  .ph.ph-radical:before {
+  .ph.ph-radio:before {
+  .ph.ph-radio-button:before {
+  .ph.ph-radioactive:before {
+  .ph.ph-rainbow:before {
+  .ph.ph-rainbow-cloud:before {
+  .ph.ph-ranking:before {
+  .ph.ph-read-cv-logo:before {
+  .ph.ph-receipt:before {
+  .ph.ph-receipt-x:before {
+  .ph.ph-record:before {
+  .ph.ph-rectangle:before {
+  .ph.ph-rectangle-dashed:before {
+  .ph.ph-recycle:before {
+  .ph.ph-reddit-logo:before {
+  .ph.ph-repeat:before {
+  .ph.ph-repeat-once:before {
+  .ph.ph-replit-logo:before {
+  .ph.ph-resize:before {
+  .ph.ph-rewind:before {
+  .ph.ph-rewind-circle:before {
+  .ph.ph-road-horizon:before {
+  .ph.ph-robot:before {
+  .ph.ph-rocket:before {
+  .ph.ph-rocket-launch:before {
+  .ph.ph-rows:before {
+  .ph.ph-rows-plus-bottom:before {
+  .ph.ph-rows-plus-top:before {
+  .ph.ph-rss:before {
+  .ph.ph-rss-simple:before {
+  .ph.ph-rug:before {
+  .ph.ph-ruler:before {
+  .ph.ph-sailboat:before {
+  .ph.ph-scales:before {
+  .ph.ph-scan:before {
+  .ph.ph-scan-smiley:before {
+  .ph.ph-scissors:before {
+  .ph.ph-scooter:before {
+  .ph.ph-screencast:before {
+  .ph.ph-screwdriver:before {
+  .ph.ph-scribble:before {
+  .ph.ph-scribble-loop:before {
+  .ph.ph-scroll:before {
+  .ph.ph-seal:before {
+  .ph.ph-circle-wavy:before {
+  .ph.ph-seal-check:before {
+  .ph.ph-circle-wavy-check:before {
+  .ph.ph-seal-percent:before {
+  .ph.ph-seal-question:before {
+  .ph.ph-circle-wavy-question:before {
+  .ph.ph-seal-warning:before {
+  .ph.ph-circle-wavy-warning:before {
+  .ph.ph-seat:before {
+  .ph.ph-seatbelt:before {
+  .ph.ph-security-camera:before {
+  .ph.ph-selection:before {
+  .ph.ph-selection-all:before {
+  .ph.ph-selection-background:before {
+  .ph.ph-selection-foreground:before {
+  .ph.ph-selection-inverse:before {
+  .ph.ph-selection-plus:before {
+  .ph.ph-selection-slash:before {
+  .ph.ph-shapes:before {
+  .ph.ph-share:before {
+  .ph.ph-share-fat:before {
+  .ph.ph-share-network:before {
+  .ph.ph-shield:before {
+  .ph.ph-shield-check:before {
+  .ph.ph-shield-checkered:before {
+  .ph.ph-shield-chevron:before {
+  .ph.ph-shield-plus:before {
+  .ph.ph-shield-slash:before {
+  .ph.ph-shield-star:before {
+  .ph.ph-shield-warning:before {
+  .ph.ph-shipping-container:before {
+  .ph.ph-shirt-folded:before {
+  .ph.ph-shooting-star:before {
+  .ph.ph-shopping-bag:before {
+  .ph.ph-shopping-bag-open:before {
+  .ph.ph-shopping-cart:before {
+  .ph.ph-shopping-cart-simple:before {
+  .ph.ph-shovel:before {
+  .ph.ph-shower:before {
+  .ph.ph-shrimp:before {
+  .ph.ph-shuffle:before {
+  .ph.ph-shuffle-angular:before {
+  .ph.ph-shuffle-simple:before {
+  .ph.ph-sidebar:before {
+  .ph.ph-sidebar-simple:before {
+  .ph.ph-sigma:before {
+  .ph.ph-sign-in:before {
+  .ph.ph-sign-out:before {
+  .ph.ph-signature:before {
+  .ph.ph-signpost:before {
+  .ph.ph-sim-card:before {
+  .ph.ph-siren:before {
+  .ph.ph-sketch-logo:before {
+  .ph.ph-skip-back:before {
+  .ph.ph-skip-back-circle:before {
+  .ph.ph-skip-forward:before {
+  .ph.ph-skip-forward-circle:before {
+  .ph.ph-skull:before {
+  .ph.ph-skype-logo:before {
+  .ph.ph-slack-logo:before {
+  .ph.ph-sliders:before {
+  .ph.ph-sliders-horizontal:before {
+  .ph.ph-slideshow:before {
+  .ph.ph-smiley:before {
+  .ph.ph-smiley-angry:before {
+  .ph.ph-smiley-blank:before {
+  .ph.ph-smiley-meh:before {
+  .ph.ph-smiley-melting:before {
+  .ph.ph-smiley-nervous:before {
+  .ph.ph-smiley-sad:before {
+  .ph.ph-smiley-sticker:before {
+  .ph.ph-smiley-wink:before {
+  .ph.ph-smiley-x-eyes:before {
+  .ph.ph-snapchat-logo:before {
+  .ph.ph-sneaker:before {
+  .ph.ph-sneaker-move:before {
+  .ph.ph-snowflake:before {
+  .ph.ph-soccer-ball:before {
+  .ph.ph-sock:before {
+  .ph.ph-solar-panel:before {
+  .ph.ph-solar-roof:before {
+  .ph.ph-sort-ascending:before {
+  .ph.ph-sort-descending:before {
+  .ph.ph-soundcloud-logo:before {
+  .ph.ph-spade:before {
+  .ph.ph-sparkle:before {
+  .ph.ph-speaker-hifi:before {
+  .ph.ph-speaker-high:before {
+  .ph.ph-speaker-low:before {
+  .ph.ph-speaker-none:before {
+  .ph.ph-speaker-simple-high:before {
+  .ph.ph-speaker-simple-low:before {
+  .ph.ph-speaker-simple-none:before {
+  .ph.ph-speaker-simple-slash:before {
+  .ph.ph-speaker-simple-x:before {
+  .ph.ph-speaker-slash:before {
+  .ph.ph-speaker-x:before {
+  .ph.ph-speedometer:before {
+  .ph.ph-sphere:before {
+  .ph.ph-spinner:before {
+  .ph.ph-spinner-ball:before {
+  .ph.ph-spinner-gap:before {
+  .ph.ph-spiral:before {
+  .ph.ph-split-horizontal:before {
+  .ph.ph-split-vertical:before {
+  .ph.ph-spotify-logo:before {
+  .ph.ph-spray-bottle:before {
+  .ph.ph-square:before {
+  .ph.ph-square-half:before {
+  .ph.ph-square-half-bottom:before {
+  .ph.ph-square-logo:before {
+  .ph.ph-square-split-horizontal:before {
+  .ph.ph-square-split-vertical:before {
+  .ph.ph-squares-four:before {
+  .ph.ph-stack:before {
+  .ph.ph-stack-minus:before {
+  .ph.ph-stack-overflow-logo:before {
+  .ph.ph-stack-plus:before {
+  .ph.ph-stack-simple:before {
+  .ph.ph-stairs:before {
+  .ph.ph-stamp:before {
+  .ph.ph-standard-definition:before {
+  .ph.ph-star:before {
+  .ph.ph-star-and-crescent:before {
+  .ph.ph-star-four:before {
+  .ph.ph-star-half:before {
+  .ph.ph-star-of-david:before {
+  .ph.ph-steam-logo:before {
+  .ph.ph-steering-wheel:before {
+  .ph.ph-steps:before {
+  .ph.ph-stethoscope:before {
+  .ph.ph-sticker:before {
+  .ph.ph-stool:before {
+  .ph.ph-stop:before {
+  .ph.ph-stop-circle:before {
+  .ph.ph-storefront:before {
+  .ph.ph-strategy:before {
+  .ph.ph-stripe-logo:before {
+  .ph.ph-student:before {
+  .ph.ph-subset-of:before {
+  .ph.ph-subset-proper-of:before {
+  .ph.ph-subtitles:before {
+  .ph.ph-subtitles-slash:before {
+  .ph.ph-subtract:before {
+  .ph.ph-subtract-square:before {
+  .ph.ph-subway:before {
+  .ph.ph-suitcase:before {
+  .ph.ph-suitcase-rolling:before {
+  .ph.ph-suitcase-simple:before {
+  .ph.ph-sun:before {
+  .ph.ph-sun-dim:before {
+  .ph.ph-sun-horizon:before {
+  .ph.ph-sunglasses:before {
+  .ph.ph-superset-of:before {
+  .ph.ph-superset-proper-of:before {
+  .ph.ph-swap:before {
+  .ph.ph-swatches:before {
+  .ph.ph-swimming-pool:before {
+  .ph.ph-sword:before {
+  .ph.ph-synagogue:before {
+  .ph.ph-syringe:before {
+  .ph.ph-t-shirt:before {
+  .ph.ph-table:before {
+  .ph.ph-tabs:before {
+  .ph.ph-tag:before {
+  .ph.ph-tag-chevron:before {
+  .ph.ph-tag-simple:before {
+  .ph.ph-target:before {
+  .ph.ph-taxi:before {
+  .ph.ph-tea-bag:before {
+  .ph.ph-telegram-logo:before {
+  .ph.ph-television:before {
+  .ph.ph-television-simple:before {
+  .ph.ph-tennis-ball:before {
+  .ph.ph-tent:before {
+  .ph.ph-terminal:before {
+  .ph.ph-terminal-window:before {
+  .ph.ph-test-tube:before {
+  .ph.ph-text-a-underline:before {
+  .ph.ph-text-aa:before {
+  .ph.ph-text-align-center:before {
+  .ph.ph-text-align-justify:before {
+  .ph.ph-text-align-left:before {
+  .ph.ph-text-align-right:before {
+  .ph.ph-text-b:before {
+  .ph.ph-text-bolder:before {
+  .ph.ph-text-columns:before {
+  .ph.ph-text-h:before {
+  .ph.ph-text-h-five:before {
+  .ph.ph-text-h-four:before {
+  .ph.ph-text-h-one:before {
+  .ph.ph-text-h-six:before {
+  .ph.ph-text-h-three:before {
+  .ph.ph-text-h-two:before {
+  .ph.ph-text-indent:before {
+  .ph.ph-text-italic:before {
+  .ph.ph-text-outdent:before {
+  .ph.ph-text-strikethrough:before {
+  .ph.ph-text-subscript:before {
+  .ph.ph-text-superscript:before {
+  .ph.ph-text-t:before {
+  .ph.ph-text-t-slash:before {
+  .ph.ph-text-underline:before {
+  .ph.ph-textbox:before {
+  .ph.ph-thermometer:before {
+  .ph.ph-thermometer-cold:before {
+  .ph.ph-thermometer-hot:before {
+  .ph.ph-thermometer-simple:before {
+  .ph.ph-threads-logo:before {
+  .ph.ph-three-d:before {
+  .ph.ph-thumbs-down:before {
+  .ph.ph-thumbs-up:before {
+  .ph.ph-ticket:before {
+  .ph.ph-tidal-logo:before {
+  .ph.ph-tiktok-logo:before {
+  .ph.ph-tilde:before {
+  .ph.ph-timer:before {
+  .ph.ph-tip-jar:before {
+  .ph.ph-tipi:before {
+  .ph.ph-tire:before {
+  .ph.ph-toggle-left:before {
+  .ph.ph-toggle-right:before {
+  .ph.ph-toilet:before {
+  .ph.ph-toilet-paper:before {
+  .ph.ph-toolbox:before {
+  .ph.ph-tooth:before {
+  .ph.ph-tornado:before {
+  .ph.ph-tote:before {
+  .ph.ph-tote-simple:before {
+  .ph.ph-towel:before {
+  .ph.ph-tractor:before {
+  .ph.ph-trademark:before {
+  .ph.ph-trademark-registered:before {
+  .ph.ph-traffic-cone:before {
+  .ph.ph-traffic-sign:before {
+  .ph.ph-traffic-signal:before {
+  .ph.ph-train:before {
+  .ph.ph-train-regional:before {
+  .ph.ph-train-simple:before {
+  .ph.ph-tram:before {
+  .ph.ph-translate:before {
+  .ph.ph-trash:before {
+  .ph.ph-trash-simple:before {
+  .ph.ph-tray:before {
+  .ph.ph-tray-arrow-down:before {
+  .ph.ph-archive-tray:before {
+  .ph.ph-tray-arrow-up:before {
+  .ph.ph-treasure-chest:before {
+  .ph.ph-tree:before {
+  .ph.ph-tree-evergreen:before {
+  .ph.ph-tree-palm:before {
+  .ph.ph-tree-structure:before {
+  .ph.ph-tree-view:before {
+  .ph.ph-trend-down:before {
+  .ph.ph-trend-up:before {
+  .ph.ph-triangle:before {
+  .ph.ph-triangle-dashed:before {
+  .ph.ph-trolley:before {
+  .ph.ph-trolley-suitcase:before {
+  .ph.ph-trophy:before {
+  .ph.ph-truck:before {
+  .ph.ph-truck-trailer:before {
+  .ph.ph-tumblr-logo:before {
+  .ph.ph-twitch-logo:before {
+  .ph.ph-twitter-logo:before {
+  .ph.ph-umbrella:before {
+  .ph.ph-umbrella-simple:before {
+  .ph.ph-union:before {
+  .ph.ph-unite:before {
+  .ph.ph-unite-square:before {
+  .ph.ph-upload:before {
+  .ph.ph-upload-simple:before {
+  .ph.ph-usb:before {
+  .ph.ph-user:before {
+  .ph.ph-user-check:before {
+  .ph.ph-user-circle:before {
+  .ph.ph-user-circle-check:before {
+  .ph.ph-user-circle-dashed:before {
+  .ph.ph-user-circle-gear:before {
+  .ph.ph-user-circle-minus:before {
+  .ph.ph-user-circle-plus:before {
+  .ph.ph-user-focus:before {
+  .ph.ph-user-gear:before {
+  .ph.ph-user-list:before {
+  .ph.ph-user-minus:before {
+  .ph.ph-user-plus:before {
+  .ph.ph-user-rectangle:before {
+  .ph.ph-user-sound:before {
+  .ph.ph-user-square:before {
+  .ph.ph-user-switch:before {
+  .ph.ph-users:before {
+  .ph.ph-users-four:before {
+  .ph.ph-users-three:before {
+  .ph.ph-van:before {
+  .ph.ph-vault:before {
+  .ph.ph-vector-three:before {
+  .ph.ph-vector-two:before {
+  .ph.ph-vibrate:before {
+  .ph.ph-video:before {
+  .ph.ph-video-camera:before {
+  .ph.ph-video-camera-slash:before {
+  .ph.ph-video-conference:before {
+  .ph.ph-vignette:before {
+  .ph.ph-vinyl-record:before {
+  .ph.ph-virtual-reality:before {
+  .ph.ph-virus:before {
+  .ph.ph-visor:before {
+  .ph.ph-voicemail:before {
+  .ph.ph-volleyball:before {
+  .ph.ph-wall:before {
+  .ph.ph-wallet:before {
+  .ph.ph-warehouse:before {
+  .ph.ph-warning:before {
+  .ph.ph-warning-circle:before {
+  .ph.ph-warning-diamond:before {
+  .ph.ph-warning-octagon:before {
+  .ph.ph-washing-machine:before {
+  .ph.ph-watch:before {
+  .ph.ph-wave-sawtooth:before {
+  .ph.ph-wave-sine:before {
+  .ph.ph-wave-square:before {
+  .ph.ph-wave-triangle:before {
+  .ph.ph-waveform:before {
+  .ph.ph-waveform-slash:before {
+  .ph.ph-waves:before {
+  .ph.ph-webcam:before {
+  .ph.ph-webcam-slash:before {
+  .ph.ph-webhooks-logo:before {
+  .ph.ph-wechat-logo:before {
+  .ph.ph-whatsapp-logo:before {
+  .ph.ph-wheelchair:before {
+  .ph.ph-wheelchair-motion:before {
+  .ph.ph-wifi-high:before {
+  .ph.ph-wifi-low:before {
+  .ph.ph-wifi-medium:before {
+  .ph.ph-wifi-none:before {
+  .ph.ph-wifi-slash:before {
+  .ph.ph-wifi-x:before {
+  .ph.ph-wind:before {
+  .ph.ph-windmill:before {
+  .ph.ph-windows-logo:before {
+  .ph.ph-wine:before {
+  .ph.ph-wrench:before {
+  .ph.ph-x:before {
+  .ph.ph-x-circle:before {
+  .ph.ph-x-logo:before {
+  .ph.ph-x-square:before {
+  .ph.ph-yarn:before {
+  .ph.ph-yin-yang:before {
+  .ph.ph-youtube-logo:before {
+.ph-fill.ph-acorn:before {
+.ph-fill.ph-address-book:before {
+.ph-fill.ph-address-book-tabs:before {
+.ph-fill.ph-air-traffic-control:before {
+.ph-fill.ph-airplane:before {
+.ph-fill.ph-airplane-in-flight:before {
+.ph-fill.ph-airplane-landing:before {
+.ph-fill.ph-airplane-takeoff:before {
+.ph-fill.ph-airplane-taxiing:before {
+.ph-fill.ph-airplane-tilt:before {
+.ph-fill.ph-airplay:before {
+.ph-fill.ph-alarm:before {
+.ph-fill.ph-alien:before {
+.ph-fill.ph-align-bottom:before {
+.ph-fill.ph-align-bottom-simple:before {
+.ph-fill.ph-align-center-horizontal:before {
+.ph-fill.ph-align-center-horizontal-simple:before {
+.ph-fill.ph-align-center-vertical:before {
+.ph-fill.ph-align-center-vertical-simple:before {
+.ph-fill.ph-align-left:before {
+.ph-fill.ph-align-left-simple:before {
+.ph-fill.ph-align-right:before {
+.ph-fill.ph-align-right-simple:before {
+.ph-fill.ph-align-top:before {
+.ph-fill.ph-align-top-simple:before {
+.ph-fill.ph-amazon-logo:before {
+.ph-fill.ph-ambulance:before {
+.ph-fill.ph-anchor:before {
+.ph-fill.ph-anchor-simple:before {
+.ph-fill.ph-android-logo:before {
+.ph-fill.ph-angle:before {
+.ph-fill.ph-angular-logo:before {
+.ph-fill.ph-aperture:before {
+.ph-fill.ph-app-store-logo:before {
+.ph-fill.ph-app-window:before {
+.ph-fill.ph-apple-logo:before {
+.ph-fill.ph-apple-podcasts-logo:before {
+.ph-fill.ph-approximate-equals:before {
+.ph-fill.ph-archive:before {
+.ph-fill.ph-armchair:before {
+.ph-fill.ph-arrow-arc-left:before {
+.ph-fill.ph-arrow-arc-right:before {
+.ph-fill.ph-arrow-bend-double-up-left:before {
+.ph-fill.ph-arrow-bend-double-up-right:before {
+.ph-fill.ph-arrow-bend-down-left:before {
+.ph-fill.ph-arrow-bend-down-right:before {
+.ph-fill.ph-arrow-bend-left-down:before {
+.ph-fill.ph-arrow-bend-left-up:before {
+.ph-fill.ph-arrow-bend-right-down:before {
+.ph-fill.ph-arrow-bend-right-up:before {
+.ph-fill.ph-arrow-bend-up-left:before {
+.ph-fill.ph-arrow-bend-up-right:before {
+.ph-fill.ph-arrow-circle-down:before {
+.ph-fill.ph-arrow-circle-down-left:before {
+.ph-fill.ph-arrow-circle-down-right:before {
+.ph-fill.ph-arrow-circle-left:before {
+.ph-fill.ph-arrow-circle-right:before {
+.ph-fill.ph-arrow-circle-up:before {
+.ph-fill.ph-arrow-circle-up-left:before {
+.ph-fill.ph-arrow-circle-up-right:before {
+.ph-fill.ph-arrow-clockwise:before {
+.ph-fill.ph-arrow-counter-clockwise:before {
+.ph-fill.ph-arrow-down:before {
+.ph-fill.ph-arrow-down-left:before {
+.ph-fill.ph-arrow-down-right:before {
+.ph-fill.ph-arrow-elbow-down-left:before {
+.ph-fill.ph-arrow-elbow-down-right:before {
+.ph-fill.ph-arrow-elbow-left:before {
+.ph-fill.ph-arrow-elbow-left-down:before {
+.ph-fill.ph-arrow-elbow-left-up:before {
+.ph-fill.ph-arrow-elbow-right:before {
+.ph-fill.ph-arrow-elbow-right-down:before {
+.ph-fill.ph-arrow-elbow-right-up:before {
+.ph-fill.ph-arrow-elbow-up-left:before {
+.ph-fill.ph-arrow-elbow-up-right:before {
+.ph-fill.ph-arrow-fat-down:before {
+.ph-fill.ph-arrow-fat-left:before {
+.ph-fill.ph-arrow-fat-line-down:before {
+.ph-fill.ph-arrow-fat-line-left:before {
+.ph-fill.ph-arrow-fat-line-right:before {
+.ph-fill.ph-arrow-fat-line-up:before {
+.ph-fill.ph-arrow-fat-lines-down:before {
+.ph-fill.ph-arrow-fat-lines-left:before {
+.ph-fill.ph-arrow-fat-lines-right:before {
+.ph-fill.ph-arrow-fat-lines-up:before {
+.ph-fill.ph-arrow-fat-right:before {
+.ph-fill.ph-arrow-fat-up:before {
+.ph-fill.ph-arrow-left:before {
+.ph-fill.ph-arrow-line-down:before {
+.ph-fill.ph-arrow-line-down-left:before {
+.ph-fill.ph-arrow-line-down-right:before {
+.ph-fill.ph-arrow-line-left:before {
+.ph-fill.ph-arrow-line-right:before {
+.ph-fill.ph-arrow-line-up:before {
+.ph-fill.ph-arrow-line-up-left:before {
+.ph-fill.ph-arrow-line-up-right:before {
+.ph-fill.ph-arrow-right:before {
+.ph-fill.ph-arrow-square-down:before {
+.ph-fill.ph-arrow-square-down-left:before {
+.ph-fill.ph-arrow-square-down-right:before {
+.ph-fill.ph-arrow-square-in:before {
+.ph-fill.ph-arrow-square-left:before {
+.ph-fill.ph-arrow-square-out:before {
+.ph-fill.ph-arrow-square-right:before {
+.ph-fill.ph-arrow-square-up:before {
+.ph-fill.ph-arrow-square-up-left:before {
+.ph-fill.ph-arrow-square-up-right:before {
+.ph-fill.ph-arrow-u-down-left:before {
+.ph-fill.ph-arrow-u-down-right:before {
+.ph-fill.ph-arrow-u-left-down:before {
+.ph-fill.ph-arrow-u-left-up:before {
+.ph-fill.ph-arrow-u-right-down:before {
+.ph-fill.ph-arrow-u-right-up:before {
+.ph-fill.ph-arrow-u-up-left:before {
+.ph-fill.ph-arrow-u-up-right:before {
+.ph-fill.ph-arrow-up:before {
+.ph-fill.ph-arrow-up-left:before {
+.ph-fill.ph-arrow-up-right:before {
+.ph-fill.ph-arrows-clockwise:before {
+.ph-fill.ph-arrows-counter-clockwise:before {
+.ph-fill.ph-arrows-down-up:before {
+.ph-fill.ph-arrows-horizontal:before {
+.ph-fill.ph-arrows-in:before {
+.ph-fill.ph-arrows-in-cardinal:before {
+.ph-fill.ph-arrows-in-line-horizontal:before {
+.ph-fill.ph-arrows-in-line-vertical:before {
+.ph-fill.ph-arrows-in-simple:before {
+.ph-fill.ph-arrows-left-right:before {
+.ph-fill.ph-arrows-merge:before {
+.ph-fill.ph-arrows-out:before {
+.ph-fill.ph-arrows-out-cardinal:before {
+.ph-fill.ph-arrows-out-line-horizontal:before {
+.ph-fill.ph-arrows-out-line-vertical:before {
+.ph-fill.ph-arrows-out-simple:before {
+.ph-fill.ph-arrows-split:before {
+.ph-fill.ph-arrows-vertical:before {
+.ph-fill.ph-article:before {
+.ph-fill.ph-article-medium:before {
+.ph-fill.ph-article-ny-times:before {
+.ph-fill.ph-asclepius:before {
+.ph-fill.ph-caduceus:before {
+.ph-fill.ph-asterisk:before {
+.ph-fill.ph-asterisk-simple:before {
+.ph-fill.ph-at:before {
+.ph-fill.ph-atom:before {
+.ph-fill.ph-avocado:before {
+.ph-fill.ph-axe:before {
+.ph-fill.ph-baby:before {
+.ph-fill.ph-baby-carriage:before {
+.ph-fill.ph-backpack:before {
+.ph-fill.ph-backspace:before {
+.ph-fill.ph-bag:before {
+.ph-fill.ph-bag-simple:before {
+.ph-fill.ph-balloon:before {
+.ph-fill.ph-bandaids:before {
+.ph-fill.ph-bank:before {
+.ph-fill.ph-barbell:before {
+.ph-fill.ph-barcode:before {
+.ph-fill.ph-barn:before {
+.ph-fill.ph-barricade:before {
+.ph-fill.ph-baseball:before {
+.ph-fill.ph-baseball-cap:before {
+.ph-fill.ph-baseball-helmet:before {
+.ph-fill.ph-basket:before {
+.ph-fill.ph-basketball:before {
+.ph-fill.ph-bathtub:before {
+.ph-fill.ph-battery-charging:before {
+.ph-fill.ph-battery-charging-vertical:before {
+.ph-fill.ph-battery-empty:before {
+.ph-fill.ph-battery-full:before {
+.ph-fill.ph-battery-high:before {
+.ph-fill.ph-battery-low:before {
+.ph-fill.ph-battery-medium:before {
+.ph-fill.ph-battery-plus:before {
+.ph-fill.ph-battery-plus-vertical:before {
+.ph-fill.ph-battery-vertical-empty:before {
+.ph-fill.ph-battery-vertical-full:before {
+.ph-fill.ph-battery-vertical-high:before {
+.ph-fill.ph-battery-vertical-low:before {
+.ph-fill.ph-battery-vertical-medium:before {
+.ph-fill.ph-battery-warning:before {
+.ph-fill.ph-battery-warning-vertical:before {
+.ph-fill.ph-beach-ball:before {
+.ph-fill.ph-beanie:before {
+.ph-fill.ph-bed:before {
+.ph-fill.ph-beer-bottle:before {
+.ph-fill.ph-beer-stein:before {
+.ph-fill.ph-behance-logo:before {
+.ph-fill.ph-bell:before {
+.ph-fill.ph-bell-ringing:before {
+.ph-fill.ph-bell-simple:before {
+.ph-fill.ph-bell-simple-ringing:before {
+.ph-fill.ph-bell-simple-slash:before {
+.ph-fill.ph-bell-simple-z:before {
+.ph-fill.ph-bell-slash:before {
+.ph-fill.ph-bell-z:before {
+.ph-fill.ph-belt:before {
+.ph-fill.ph-bezier-curve:before {
+.ph-fill.ph-bicycle:before {
+.ph-fill.ph-binary:before {
+.ph-fill.ph-binoculars:before {
+.ph-fill.ph-biohazard:before {
+.ph-fill.ph-bird:before {
+.ph-fill.ph-blueprint:before {
+.ph-fill.ph-bluetooth:before {
+.ph-fill.ph-bluetooth-connected:before {
+.ph-fill.ph-bluetooth-slash:before {
+.ph-fill.ph-bluetooth-x:before {
+.ph-fill.ph-boat:before {
+.ph-fill.ph-bomb:before {
+.ph-fill.ph-bone:before {
+.ph-fill.ph-book:before {
+.ph-fill.ph-book-bookmark:before {
+.ph-fill.ph-book-open:before {
+.ph-fill.ph-book-open-text:before {
+.ph-fill.ph-book-open-user:before {
+.ph-fill.ph-bookmark:before {
+.ph-fill.ph-bookmark-simple:before {
+.ph-fill.ph-bookmarks:before {
+.ph-fill.ph-bookmarks-simple:before {
+.ph-fill.ph-books:before {
+.ph-fill.ph-boot:before {
+.ph-fill.ph-boules:before {
+.ph-fill.ph-bounding-box:before {
+.ph-fill.ph-bowl-food:before {
+.ph-fill.ph-bowl-steam:before {
+.ph-fill.ph-bowling-ball:before {
+.ph-fill.ph-box-arrow-down:before {
+.ph-fill.ph-archive-box:before {
+.ph-fill.ph-box-arrow-up:before {
+.ph-fill.ph-boxing-glove:before {
+.ph-fill.ph-brackets-angle:before {
+.ph-fill.ph-brackets-curly:before {
+.ph-fill.ph-brackets-round:before {
+.ph-fill.ph-brackets-square:before {
+.ph-fill.ph-brain:before {
+.ph-fill.ph-brandy:before {
+.ph-fill.ph-bread:before {
+.ph-fill.ph-bridge:before {
+.ph-fill.ph-briefcase:before {
+.ph-fill.ph-briefcase-metal:before {
+.ph-fill.ph-broadcast:before {
+.ph-fill.ph-broom:before {
+.ph-fill.ph-browser:before {
+.ph-fill.ph-browsers:before {
+.ph-fill.ph-bug:before {
+.ph-fill.ph-bug-beetle:before {
+.ph-fill.ph-bug-droid:before {
+.ph-fill.ph-building:before {
+.ph-fill.ph-building-apartment:before {
+.ph-fill.ph-building-office:before {
+.ph-fill.ph-buildings:before {
+.ph-fill.ph-bulldozer:before {
+.ph-fill.ph-bus:before {
+.ph-fill.ph-butterfly:before {
+.ph-fill.ph-cable-car:before {
+.ph-fill.ph-cactus:before {
+.ph-fill.ph-cake:before {
+.ph-fill.ph-calculator:before {
+.ph-fill.ph-calendar:before {
+.ph-fill.ph-calendar-blank:before {
+.ph-fill.ph-calendar-check:before {
+.ph-fill.ph-calendar-dot:before {
+.ph-fill.ph-calendar-dots:before {
+.ph-fill.ph-calendar-heart:before {
+.ph-fill.ph-calendar-minus:before {
+.ph-fill.ph-calendar-plus:before {
+.ph-fill.ph-calendar-slash:before {
+.ph-fill.ph-calendar-star:before {
+.ph-fill.ph-calendar-x:before {
+.ph-fill.ph-call-bell:before {
+.ph-fill.ph-camera:before {
+.ph-fill.ph-camera-plus:before {
+.ph-fill.ph-camera-rotate:before {
+.ph-fill.ph-camera-slash:before {
+.ph-fill.ph-campfire:before {
+.ph-fill.ph-car:before {
+.ph-fill.ph-car-battery:before {
+.ph-fill.ph-car-profile:before {
+.ph-fill.ph-car-simple:before {
+.ph-fill.ph-cardholder:before {
+.ph-fill.ph-cards:before {
+.ph-fill.ph-cards-three:before {
+.ph-fill.ph-caret-circle-double-down:before {
+.ph-fill.ph-caret-circle-double-left:before {
+.ph-fill.ph-caret-circle-double-right:before {
+.ph-fill.ph-caret-circle-double-up:before {
+.ph-fill.ph-caret-circle-down:before {
+.ph-fill.ph-caret-circle-left:before {
+.ph-fill.ph-caret-circle-right:before {
+.ph-fill.ph-caret-circle-up:before {
+.ph-fill.ph-caret-circle-up-down:before {
+.ph-fill.ph-caret-double-down:before {
+.ph-fill.ph-caret-double-left:before {
+.ph-fill.ph-caret-double-right:before {
+.ph-fill.ph-caret-double-up:before {
+.ph-fill.ph-caret-down:before {
+.ph-fill.ph-caret-left:before {
+.ph-fill.ph-caret-line-down:before {
+.ph-fill.ph-caret-line-left:before {
+.ph-fill.ph-caret-line-right:before {
+.ph-fill.ph-caret-line-up:before {
+.ph-fill.ph-caret-right:before {
+.ph-fill.ph-caret-up:before {
+.ph-fill.ph-caret-up-down:before {
+.ph-fill.ph-carrot:before {
+.ph-fill.ph-cash-register:before {
+.ph-fill.ph-cassette-tape:before {
+.ph-fill.ph-castle-turret:before {
+.ph-fill.ph-cat:before {
+.ph-fill.ph-cell-signal-full:before {
+.ph-fill.ph-cell-signal-high:before {
+.ph-fill.ph-cell-signal-low:before {
+.ph-fill.ph-cell-signal-medium:before {
+.ph-fill.ph-cell-signal-none:before {
+.ph-fill.ph-cell-signal-slash:before {
+.ph-fill.ph-cell-signal-x:before {
+.ph-fill.ph-cell-tower:before {
+.ph-fill.ph-certificate:before {
+.ph-fill.ph-chair:before {
+.ph-fill.ph-chalkboard:before {
+.ph-fill.ph-chalkboard-simple:before {
+.ph-fill.ph-chalkboard-teacher:before {
+.ph-fill.ph-champagne:before {
+.ph-fill.ph-charging-station:before {
+.ph-fill.ph-chart-bar:before {
+.ph-fill.ph-chart-bar-horizontal:before {
+.ph-fill.ph-chart-donut:before {
+.ph-fill.ph-chart-line:before {
+.ph-fill.ph-chart-line-down:before {
+.ph-fill.ph-chart-line-up:before {
+.ph-fill.ph-chart-pie:before {
+.ph-fill.ph-chart-pie-slice:before {
+.ph-fill.ph-chart-polar:before {
+.ph-fill.ph-chart-scatter:before {
+.ph-fill.ph-chat:before {
+.ph-fill.ph-chat-centered:before {
+.ph-fill.ph-chat-centered-dots:before {
+.ph-fill.ph-chat-centered-slash:before {
+.ph-fill.ph-chat-centered-text:before {
+.ph-fill.ph-chat-circle:before {
+.ph-fill.ph-chat-circle-dots:before {
+.ph-fill.ph-chat-circle-slash:before {
+.ph-fill.ph-chat-circle-text:before {
+.ph-fill.ph-chat-dots:before {
+.ph-fill.ph-chat-slash:before {
+.ph-fill.ph-chat-teardrop:before {
+.ph-fill.ph-chat-teardrop-dots:before {
+.ph-fill.ph-chat-teardrop-slash:before {
+.ph-fill.ph-chat-teardrop-text:before {
+.ph-fill.ph-chat-text:before {
+.ph-fill.ph-chats:before {
+.ph-fill.ph-chats-circle:before {
+.ph-fill.ph-chats-teardrop:before {
+.ph-fill.ph-check:before {
+.ph-fill.ph-check-circle:before {
+.ph-fill.ph-check-fat:before {
+.ph-fill.ph-check-square:before {
+.ph-fill.ph-check-square-offset:before {
+.ph-fill.ph-checkerboard:before {
+.ph-fill.ph-checks:before {
+.ph-fill.ph-cheers:before {
+.ph-fill.ph-cheese:before {
+.ph-fill.ph-chef-hat:before {
+.ph-fill.ph-cherries:before {
+.ph-fill.ph-church:before {
+.ph-fill.ph-cigarette:before {
+.ph-fill.ph-cigarette-slash:before {
+.ph-fill.ph-circle:before {
+.ph-fill.ph-circle-dashed:before {
+.ph-fill.ph-circle-half:before {
+.ph-fill.ph-circle-half-tilt:before {
+.ph-fill.ph-circle-notch:before {
+.ph-fill.ph-circles-four:before {
+.ph-fill.ph-circles-three:before {
+.ph-fill.ph-circles-three-plus:before {
+.ph-fill.ph-circuitry:before {
+.ph-fill.ph-city:before {
+.ph-fill.ph-clipboard:before {
+.ph-fill.ph-clipboard-text:before {
+.ph-fill.ph-clock:before {
+.ph-fill.ph-clock-afternoon:before {
+.ph-fill.ph-clock-clockwise:before {
+.ph-fill.ph-clock-countdown:before {
+.ph-fill.ph-clock-counter-clockwise:before {
+.ph-fill.ph-clock-user:before {
+.ph-fill.ph-closed-captioning:before {
+.ph-fill.ph-cloud:before {
+.ph-fill.ph-cloud-arrow-down:before {
+.ph-fill.ph-cloud-arrow-up:before {
+.ph-fill.ph-cloud-check:before {
+.ph-fill.ph-cloud-fog:before {
+.ph-fill.ph-cloud-lightning:before {
+.ph-fill.ph-cloud-moon:before {
+.ph-fill.ph-cloud-rain:before {
+.ph-fill.ph-cloud-slash:before {
+.ph-fill.ph-cloud-snow:before {
+.ph-fill.ph-cloud-sun:before {
+.ph-fill.ph-cloud-warning:before {
+.ph-fill.ph-cloud-x:before {
+.ph-fill.ph-clover:before {
+.ph-fill.ph-club:before {
+.ph-fill.ph-coat-hanger:before {
+.ph-fill.ph-coda-logo:before {
+.ph-fill.ph-code:before {
+.ph-fill.ph-code-block:before {
+.ph-fill.ph-code-simple:before {
+.ph-fill.ph-codepen-logo:before {
+.ph-fill.ph-codesandbox-logo:before {
+.ph-fill.ph-coffee:before {
+.ph-fill.ph-coffee-bean:before {
+.ph-fill.ph-coin:before {
+.ph-fill.ph-coin-vertical:before {
+.ph-fill.ph-coins:before {
+.ph-fill.ph-columns:before {
+.ph-fill.ph-columns-plus-left:before {
+.ph-fill.ph-columns-plus-right:before {
+.ph-fill.ph-command:before {
+.ph-fill.ph-compass:before {
+.ph-fill.ph-compass-rose:before {
+.ph-fill.ph-compass-tool:before {
+.ph-fill.ph-computer-tower:before {
+.ph-fill.ph-confetti:before {
+.ph-fill.ph-contactless-payment:before {
+.ph-fill.ph-control:before {
+.ph-fill.ph-cookie:before {
+.ph-fill.ph-cooking-pot:before {
+.ph-fill.ph-copy:before {
+.ph-fill.ph-copy-simple:before {
+.ph-fill.ph-copyleft:before {
+.ph-fill.ph-copyright:before {
+.ph-fill.ph-corners-in:before {
+.ph-fill.ph-corners-out:before {
+.ph-fill.ph-couch:before {
+.ph-fill.ph-court-basketball:before {
+.ph-fill.ph-cow:before {
+.ph-fill.ph-cowboy-hat:before {
+.ph-fill.ph-cpu:before {
+.ph-fill.ph-crane:before {
+.ph-fill.ph-crane-tower:before {
+.ph-fill.ph-credit-card:before {
+.ph-fill.ph-cricket:before {
+.ph-fill.ph-crop:before {
+.ph-fill.ph-cross:before {
+.ph-fill.ph-crosshair:before {
+.ph-fill.ph-crosshair-simple:before {
+.ph-fill.ph-crown:before {
+.ph-fill.ph-crown-cross:before {
+.ph-fill.ph-crown-simple:before {
+.ph-fill.ph-cube:before {
+.ph-fill.ph-cube-focus:before {
+.ph-fill.ph-cube-transparent:before {
+.ph-fill.ph-currency-btc:before {
+.ph-fill.ph-currency-circle-dollar:before {
+.ph-fill.ph-currency-cny:before {
+.ph-fill.ph-currency-dollar:before {
+.ph-fill.ph-currency-dollar-simple:before {
+.ph-fill.ph-currency-eth:before {
+.ph-fill.ph-currency-eur:before {
+.ph-fill.ph-currency-gbp:before {
+.ph-fill.ph-currency-inr:before {
+.ph-fill.ph-currency-jpy:before {
+.ph-fill.ph-currency-krw:before {
+.ph-fill.ph-currency-kzt:before {
+.ph-fill.ph-currency-ngn:before {
+.ph-fill.ph-currency-rub:before {
+.ph-fill.ph-cursor:before {
+.ph-fill.ph-cursor-click:before {
+.ph-fill.ph-cursor-text:before {
+.ph-fill.ph-cylinder:before {
+.ph-fill.ph-database:before {
+.ph-fill.ph-desk:before {
+.ph-fill.ph-desktop:before {
+.ph-fill.ph-desktop-tower:before {
+.ph-fill.ph-detective:before {
+.ph-fill.ph-dev-to-logo:before {
+.ph-fill.ph-device-mobile:before {
+.ph-fill.ph-device-mobile-camera:before {
+.ph-fill.ph-device-mobile-slash:before {
+.ph-fill.ph-device-mobile-speaker:before {
+.ph-fill.ph-device-rotate:before {
+.ph-fill.ph-device-tablet:before {
+.ph-fill.ph-device-tablet-camera:before {
+.ph-fill.ph-device-tablet-speaker:before {
+.ph-fill.ph-devices:before {
+.ph-fill.ph-diamond:before {
+.ph-fill.ph-diamonds-four:before {
+.ph-fill.ph-dice-five:before {
+.ph-fill.ph-dice-four:before {
+.ph-fill.ph-dice-one:before {
+.ph-fill.ph-dice-six:before {
+.ph-fill.ph-dice-three:before {
+.ph-fill.ph-dice-two:before {
+.ph-fill.ph-disc:before {
+.ph-fill.ph-disco-ball:before {
+.ph-fill.ph-discord-logo:before {
+.ph-fill.ph-divide:before {
+.ph-fill.ph-dna:before {
+.ph-fill.ph-dog:before {
+.ph-fill.ph-door:before {
+.ph-fill.ph-door-open:before {
+.ph-fill.ph-dot:before {
+.ph-fill.ph-dot-outline:before {
+.ph-fill.ph-dots-nine:before {
+.ph-fill.ph-dots-six:before {
+.ph-fill.ph-dots-six-vertical:before {
+.ph-fill.ph-dots-three:before {
+.ph-fill.ph-dots-three-circle:before {
+.ph-fill.ph-dots-three-circle-vertical:before {
+.ph-fill.ph-dots-three-outline:before {
+.ph-fill.ph-dots-three-outline-vertical:before {
+.ph-fill.ph-dots-three-vertical:before {
+.ph-fill.ph-download:before {
+.ph-fill.ph-download-simple:before {
+.ph-fill.ph-dress:before {
+.ph-fill.ph-dresser:before {
+.ph-fill.ph-dribbble-logo:before {
+.ph-fill.ph-drone:before {
+.ph-fill.ph-drop:before {
+.ph-fill.ph-drop-half:before {
+.ph-fill.ph-drop-half-bottom:before {
+.ph-fill.ph-drop-simple:before {
+.ph-fill.ph-drop-slash:before {
+.ph-fill.ph-dropbox-logo:before {
+.ph-fill.ph-ear:before {
+.ph-fill.ph-ear-slash:before {
+.ph-fill.ph-egg:before {
+.ph-fill.ph-egg-crack:before {
+.ph-fill.ph-eject:before {
+.ph-fill.ph-eject-simple:before {
+.ph-fill.ph-elevator:before {
+.ph-fill.ph-empty:before {
+.ph-fill.ph-engine:before {
+.ph-fill.ph-envelope:before {
+.ph-fill.ph-envelope-open:before {
+.ph-fill.ph-envelope-simple:before {
+.ph-fill.ph-envelope-simple-open:before {
+.ph-fill.ph-equalizer:before {
+.ph-fill.ph-equals:before {
+.ph-fill.ph-eraser:before {
+.ph-fill.ph-escalator-down:before {
+.ph-fill.ph-escalator-up:before {
+.ph-fill.ph-exam:before {
+.ph-fill.ph-exclamation-mark:before {
+.ph-fill.ph-exclude:before {
+.ph-fill.ph-exclude-square:before {
+.ph-fill.ph-export:before {
+.ph-fill.ph-eye:before {
+.ph-fill.ph-eye-closed:before {
+.ph-fill.ph-eye-slash:before {
+.ph-fill.ph-eyedropper:before {
+.ph-fill.ph-eyedropper-sample:before {
+.ph-fill.ph-eyeglasses:before {
+.ph-fill.ph-eyes:before {
+.ph-fill.ph-face-mask:before {
+.ph-fill.ph-facebook-logo:before {
+.ph-fill.ph-factory:before {
+.ph-fill.ph-faders:before {
+.ph-fill.ph-faders-horizontal:before {
+.ph-fill.ph-fallout-shelter:before {
+.ph-fill.ph-fan:before {
+.ph-fill.ph-farm:before {
+.ph-fill.ph-fast-forward:before {
+.ph-fill.ph-fast-forward-circle:before {
+.ph-fill.ph-feather:before {
+.ph-fill.ph-fediverse-logo:before {
+.ph-fill.ph-figma-logo:before {
+.ph-fill.ph-file:before {
+.ph-fill.ph-file-archive:before {
+.ph-fill.ph-file-arrow-down:before {
+.ph-fill.ph-file-arrow-up:before {
+.ph-fill.ph-file-audio:before {
+.ph-fill.ph-file-c:before {
+.ph-fill.ph-file-c-sharp:before {
+.ph-fill.ph-file-cloud:before {
+.ph-fill.ph-file-code:before {
+.ph-fill.ph-file-cpp:before {
+.ph-fill.ph-file-css:before {
+.ph-fill.ph-file-csv:before {
+.ph-fill.ph-file-dashed:before {
+.ph-fill.ph-file-dotted:before {
+.ph-fill.ph-file-doc:before {
+.ph-fill.ph-file-html:before {
+.ph-fill.ph-file-image:before {
+.ph-fill.ph-file-ini:before {
+.ph-fill.ph-file-jpg:before {
+.ph-fill.ph-file-js:before {
+.ph-fill.ph-file-jsx:before {
+.ph-fill.ph-file-lock:before {
+.ph-fill.ph-file-magnifying-glass:before {
+.ph-fill.ph-file-search:before {
+.ph-fill.ph-file-md:before {
+.ph-fill.ph-file-minus:before {
+.ph-fill.ph-file-pdf:before {
+.ph-fill.ph-file-plus:before {
+.ph-fill.ph-file-png:before {
+.ph-fill.ph-file-ppt:before {
+.ph-fill.ph-file-py:before {
+.ph-fill.ph-file-rs:before {
+.ph-fill.ph-file-sql:before {
+.ph-fill.ph-file-svg:before {
+.ph-fill.ph-file-text:before {
+.ph-fill.ph-file-ts:before {
+.ph-fill.ph-file-tsx:before {
+.ph-fill.ph-file-txt:before {
+.ph-fill.ph-file-video:before {
+.ph-fill.ph-file-vue:before {
+.ph-fill.ph-file-x:before {
+.ph-fill.ph-file-xls:before {
+.ph-fill.ph-file-zip:before {
+.ph-fill.ph-files:before {
+.ph-fill.ph-film-reel:before {
+.ph-fill.ph-film-script:before {
+.ph-fill.ph-film-slate:before {
+.ph-fill.ph-film-strip:before {
+.ph-fill.ph-fingerprint:before {
+.ph-fill.ph-fingerprint-simple:before {
+.ph-fill.ph-finn-the-human:before {
+.ph-fill.ph-fire:before {
+.ph-fill.ph-fire-extinguisher:before {
+.ph-fill.ph-fire-simple:before {
+.ph-fill.ph-fire-truck:before {
+.ph-fill.ph-first-aid:before {
+.ph-fill.ph-first-aid-kit:before {
+.ph-fill.ph-fish:before {
+.ph-fill.ph-fish-simple:before {
+.ph-fill.ph-flag:before {
+.ph-fill.ph-flag-banner:before {
+.ph-fill.ph-flag-banner-fold:before {
+.ph-fill.ph-flag-checkered:before {
+.ph-fill.ph-flag-pennant:before {
+.ph-fill.ph-flame:before {
+.ph-fill.ph-flashlight:before {
+.ph-fill.ph-flask:before {
+.ph-fill.ph-flip-horizontal:before {
+.ph-fill.ph-flip-vertical:before {
+.ph-fill.ph-floppy-disk:before {
+.ph-fill.ph-floppy-disk-back:before {
+.ph-fill.ph-flow-arrow:before {
+.ph-fill.ph-flower:before {
+.ph-fill.ph-flower-lotus:before {
+.ph-fill.ph-flower-tulip:before {
+.ph-fill.ph-flying-saucer:before {
+.ph-fill.ph-folder:before {
+.ph-fill.ph-folder-notch:before {
+.ph-fill.ph-folder-dashed:before {
+.ph-fill.ph-folder-dotted:before {
+.ph-fill.ph-folder-lock:before {
+.ph-fill.ph-folder-minus:before {
+.ph-fill.ph-folder-notch-minus:before {
+.ph-fill.ph-folder-open:before {
+.ph-fill.ph-folder-notch-open:before {
+.ph-fill.ph-folder-plus:before {
+.ph-fill.ph-folder-notch-plus:before {
+.ph-fill.ph-folder-simple:before {
+.ph-fill.ph-folder-simple-dashed:before {
+.ph-fill.ph-folder-simple-dotted:before {
+.ph-fill.ph-folder-simple-lock:before {
+.ph-fill.ph-folder-simple-minus:before {
+.ph-fill.ph-folder-simple-plus:before {
+.ph-fill.ph-folder-simple-star:before {
+.ph-fill.ph-folder-simple-user:before {
+.ph-fill.ph-folder-star:before {
+.ph-fill.ph-folder-user:before {
+.ph-fill.ph-folders:before {
+.ph-fill.ph-football:before {
+.ph-fill.ph-football-helmet:before {
+.ph-fill.ph-footprints:before {
+.ph-fill.ph-fork-knife:before {
+.ph-fill.ph-four-k:before {
+.ph-fill.ph-frame-corners:before {
+.ph-fill.ph-framer-logo:before {
+.ph-fill.ph-function:before {
+.ph-fill.ph-funnel:before {
+.ph-fill.ph-funnel-simple:before {
+.ph-fill.ph-funnel-simple-x:before {
+.ph-fill.ph-funnel-x:before {
+.ph-fill.ph-game-controller:before {
+.ph-fill.ph-garage:before {
+.ph-fill.ph-gas-can:before {
+.ph-fill.ph-gas-pump:before {
+.ph-fill.ph-gauge:before {
+.ph-fill.ph-gavel:before {
+.ph-fill.ph-gear:before {
+.ph-fill.ph-gear-fine:before {
+.ph-fill.ph-gear-six:before {
+.ph-fill.ph-gender-female:before {
+.ph-fill.ph-gender-intersex:before {
+.ph-fill.ph-gender-male:before {
+.ph-fill.ph-gender-neuter:before {
+.ph-fill.ph-gender-nonbinary:before {
+.ph-fill.ph-gender-transgender:before {
+.ph-fill.ph-ghost:before {
+.ph-fill.ph-gif:before {
+.ph-fill.ph-gift:before {
+.ph-fill.ph-git-branch:before {
+.ph-fill.ph-git-commit:before {
+.ph-fill.ph-git-diff:before {
+.ph-fill.ph-git-fork:before {
+.ph-fill.ph-git-merge:before {
+.ph-fill.ph-git-pull-request:before {
+.ph-fill.ph-github-logo:before {
+.ph-fill.ph-gitlab-logo:before {
+.ph-fill.ph-gitlab-logo-simple:before {
+.ph-fill.ph-globe:before {
+.ph-fill.ph-globe-hemisphere-east:before {
+.ph-fill.ph-globe-hemisphere-west:before {
+.ph-fill.ph-globe-simple:before {
+.ph-fill.ph-globe-simple-x:before {
+.ph-fill.ph-globe-stand:before {
+.ph-fill.ph-globe-x:before {
+.ph-fill.ph-goggles:before {
+.ph-fill.ph-golf:before {
+.ph-fill.ph-goodreads-logo:before {
+.ph-fill.ph-google-cardboard-logo:before {
+.ph-fill.ph-google-chrome-logo:before {
+.ph-fill.ph-google-drive-logo:before {
+.ph-fill.ph-google-logo:before {
+.ph-fill.ph-google-photos-logo:before {
+.ph-fill.ph-google-play-logo:before {
+.ph-fill.ph-google-podcasts-logo:before {
+.ph-fill.ph-gps:before {
+.ph-fill.ph-gps-fix:before {
+.ph-fill.ph-gps-slash:before {
+.ph-fill.ph-gradient:before {
+.ph-fill.ph-graduation-cap:before {
+.ph-fill.ph-grains:before {
+.ph-fill.ph-grains-slash:before {
+.ph-fill.ph-graph:before {
+.ph-fill.ph-graphics-card:before {
+.ph-fill.ph-greater-than:before {
+.ph-fill.ph-greater-than-or-equal:before {
+.ph-fill.ph-grid-four:before {
+.ph-fill.ph-grid-nine:before {
+.ph-fill.ph-guitar:before {
+.ph-fill.ph-hair-dryer:before {
+.ph-fill.ph-hamburger:before {
+.ph-fill.ph-hammer:before {
+.ph-fill.ph-hand:before {
+.ph-fill.ph-hand-arrow-down:before {
+.ph-fill.ph-hand-arrow-up:before {
+.ph-fill.ph-hand-coins:before {
+.ph-fill.ph-hand-deposit:before {
+.ph-fill.ph-hand-eye:before {
+.ph-fill.ph-hand-fist:before {
+.ph-fill.ph-hand-grabbing:before {
+.ph-fill.ph-hand-heart:before {
+.ph-fill.ph-hand-palm:before {
+.ph-fill.ph-hand-peace:before {
+.ph-fill.ph-hand-pointing:before {
+.ph-fill.ph-hand-soap:before {
+.ph-fill.ph-hand-swipe-left:before {
+.ph-fill.ph-hand-swipe-right:before {
+.ph-fill.ph-hand-tap:before {
+.ph-fill.ph-hand-waving:before {
+.ph-fill.ph-hand-withdraw:before {
+.ph-fill.ph-handbag:before {
+.ph-fill.ph-handbag-simple:before {
+.ph-fill.ph-hands-clapping:before {
+.ph-fill.ph-hands-praying:before {
+.ph-fill.ph-handshake:before {
+.ph-fill.ph-hard-drive:before {
+.ph-fill.ph-hard-drives:before {
+.ph-fill.ph-hard-hat:before {
+.ph-fill.ph-hash:before {
+.ph-fill.ph-hash-straight:before {
+.ph-fill.ph-head-circuit:before {
+.ph-fill.ph-headlights:before {
+.ph-fill.ph-headphones:before {
+.ph-fill.ph-headset:before {
+.ph-fill.ph-heart:before {
+.ph-fill.ph-heart-break:before {
+.ph-fill.ph-heart-half:before {
+.ph-fill.ph-heart-straight:before {
+.ph-fill.ph-heart-straight-break:before {
+.ph-fill.ph-heartbeat:before {
+.ph-fill.ph-hexagon:before {
+.ph-fill.ph-high-definition:before {
+.ph-fill.ph-high-heel:before {
+.ph-fill.ph-highlighter:before {
+.ph-fill.ph-highlighter-circle:before {
+.ph-fill.ph-hockey:before {
+.ph-fill.ph-hoodie:before {
+.ph-fill.ph-horse:before {
+.ph-fill.ph-hospital:before {
+.ph-fill.ph-hourglass:before {
+.ph-fill.ph-hourglass-high:before {
+.ph-fill.ph-hourglass-low:before {
+.ph-fill.ph-hourglass-medium:before {
+.ph-fill.ph-hourglass-simple:before {
+.ph-fill.ph-hourglass-simple-high:before {
+.ph-fill.ph-hourglass-simple-low:before {
+.ph-fill.ph-hourglass-simple-medium:before {
+.ph-fill.ph-house:before {
+.ph-fill.ph-house-line:before {
+.ph-fill.ph-house-simple:before {
+.ph-fill.ph-hurricane:before {
+.ph-fill.ph-ice-cream:before {
+.ph-fill.ph-identification-badge:before {
+.ph-fill.ph-identification-card:before {
+.ph-fill.ph-image:before {
+.ph-fill.ph-image-broken:before {
+.ph-fill.ph-image-square:before {
+.ph-fill.ph-images:before {
+.ph-fill.ph-images-square:before {
+.ph-fill.ph-infinity:before {
+.ph-fill.ph-lemniscate:before {
+.ph-fill.ph-info:before {
+.ph-fill.ph-instagram-logo:before {
+.ph-fill.ph-intersect:before {
+.ph-fill.ph-intersect-square:before {
+.ph-fill.ph-intersect-three:before {
+.ph-fill.ph-intersection:before {
+.ph-fill.ph-invoice:before {
+.ph-fill.ph-island:before {
+.ph-fill.ph-jar:before {
+.ph-fill.ph-jar-label:before {
+.ph-fill.ph-jeep:before {
+.ph-fill.ph-joystick:before {
+.ph-fill.ph-kanban:before {
+.ph-fill.ph-key:before {
+.ph-fill.ph-key-return:before {
+.ph-fill.ph-keyboard:before {
+.ph-fill.ph-keyhole:before {
+.ph-fill.ph-knife:before {
+.ph-fill.ph-ladder:before {
+.ph-fill.ph-ladder-simple:before {
+.ph-fill.ph-lamp:before {
+.ph-fill.ph-lamp-pendant:before {
+.ph-fill.ph-laptop:before {
+.ph-fill.ph-lasso:before {
+.ph-fill.ph-lastfm-logo:before {
+.ph-fill.ph-layout:before {
+.ph-fill.ph-leaf:before {
+.ph-fill.ph-lectern:before {
+.ph-fill.ph-lego:before {
+.ph-fill.ph-lego-smiley:before {
+.ph-fill.ph-less-than:before {
+.ph-fill.ph-less-than-or-equal:before {
+.ph-fill.ph-letter-circle-h:before {
+.ph-fill.ph-letter-circle-p:before {
+.ph-fill.ph-letter-circle-v:before {
+.ph-fill.ph-lifebuoy:before {
+.ph-fill.ph-lightbulb:before {
+.ph-fill.ph-lightbulb-filament:before {
+.ph-fill.ph-lighthouse:before {
+.ph-fill.ph-lightning:before {
+.ph-fill.ph-lightning-a:before {
+.ph-fill.ph-lightning-slash:before {
+.ph-fill.ph-line-segment:before {
+.ph-fill.ph-line-segments:before {
+.ph-fill.ph-line-vertical:before {
+.ph-fill.ph-link:before {
+.ph-fill.ph-link-break:before {
+.ph-fill.ph-link-simple:before {
+.ph-fill.ph-link-simple-break:before {
+.ph-fill.ph-link-simple-horizontal:before {
+.ph-fill.ph-link-simple-horizontal-break:before {
+.ph-fill.ph-linkedin-logo:before {
+.ph-fill.ph-linktree-logo:before {
+.ph-fill.ph-linux-logo:before {
+.ph-fill.ph-list:before {
+.ph-fill.ph-list-bullets:before {
+.ph-fill.ph-list-checks:before {
+.ph-fill.ph-list-dashes:before {
+.ph-fill.ph-list-heart:before {
+.ph-fill.ph-list-magnifying-glass:before {
+.ph-fill.ph-list-numbers:before {
+.ph-fill.ph-list-plus:before {
+.ph-fill.ph-list-star:before {
+.ph-fill.ph-lock:before {
+.ph-fill.ph-lock-key:before {
+.ph-fill.ph-lock-key-open:before {
+.ph-fill.ph-lock-laminated:before {
+.ph-fill.ph-lock-laminated-open:before {
+.ph-fill.ph-lock-open:before {
+.ph-fill.ph-lock-simple:before {
+.ph-fill.ph-lock-simple-open:before {
+.ph-fill.ph-lockers:before {
+.ph-fill.ph-log:before {
+.ph-fill.ph-magic-wand:before {
+.ph-fill.ph-magnet:before {
+.ph-fill.ph-magnet-straight:before {
+.ph-fill.ph-magnifying-glass:before {
+.ph-fill.ph-magnifying-glass-minus:before {
+.ph-fill.ph-magnifying-glass-plus:before {
+.ph-fill.ph-mailbox:before {
+.ph-fill.ph-map-pin:before {
+.ph-fill.ph-map-pin-area:before {
+.ph-fill.ph-map-pin-line:before {
+.ph-fill.ph-map-pin-plus:before {
+.ph-fill.ph-map-pin-simple:before {
+.ph-fill.ph-map-pin-simple-area:before {
+.ph-fill.ph-map-pin-simple-line:before {
+.ph-fill.ph-map-trifold:before {
+.ph-fill.ph-markdown-logo:before {
+.ph-fill.ph-marker-circle:before {
+.ph-fill.ph-martini:before {
+.ph-fill.ph-mask-happy:before {
+.ph-fill.ph-mask-sad:before {
+.ph-fill.ph-mastodon-logo:before {
+.ph-fill.ph-math-operations:before {
+.ph-fill.ph-matrix-logo:before {
+.ph-fill.ph-medal:before {
+.ph-fill.ph-medal-military:before {
+.ph-fill.ph-medium-logo:before {
+.ph-fill.ph-megaphone:before {
+.ph-fill.ph-megaphone-simple:before {
+.ph-fill.ph-member-of:before {
+.ph-fill.ph-memory:before {
+.ph-fill.ph-messenger-logo:before {
+.ph-fill.ph-meta-logo:before {
+.ph-fill.ph-meteor:before {
+.ph-fill.ph-metronome:before {
+.ph-fill.ph-microphone:before {
+.ph-fill.ph-microphone-slash:before {
+.ph-fill.ph-microphone-stage:before {
+.ph-fill.ph-microscope:before {
+.ph-fill.ph-microsoft-excel-logo:before {
+.ph-fill.ph-microsoft-outlook-logo:before {
+.ph-fill.ph-microsoft-powerpoint-logo:before {
+.ph-fill.ph-microsoft-teams-logo:before {
+.ph-fill.ph-microsoft-word-logo:before {
+.ph-fill.ph-minus:before {
+.ph-fill.ph-minus-circle:before {
+.ph-fill.ph-minus-square:before {
+.ph-fill.ph-money:before {
+.ph-fill.ph-money-wavy:before {
+.ph-fill.ph-monitor:before {
+.ph-fill.ph-monitor-arrow-up:before {
+.ph-fill.ph-monitor-play:before {
+.ph-fill.ph-moon:before {
+.ph-fill.ph-moon-stars:before {
+.ph-fill.ph-moped:before {
+.ph-fill.ph-moped-front:before {
+.ph-fill.ph-mosque:before {
+.ph-fill.ph-motorcycle:before {
+.ph-fill.ph-mountains:before {
+.ph-fill.ph-mouse:before {
+.ph-fill.ph-mouse-left-click:before {
+.ph-fill.ph-mouse-middle-click:before {
+.ph-fill.ph-mouse-right-click:before {
+.ph-fill.ph-mouse-scroll:before {
+.ph-fill.ph-mouse-simple:before {
+.ph-fill.ph-music-note:before {
+.ph-fill.ph-music-note-simple:before {
+.ph-fill.ph-music-notes:before {
+.ph-fill.ph-music-notes-minus:before {
+.ph-fill.ph-music-notes-plus:before {
+.ph-fill.ph-music-notes-simple:before {
+.ph-fill.ph-navigation-arrow:before {
+.ph-fill.ph-needle:before {
+.ph-fill.ph-network:before {
+.ph-fill.ph-network-slash:before {
+.ph-fill.ph-network-x:before {
+.ph-fill.ph-newspaper:before {
+.ph-fill.ph-newspaper-clipping:before {
+.ph-fill.ph-not-equals:before {
+.ph-fill.ph-not-member-of:before {
+.ph-fill.ph-not-subset-of:before {
+.ph-fill.ph-not-superset-of:before {
+.ph-fill.ph-notches:before {
+.ph-fill.ph-note:before {
+.ph-fill.ph-note-blank:before {
+.ph-fill.ph-note-pencil:before {
+.ph-fill.ph-notebook:before {
+.ph-fill.ph-notepad:before {
+.ph-fill.ph-notification:before {
+.ph-fill.ph-notion-logo:before {
+.ph-fill.ph-nuclear-plant:before {
+.ph-fill.ph-number-circle-eight:before {
+.ph-fill.ph-number-circle-five:before {
+.ph-fill.ph-number-circle-four:before {
+.ph-fill.ph-number-circle-nine:before {
+.ph-fill.ph-number-circle-one:before {
+.ph-fill.ph-number-circle-seven:before {
+.ph-fill.ph-number-circle-six:before {
+.ph-fill.ph-number-circle-three:before {
+.ph-fill.ph-number-circle-two:before {
+.ph-fill.ph-number-circle-zero:before {
+.ph-fill.ph-number-eight:before {
+.ph-fill.ph-number-five:before {
+.ph-fill.ph-number-four:before {
+.ph-fill.ph-number-nine:before {
+.ph-fill.ph-number-one:before {
+.ph-fill.ph-number-seven:before {
+.ph-fill.ph-number-six:before {
+.ph-fill.ph-number-square-eight:before {
+.ph-fill.ph-number-square-five:before {
+.ph-fill.ph-number-square-four:before {
+.ph-fill.ph-number-square-nine:before {
+.ph-fill.ph-number-square-one:before {
+.ph-fill.ph-number-square-seven:before {
+.ph-fill.ph-number-square-six:before {
+.ph-fill.ph-number-square-three:before {
+.ph-fill.ph-number-square-two:before {
+.ph-fill.ph-number-square-zero:before {
+.ph-fill.ph-number-three:before {
+.ph-fill.ph-number-two:before {
+.ph-fill.ph-number-zero:before {
+.ph-fill.ph-numpad:before {
+.ph-fill.ph-nut:before {
+.ph-fill.ph-ny-times-logo:before {
+.ph-fill.ph-octagon:before {
+.ph-fill.ph-office-chair:before {
+.ph-fill.ph-onigiri:before {
+.ph-fill.ph-open-ai-logo:before {
+.ph-fill.ph-option:before {
+.ph-fill.ph-orange:before {
+.ph-fill.ph-orange-slice:before {
+.ph-fill.ph-oven:before {
+.ph-fill.ph-package:before {
+.ph-fill.ph-paint-brush:before {
+.ph-fill.ph-paint-brush-broad:before {
+.ph-fill.ph-paint-brush-household:before {
+.ph-fill.ph-paint-bucket:before {
+.ph-fill.ph-paint-roller:before {
+.ph-fill.ph-palette:before {
+.ph-fill.ph-panorama:before {
+.ph-fill.ph-pants:before {
+.ph-fill.ph-paper-plane:before {
+.ph-fill.ph-paper-plane-right:before {
+.ph-fill.ph-paper-plane-tilt:before {
+.ph-fill.ph-paperclip:before {
+.ph-fill.ph-paperclip-horizontal:before {
+.ph-fill.ph-parachute:before {
+.ph-fill.ph-paragraph:before {
+.ph-fill.ph-parallelogram:before {
+.ph-fill.ph-park:before {
+.ph-fill.ph-password:before {
+.ph-fill.ph-path:before {
+.ph-fill.ph-patreon-logo:before {
+.ph-fill.ph-pause:before {
+.ph-fill.ph-pause-circle:before {
+.ph-fill.ph-paw-print:before {
+.ph-fill.ph-paypal-logo:before {
+.ph-fill.ph-peace:before {
+.ph-fill.ph-pen:before {
+.ph-fill.ph-pen-nib:before {
+.ph-fill.ph-pen-nib-straight:before {
+.ph-fill.ph-pencil:before {
+.ph-fill.ph-pencil-circle:before {
+.ph-fill.ph-pencil-line:before {
+.ph-fill.ph-pencil-ruler:before {
+.ph-fill.ph-pencil-simple:before {
+.ph-fill.ph-pencil-simple-line:before {
+.ph-fill.ph-pencil-simple-slash:before {
+.ph-fill.ph-pencil-slash:before {
+.ph-fill.ph-pentagon:before {
+.ph-fill.ph-pentagram:before {
+.ph-fill.ph-pepper:before {
+.ph-fill.ph-percent:before {
+.ph-fill.ph-person:before {
+.ph-fill.ph-person-arms-spread:before {
+.ph-fill.ph-person-simple:before {
+.ph-fill.ph-person-simple-bike:before {
+.ph-fill.ph-person-simple-circle:before {
+.ph-fill.ph-person-simple-hike:before {
+.ph-fill.ph-person-simple-run:before {
+.ph-fill.ph-person-simple-ski:before {
+.ph-fill.ph-person-simple-snowboard:before {
+.ph-fill.ph-person-simple-swim:before {
+.ph-fill.ph-person-simple-tai-chi:before {
+.ph-fill.ph-person-simple-throw:before {
+.ph-fill.ph-person-simple-walk:before {
+.ph-fill.ph-perspective:before {
+.ph-fill.ph-phone:before {
+.ph-fill.ph-phone-call:before {
+.ph-fill.ph-phone-disconnect:before {
+.ph-fill.ph-phone-incoming:before {
+.ph-fill.ph-phone-list:before {
+.ph-fill.ph-phone-outgoing:before {
+.ph-fill.ph-phone-pause:before {
+.ph-fill.ph-phone-plus:before {
+.ph-fill.ph-phone-slash:before {
+.ph-fill.ph-phone-transfer:before {
+.ph-fill.ph-phone-x:before {
+.ph-fill.ph-phosphor-logo:before {
+.ph-fill.ph-pi:before {
+.ph-fill.ph-piano-keys:before {
+.ph-fill.ph-picnic-table:before {
+.ph-fill.ph-picture-in-picture:before {
+.ph-fill.ph-piggy-bank:before {
+.ph-fill.ph-pill:before {
+.ph-fill.ph-ping-pong:before {
+.ph-fill.ph-pint-glass:before {
+.ph-fill.ph-pinterest-logo:before {
+.ph-fill.ph-pinwheel:before {
+.ph-fill.ph-pipe:before {
+.ph-fill.ph-pipe-wrench:before {
+.ph-fill.ph-pix-logo:before {
+.ph-fill.ph-pizza:before {
+.ph-fill.ph-placeholder:before {
+.ph-fill.ph-planet:before {
+.ph-fill.ph-plant:before {
+.ph-fill.ph-play:before {
+.ph-fill.ph-play-circle:before {
+.ph-fill.ph-play-pause:before {
+.ph-fill.ph-playlist:before {
+.ph-fill.ph-plug:before {
+.ph-fill.ph-plug-charging:before {
+.ph-fill.ph-plugs:before {
+.ph-fill.ph-plugs-connected:before {
+.ph-fill.ph-plus:before {
+.ph-fill.ph-plus-circle:before {
+.ph-fill.ph-plus-minus:before {
+.ph-fill.ph-plus-square:before {
+.ph-fill.ph-poker-chip:before {
+.ph-fill.ph-police-car:before {
+.ph-fill.ph-polygon:before {
+.ph-fill.ph-popcorn:before {
+.ph-fill.ph-popsicle:before {
+.ph-fill.ph-potted-plant:before {
+.ph-fill.ph-power:before {
+.ph-fill.ph-prescription:before {
+.ph-fill.ph-presentation:before {
+.ph-fill.ph-presentation-chart:before {
+.ph-fill.ph-printer:before {
+.ph-fill.ph-prohibit:before {
+.ph-fill.ph-prohibit-inset:before {
+.ph-fill.ph-projector-screen:before {
+.ph-fill.ph-projector-screen-chart:before {
+.ph-fill.ph-pulse:before {
+.ph-fill.ph-activity:before {
+.ph-fill.ph-push-pin:before {
+.ph-fill.ph-push-pin-simple:before {
+.ph-fill.ph-push-pin-simple-slash:before {
+.ph-fill.ph-push-pin-slash:before {
+.ph-fill.ph-puzzle-piece:before {
+.ph-fill.ph-qr-code:before {
+.ph-fill.ph-question:before {
+.ph-fill.ph-question-mark:before {
+.ph-fill.ph-queue:before {
+.ph-fill.ph-quotes:before {
+.ph-fill.ph-rabbit:before {
+.ph-fill.ph-racquet:before {
+.ph-fill.ph-radical:before {
+.ph-fill.ph-radio:before {
+.ph-fill.ph-radio-button:before {
+.ph-fill.ph-radioactive:before {
+.ph-fill.ph-rainbow:before {
+.ph-fill.ph-rainbow-cloud:before {
+.ph-fill.ph-ranking:before {
+.ph-fill.ph-read-cv-logo:before {
+.ph-fill.ph-receipt:before {
+.ph-fill.ph-receipt-x:before {
+.ph-fill.ph-record:before {
+.ph-fill.ph-rectangle:before {
+.ph-fill.ph-rectangle-dashed:before {
+.ph-fill.ph-recycle:before {
+.ph-fill.ph-reddit-logo:before {
+.ph-fill.ph-repeat:before {
+.ph-fill.ph-repeat-once:before {
+.ph-fill.ph-replit-logo:before {
+.ph-fill.ph-resize:before {
+.ph-fill.ph-rewind:before {
+.ph-fill.ph-rewind-circle:before {
+.ph-fill.ph-road-horizon:before {
+.ph-fill.ph-robot:before {
+.ph-fill.ph-rocket:before {
+.ph-fill.ph-rocket-launch:before {
+.ph-fill.ph-rows:before {
+.ph-fill.ph-rows-plus-bottom:before {
+.ph-fill.ph-rows-plus-top:before {
+.ph-fill.ph-rss:before {
+.ph-fill.ph-rss-simple:before {
+.ph-fill.ph-rug:before {
+.ph-fill.ph-ruler:before {
+.ph-fill.ph-sailboat:before {
+.ph-fill.ph-scales:before {
+.ph-fill.ph-scan:before {
+.ph-fill.ph-scan-smiley:before {
+.ph-fill.ph-scissors:before {
+.ph-fill.ph-scooter:before {
+.ph-fill.ph-screencast:before {
+.ph-fill.ph-screwdriver:before {
+.ph-fill.ph-scribble:before {
+.ph-fill.ph-scribble-loop:before {
+.ph-fill.ph-scroll:before {
+.ph-fill.ph-seal:before {
+.ph-fill.ph-circle-wavy:before {
+.ph-fill.ph-seal-check:before {
+.ph-fill.ph-circle-wavy-check:before {
+.ph-fill.ph-seal-percent:before {
+.ph-fill.ph-seal-question:before {
+.ph-fill.ph-circle-wavy-question:before {
+.ph-fill.ph-seal-warning:before {
+.ph-fill.ph-circle-wavy-warning:before {
+.ph-fill.ph-seat:before {
+.ph-fill.ph-seatbelt:before {
+.ph-fill.ph-security-camera:before {
+.ph-fill.ph-selection:before {
+.ph-fill.ph-selection-all:before {
+.ph-fill.ph-selection-background:before {
+.ph-fill.ph-selection-foreground:before {
+.ph-fill.ph-selection-inverse:before {
+.ph-fill.ph-selection-plus:before {
+.ph-fill.ph-selection-slash:before {
+.ph-fill.ph-shapes:before {
+.ph-fill.ph-share:before {
+.ph-fill.ph-share-fat:before {
+.ph-fill.ph-share-network:before {
+.ph-fill.ph-shield:before {
+.ph-fill.ph-shield-check:before {
+.ph-fill.ph-shield-checkered:before {
+.ph-fill.ph-shield-chevron:before {
+.ph-fill.ph-shield-plus:before {
+.ph-fill.ph-shield-slash:before {
+.ph-fill.ph-shield-star:before {
+.ph-fill.ph-shield-warning:before {
+.ph-fill.ph-shipping-container:before {
+.ph-fill.ph-shirt-folded:before {
+.ph-fill.ph-shooting-star:before {
+.ph-fill.ph-shopping-bag:before {
+.ph-fill.ph-shopping-bag-open:before {
+.ph-fill.ph-shopping-cart:before {
+.ph-fill.ph-shopping-cart-simple:before {
+.ph-fill.ph-shovel:before {
+.ph-fill.ph-shower:before {
+.ph-fill.ph-shrimp:before {
+.ph-fill.ph-shuffle:before {
+.ph-fill.ph-shuffle-angular:before {
+.ph-fill.ph-shuffle-simple:before {
+.ph-fill.ph-sidebar:before {
+.ph-fill.ph-sidebar-simple:before {
+.ph-fill.ph-sigma:before {
+.ph-fill.ph-sign-in:before {
+.ph-fill.ph-sign-out:before {
+.ph-fill.ph-signature:before {
+.ph-fill.ph-signpost:before {
+.ph-fill.ph-sim-card:before {
+.ph-fill.ph-siren:before {
+.ph-fill.ph-sketch-logo:before {
+.ph-fill.ph-skip-back:before {
+.ph-fill.ph-skip-back-circle:before {
+.ph-fill.ph-skip-forward:before {
+.ph-fill.ph-skip-forward-circle:before {
+.ph-fill.ph-skull:before {
+.ph-fill.ph-skype-logo:before {
+.ph-fill.ph-slack-logo:before {
+.ph-fill.ph-sliders:before {
+.ph-fill.ph-sliders-horizontal:before {
+.ph-fill.ph-slideshow:before {
+.ph-fill.ph-smiley:before {
+.ph-fill.ph-smiley-angry:before {
+.ph-fill.ph-smiley-blank:before {
+.ph-fill.ph-smiley-meh:before {
+.ph-fill.ph-smiley-melting:before {
+.ph-fill.ph-smiley-nervous:before {
+.ph-fill.ph-smiley-sad:before {
+.ph-fill.ph-smiley-sticker:before {
+.ph-fill.ph-smiley-wink:before {
+.ph-fill.ph-smiley-x-eyes:before {
+.ph-fill.ph-snapchat-logo:before {
+.ph-fill.ph-sneaker:before {
+.ph-fill.ph-sneaker-move:before {
+.ph-fill.ph-snowflake:before {
+.ph-fill.ph-soccer-ball:before {
+.ph-fill.ph-sock:before {
+.ph-fill.ph-solar-panel:before {
+.ph-fill.ph-solar-roof:before {
+.ph-fill.ph-sort-ascending:before {
+.ph-fill.ph-sort-descending:before {
+.ph-fill.ph-soundcloud-logo:before {
+.ph-fill.ph-spade:before {
+.ph-fill.ph-sparkle:before {
+.ph-fill.ph-speaker-hifi:before {
+.ph-fill.ph-speaker-high:before {
+.ph-fill.ph-speaker-low:before {
+.ph-fill.ph-speaker-none:before {
+.ph-fill.ph-speaker-simple-high:before {
+.ph-fill.ph-speaker-simple-low:before {
+.ph-fill.ph-speaker-simple-none:before {
+.ph-fill.ph-speaker-simple-slash:before {
+.ph-fill.ph-speaker-simple-x:before {
+.ph-fill.ph-speaker-slash:before {
+.ph-fill.ph-speaker-x:before {
+.ph-fill.ph-speedometer:before {
+.ph-fill.ph-sphere:before {
+.ph-fill.ph-spinner:before {
+.ph-fill.ph-spinner-ball:before {
+.ph-fill.ph-spinner-gap:before {
+.ph-fill.ph-spiral:before {
+.ph-fill.ph-split-horizontal:before {
+.ph-fill.ph-split-vertical:before {
+.ph-fill.ph-spotify-logo:before {
+.ph-fill.ph-spray-bottle:before {
+.ph-fill.ph-square:before {
+.ph-fill.ph-square-half:before {
+.ph-fill.ph-square-half-bottom:before {
+.ph-fill.ph-square-logo:before {
+.ph-fill.ph-square-split-horizontal:before {
+.ph-fill.ph-square-split-vertical:before {
+.ph-fill.ph-squares-four:before {
+.ph-fill.ph-stack:before {
+.ph-fill.ph-stack-minus:before {
+.ph-fill.ph-stack-overflow-logo:before {
+.ph-fill.ph-stack-plus:before {
+.ph-fill.ph-stack-simple:before {
+.ph-fill.ph-stairs:before {
+.ph-fill.ph-stamp:before {
+.ph-fill.ph-standard-definition:before {
+.ph-fill.ph-star:before {
+.ph-fill.ph-star-and-crescent:before {
+.ph-fill.ph-star-four:before {
+.ph-fill.ph-star-half:before {
+.ph-fill.ph-star-of-david:before {
+.ph-fill.ph-steam-logo:before {
+.ph-fill.ph-steering-wheel:before {
+.ph-fill.ph-steps:before {
+.ph-fill.ph-stethoscope:before {
+.ph-fill.ph-sticker:before {
+.ph-fill.ph-stool:before {
+.ph-fill.ph-stop:before {
+.ph-fill.ph-stop-circle:before {
+.ph-fill.ph-storefront:before {
+.ph-fill.ph-strategy:before {
+.ph-fill.ph-stripe-logo:before {
+.ph-fill.ph-student:before {
+.ph-fill.ph-subset-of:before {
+.ph-fill.ph-subset-proper-of:before {
+.ph-fill.ph-subtitles:before {
+.ph-fill.ph-subtitles-slash:before {
+.ph-fill.ph-subtract:before {
+.ph-fill.ph-subtract-square:before {
+.ph-fill.ph-subway:before {
+.ph-fill.ph-suitcase:before {
+.ph-fill.ph-suitcase-rolling:before {
+.ph-fill.ph-suitcase-simple:before {
+.ph-fill.ph-sun:before {
+.ph-fill.ph-sun-dim:before {
+.ph-fill.ph-sun-horizon:before {
+.ph-fill.ph-sunglasses:before {
+.ph-fill.ph-superset-of:before {
+.ph-fill.ph-superset-proper-of:before {
+.ph-fill.ph-swap:before {
+.ph-fill.ph-swatches:before {
+.ph-fill.ph-swimming-pool:before {
+.ph-fill.ph-sword:before {
+.ph-fill.ph-synagogue:before {
+.ph-fill.ph-syringe:before {
+.ph-fill.ph-t-shirt:before {
+.ph-fill.ph-table:before {
+.ph-fill.ph-tabs:before {
+.ph-fill.ph-tag:before {
+.ph-fill.ph-tag-chevron:before {
+.ph-fill.ph-tag-simple:before {
+.ph-fill.ph-target:before {
+.ph-fill.ph-taxi:before {
+.ph-fill.ph-tea-bag:before {
+.ph-fill.ph-telegram-logo:before {
+.ph-fill.ph-television:before {
+.ph-fill.ph-television-simple:before {
+.ph-fill.ph-tennis-ball:before {
+.ph-fill.ph-tent:before {
+.ph-fill.ph-terminal:before {
+.ph-fill.ph-terminal-window:before {
+.ph-fill.ph-test-tube:before {
+.ph-fill.ph-text-a-underline:before {
+.ph-fill.ph-text-aa:before {
+.ph-fill.ph-text-align-center:before {
+.ph-fill.ph-text-align-justify:before {
+.ph-fill.ph-text-align-left:before {
+.ph-fill.ph-text-align-right:before {
+.ph-fill.ph-text-b:before {
+.ph-fill.ph-text-bolder:before {
+.ph-fill.ph-text-columns:before {
+.ph-fill.ph-text-h:before {
+.ph-fill.ph-text-h-five:before {
+.ph-fill.ph-text-h-four:before {
+.ph-fill.ph-text-h-one:before {
+.ph-fill.ph-text-h-six:before {
+.ph-fill.ph-text-h-three:before {
+.ph-fill.ph-text-h-two:before {
+.ph-fill.ph-text-indent:before {
+.ph-fill.ph-text-italic:before {
+.ph-fill.ph-text-outdent:before {
+.ph-fill.ph-text-strikethrough:before {
+.ph-fill.ph-text-subscript:before {
+.ph-fill.ph-text-superscript:before {
+.ph-fill.ph-text-t:before {
+.ph-fill.ph-text-t-slash:before {
+.ph-fill.ph-text-underline:before {
+.ph-fill.ph-textbox:before {
+.ph-fill.ph-thermometer:before {
+.ph-fill.ph-thermometer-cold:before {
+.ph-fill.ph-thermometer-hot:before {
+.ph-fill.ph-thermometer-simple:before {
+.ph-fill.ph-threads-logo:before {
+.ph-fill.ph-three-d:before {
+.ph-fill.ph-thumbs-down:before {
+.ph-fill.ph-thumbs-up:before {
+.ph-fill.ph-ticket:before {
+.ph-fill.ph-tidal-logo:before {
+.ph-fill.ph-tiktok-logo:before {
+.ph-fill.ph-tilde:before {
+.ph-fill.ph-timer:before {
+.ph-fill.ph-tip-jar:before {
+.ph-fill.ph-tipi:before {
+.ph-fill.ph-tire:before {
+.ph-fill.ph-toggle-left:before {
+.ph-fill.ph-toggle-right:before {
+.ph-fill.ph-toilet:before {
+.ph-fill.ph-toilet-paper:before {
+.ph-fill.ph-toolbox:before {
+.ph-fill.ph-tooth:before {
+.ph-fill.ph-tornado:before {
+.ph-fill.ph-tote:before {
+.ph-fill.ph-tote-simple:before {
+.ph-fill.ph-towel:before {
+.ph-fill.ph-tractor:before {
+.ph-fill.ph-trademark:before {
+.ph-fill.ph-trademark-registered:before {
+.ph-fill.ph-traffic-cone:before {
+.ph-fill.ph-traffic-sign:before {
+.ph-fill.ph-traffic-signal:before {
+.ph-fill.ph-train:before {
+.ph-fill.ph-train-regional:before {
+.ph-fill.ph-train-simple:before {
+.ph-fill.ph-tram:before {
+.ph-fill.ph-translate:before {
+.ph-fill.ph-trash:before {
+.ph-fill.ph-trash-simple:before {
+.ph-fill.ph-tray:before {
+.ph-fill.ph-tray-arrow-down:before {
+.ph-fill.ph-archive-tray:before {
+.ph-fill.ph-tray-arrow-up:before {
+.ph-fill.ph-treasure-chest:before {
+.ph-fill.ph-tree:before {
+.ph-fill.ph-tree-evergreen:before {
+.ph-fill.ph-tree-palm:before {
+.ph-fill.ph-tree-structure:before {
+.ph-fill.ph-tree-view:before {
+.ph-fill.ph-trend-down:before {
+.ph-fill.ph-trend-up:before {
+.ph-fill.ph-triangle:before {
+.ph-fill.ph-triangle-dashed:before {
+.ph-fill.ph-trolley:before {
+.ph-fill.ph-trolley-suitcase:before {
+.ph-fill.ph-trophy:before {
+.ph-fill.ph-truck:before {
+.ph-fill.ph-truck-trailer:before {
+.ph-fill.ph-tumblr-logo:before {
+.ph-fill.ph-twitch-logo:before {
+.ph-fill.ph-twitter-logo:before {
+.ph-fill.ph-umbrella:before {
+.ph-fill.ph-umbrella-simple:before {
+.ph-fill.ph-union:before {
+.ph-fill.ph-unite:before {
+.ph-fill.ph-unite-square:before {
+.ph-fill.ph-upload:before {
+.ph-fill.ph-upload-simple:before {
+.ph-fill.ph-usb:before {
+.ph-fill.ph-user:before {
+.ph-fill.ph-user-check:before {
+.ph-fill.ph-user-circle:before {
+.ph-fill.ph-user-circle-check:before {
+.ph-fill.ph-user-circle-dashed:before {
+.ph-fill.ph-user-circle-gear:before {
+.ph-fill.ph-user-circle-minus:before {
+.ph-fill.ph-user-circle-plus:before {
+.ph-fill.ph-user-focus:before {
+.ph-fill.ph-user-gear:before {
+.ph-fill.ph-user-list:before {
+.ph-fill.ph-user-minus:before {
+.ph-fill.ph-user-plus:before {
+.ph-fill.ph-user-rectangle:before {
+.ph-fill.ph-user-sound:before {
+.ph-fill.ph-user-square:before {
+.ph-fill.ph-user-switch:before {
+.ph-fill.ph-users:before {
+.ph-fill.ph-users-four:before {
+.ph-fill.ph-users-three:before {
+.ph-fill.ph-van:before {
+.ph-fill.ph-vault:before {
+.ph-fill.ph-vector-three:before {
+.ph-fill.ph-vector-two:before {
+.ph-fill.ph-vibrate:before {
+.ph-fill.ph-video:before {
+.ph-fill.ph-video-camera:before {
+.ph-fill.ph-video-camera-slash:before {
+.ph-fill.ph-video-conference:before {
+.ph-fill.ph-vignette:before {
+.ph-fill.ph-vinyl-record:before {
+.ph-fill.ph-virtual-reality:before {
+.ph-fill.ph-virus:before {
+.ph-fill.ph-visor:before {
+.ph-fill.ph-voicemail:before {
+.ph-fill.ph-volleyball:before {
+.ph-fill.ph-wall:before {
+.ph-fill.ph-wallet:before {
+.ph-fill.ph-warehouse:before {
+.ph-fill.ph-warning:before {
+.ph-fill.ph-warning-circle:before {
+.ph-fill.ph-warning-diamond:before {
+.ph-fill.ph-warning-octagon:before {
+.ph-fill.ph-washing-machine:before {
+.ph-fill.ph-watch:before {
+.ph-fill.ph-wave-sawtooth:before {
+.ph-fill.ph-wave-sine:before {
+.ph-fill.ph-wave-square:before {
+.ph-fill.ph-wave-triangle:before {
+.ph-fill.ph-waveform:before {
+.ph-fill.ph-waveform-slash:before {
+.ph-fill.ph-waves:before {
+.ph-fill.ph-webcam:before {
+.ph-fill.ph-webcam-slash:before {
+.ph-fill.ph-webhooks-logo:before {
+.ph-fill.ph-wechat-logo:before {
+.ph-fill.ph-whatsapp-logo:before {
+.ph-fill.ph-wheelchair:before {
+.ph-fill.ph-wheelchair-motion:before {
+.ph-fill.ph-wifi-high:before {
+.ph-fill.ph-wifi-low:before {
+.ph-fill.ph-wifi-medium:before {
+.ph-fill.ph-wifi-none:before {
+.ph-fill.ph-wifi-slash:before {
+.ph-fill.ph-wifi-x:before {
+.ph-fill.ph-wind:before {
+.ph-fill.ph-windmill:before {
+.ph-fill.ph-windows-logo:before {
+.ph-fill.ph-wine:before {
+.ph-fill.ph-wrench:before {
+.ph-fill.ph-x:before {
+.ph-fill.ph-x-circle:before {
+.ph-fill.ph-x-logo:before {
+.ph-fill.ph-x-square:before {
+.ph-fill.ph-yarn:before {
+.ph-fill.ph-yin-yang:before {
+.ph-fill.ph-youtube-logo:before {
+.ph-bold.ph-acorn:before {
+.ph-bold.ph-address-book:before {
+.ph-bold.ph-address-book-tabs:before {
+.ph-bold.ph-air-traffic-control:before {
+.ph-bold.ph-airplane:before {
+.ph-bold.ph-airplane-in-flight:before {
+.ph-bold.ph-airplane-landing:before {
+.ph-bold.ph-airplane-takeoff:before {
+.ph-bold.ph-airplane-taxiing:before {
+.ph-bold.ph-airplane-tilt:before {
+.ph-bold.ph-airplay:before {
+.ph-bold.ph-alarm:before {
+.ph-bold.ph-alien:before {
+.ph-bold.ph-align-bottom:before {
+.ph-bold.ph-align-bottom-simple:before {
+.ph-bold.ph-align-center-horizontal:before {
+.ph-bold.ph-align-center-horizontal-simple:before {
+.ph-bold.ph-align-center-vertical:before {
+.ph-bold.ph-align-center-vertical-simple:before {
+.ph-bold.ph-align-left:before {
+.ph-bold.ph-align-left-simple:before {
+.ph-bold.ph-align-right:before {
+.ph-bold.ph-align-right-simple:before {
+.ph-bold.ph-align-top:before {
+.ph-bold.ph-align-top-simple:before {
+.ph-bold.ph-amazon-logo:before {
+.ph-bold.ph-ambulance:before {
+.ph-bold.ph-anchor:before {
+.ph-bold.ph-anchor-simple:before {
+.ph-bold.ph-android-logo:before {
+.ph-bold.ph-angle:before {
+.ph-bold.ph-angular-logo:before {
+.ph-bold.ph-aperture:before {
+.ph-bold.ph-app-store-logo:before {
+.ph-bold.ph-app-window:before {
+.ph-bold.ph-apple-logo:before {
+.ph-bold.ph-apple-podcasts-logo:before {
+.ph-bold.ph-approximate-equals:before {
+.ph-bold.ph-archive:before {
+.ph-bold.ph-armchair:before {
+.ph-bold.ph-arrow-arc-left:before {
+.ph-bold.ph-arrow-arc-right:before {
+.ph-bold.ph-arrow-bend-double-up-left:before {
+.ph-bold.ph-arrow-bend-double-up-right:before {
+.ph-bold.ph-arrow-bend-down-left:before {
+.ph-bold.ph-arrow-bend-down-right:before {
+.ph-bold.ph-arrow-bend-left-down:before {
+.ph-bold.ph-arrow-bend-left-up:before {
+.ph-bold.ph-arrow-bend-right-down:before {
+.ph-bold.ph-arrow-bend-right-up:before {
+.ph-bold.ph-arrow-bend-up-left:before {
+.ph-bold.ph-arrow-bend-up-right:before {
+.ph-bold.ph-arrow-circle-down:before {
+.ph-bold.ph-arrow-circle-down-left:before {
+.ph-bold.ph-arrow-circle-down-right:before {
+.ph-bold.ph-arrow-circle-left:before {
+.ph-bold.ph-arrow-circle-right:before {
+.ph-bold.ph-arrow-circle-up:before {
+.ph-bold.ph-arrow-circle-up-left:before {
+.ph-bold.ph-arrow-circle-up-right:before {
+.ph-bold.ph-arrow-clockwise:before {
+.ph-bold.ph-arrow-counter-clockwise:before {
+.ph-bold.ph-arrow-down:before {
+.ph-bold.ph-arrow-down-left:before {
+.ph-bold.ph-arrow-down-right:before {
+.ph-bold.ph-arrow-elbow-down-left:before {
+.ph-bold.ph-arrow-elbow-down-right:before {
+.ph-bold.ph-arrow-elbow-left:before {
+.ph-bold.ph-arrow-elbow-left-down:before {
+.ph-bold.ph-arrow-elbow-left-up:before {
+.ph-bold.ph-arrow-elbow-right:before {
+.ph-bold.ph-arrow-elbow-right-down:before {
+.ph-bold.ph-arrow-elbow-right-up:before {
+.ph-bold.ph-arrow-elbow-up-left:before {
+.ph-bold.ph-arrow-elbow-up-right:before {
+.ph-bold.ph-arrow-fat-down:before {
+.ph-bold.ph-arrow-fat-left:before {
+.ph-bold.ph-arrow-fat-line-down:before {
+.ph-bold.ph-arrow-fat-line-left:before {
+.ph-bold.ph-arrow-fat-line-right:before {
+.ph-bold.ph-arrow-fat-line-up:before {
+.ph-bold.ph-arrow-fat-lines-down:before {
+.ph-bold.ph-arrow-fat-lines-left:before {
+.ph-bold.ph-arrow-fat-lines-right:before {
+.ph-bold.ph-arrow-fat-lines-up:before {
+.ph-bold.ph-arrow-fat-right:before {
+.ph-bold.ph-arrow-fat-up:before {
+.ph-bold.ph-arrow-left:before {
+.ph-bold.ph-arrow-line-down:before {
+.ph-bold.ph-arrow-line-down-left:before {
+.ph-bold.ph-arrow-line-down-right:before {
+.ph-bold.ph-arrow-line-left:before {
+.ph-bold.ph-arrow-line-right:before {
+.ph-bold.ph-arrow-line-up:before {
+.ph-bold.ph-arrow-line-up-left:before {
+.ph-bold.ph-arrow-line-up-right:before {
+.ph-bold.ph-arrow-right:before {
+.ph-bold.ph-arrow-square-down:before {
+.ph-bold.ph-arrow-square-down-left:before {
+.ph-bold.ph-arrow-square-down-right:before {
+.ph-bold.ph-arrow-square-in:before {
+.ph-bold.ph-arrow-square-left:before {
+.ph-bold.ph-arrow-square-out:before {
+.ph-bold.ph-arrow-square-right:before {
+.ph-bold.ph-arrow-square-up:before {
+.ph-bold.ph-arrow-square-up-left:before {
+.ph-bold.ph-arrow-square-up-right:before {
+.ph-bold.ph-arrow-u-down-left:before {
+.ph-bold.ph-arrow-u-down-right:before {
+.ph-bold.ph-arrow-u-left-down:before {
+.ph-bold.ph-arrow-u-left-up:before {
+.ph-bold.ph-arrow-u-right-down:before {
+.ph-bold.ph-arrow-u-right-up:before {
+.ph-bold.ph-arrow-u-up-left:before {
+.ph-bold.ph-arrow-u-up-right:before {
+.ph-bold.ph-arrow-up:before {
+.ph-bold.ph-arrow-up-left:before {
+.ph-bold.ph-arrow-up-right:before {
+.ph-bold.ph-arrows-clockwise:before {
+.ph-bold.ph-arrows-counter-clockwise:before {
+.ph-bold.ph-arrows-down-up:before {
+.ph-bold.ph-arrows-horizontal:before {
+.ph-bold.ph-arrows-in:before {
+.ph-bold.ph-arrows-in-cardinal:before {
+.ph-bold.ph-arrows-in-line-horizontal:before {
+.ph-bold.ph-arrows-in-line-vertical:before {
+.ph-bold.ph-arrows-in-simple:before {
+.ph-bold.ph-arrows-left-right:before {
+.ph-bold.ph-arrows-merge:before {
+.ph-bold.ph-arrows-out:before {
+.ph-bold.ph-arrows-out-cardinal:before {
+.ph-bold.ph-arrows-out-line-horizontal:before {
+.ph-bold.ph-arrows-out-line-vertical:before {
+.ph-bold.ph-arrows-out-simple:before {
+.ph-bold.ph-arrows-split:before {
+.ph-bold.ph-arrows-vertical:before {
+.ph-bold.ph-article:before {
+.ph-bold.ph-article-medium:before {
+.ph-bold.ph-article-ny-times:before {
+.ph-bold.ph-asclepius:before {
+.ph-bold.ph-caduceus:before {
+.ph-bold.ph-asterisk:before {
+.ph-bold.ph-asterisk-simple:before {
+.ph-bold.ph-at:before {
+.ph-bold.ph-atom:before {
+.ph-bold.ph-avocado:before {
+.ph-bold.ph-axe:before {
+.ph-bold.ph-baby:before {
+.ph-bold.ph-baby-carriage:before {
+.ph-bold.ph-backpack:before {
+.ph-bold.ph-backspace:before {
+.ph-bold.ph-bag:before {
+.ph-bold.ph-bag-simple:before {
+.ph-bold.ph-balloon:before {
+.ph-bold.ph-bandaids:before {
+.ph-bold.ph-bank:before {
+.ph-bold.ph-barbell:before {
+.ph-bold.ph-barcode:before {
+.ph-bold.ph-barn:before {
+.ph-bold.ph-barricade:before {
+.ph-bold.ph-baseball:before {
+.ph-bold.ph-baseball-cap:before {
+.ph-bold.ph-baseball-helmet:before {
+.ph-bold.ph-basket:before {
+.ph-bold.ph-basketball:before {
+.ph-bold.ph-bathtub:before {
+.ph-bold.ph-battery-charging:before {
+.ph-bold.ph-battery-charging-vertical:before {
+.ph-bold.ph-battery-empty:before {
+.ph-bold.ph-battery-full:before {
+.ph-bold.ph-battery-high:before {
+.ph-bold.ph-battery-low:before {
+.ph-bold.ph-battery-medium:before {
+.ph-bold.ph-battery-plus:before {
+.ph-bold.ph-battery-plus-vertical:before {
+.ph-bold.ph-battery-vertical-empty:before {
+.ph-bold.ph-battery-vertical-full:before {
+.ph-bold.ph-battery-vertical-high:before {
+.ph-bold.ph-battery-vertical-low:before {
+.ph-bold.ph-battery-vertical-medium:before {
+.ph-bold.ph-battery-warning:before {
+.ph-bold.ph-battery-warning-vertical:before {
+.ph-bold.ph-beach-ball:before {
+.ph-bold.ph-beanie:before {
+.ph-bold.ph-bed:before {
+.ph-bold.ph-beer-bottle:before {
+.ph-bold.ph-beer-stein:before {
+.ph-bold.ph-behance-logo:before {
+.ph-bold.ph-bell:before {
+.ph-bold.ph-bell-ringing:before {
+.ph-bold.ph-bell-simple:before {
+.ph-bold.ph-bell-simple-ringing:before {
+.ph-bold.ph-bell-simple-slash:before {
+.ph-bold.ph-bell-simple-z:before {
+.ph-bold.ph-bell-slash:before {
+.ph-bold.ph-bell-z:before {
+.ph-bold.ph-belt:before {
+.ph-bold.ph-bezier-curve:before {
+.ph-bold.ph-bicycle:before {
+.ph-bold.ph-binary:before {
+.ph-bold.ph-binoculars:before {
+.ph-bold.ph-biohazard:before {
+.ph-bold.ph-bird:before {
+.ph-bold.ph-blueprint:before {
+.ph-bold.ph-bluetooth:before {
+.ph-bold.ph-bluetooth-connected:before {
+.ph-bold.ph-bluetooth-slash:before {
+.ph-bold.ph-bluetooth-x:before {
+.ph-bold.ph-boat:before {
+.ph-bold.ph-bomb:before {
+.ph-bold.ph-bone:before {
+.ph-bold.ph-book:before {
+.ph-bold.ph-book-bookmark:before {
+.ph-bold.ph-book-open:before {
+.ph-bold.ph-book-open-text:before {
+.ph-bold.ph-book-open-user:before {
+.ph-bold.ph-bookmark:before {
+.ph-bold.ph-bookmark-simple:before {
+.ph-bold.ph-bookmarks:before {
+.ph-bold.ph-bookmarks-simple:before {
+.ph-bold.ph-books:before {
+.ph-bold.ph-boot:before {
+.ph-bold.ph-boules:before {
+.ph-bold.ph-bounding-box:before {
+.ph-bold.ph-bowl-food:before {
+.ph-bold.ph-bowl-steam:before {
+.ph-bold.ph-bowling-ball:before {
+.ph-bold.ph-box-arrow-down:before {
+.ph-bold.ph-archive-box:before {
+.ph-bold.ph-box-arrow-up:before {
+.ph-bold.ph-boxing-glove:before {
+.ph-bold.ph-brackets-angle:before {
+.ph-bold.ph-brackets-curly:before {
+.ph-bold.ph-brackets-round:before {
+.ph-bold.ph-brackets-square:before {
+.ph-bold.ph-brain:before {
+.ph-bold.ph-brandy:before {
+.ph-bold.ph-bread:before {
+.ph-bold.ph-bridge:before {
+.ph-bold.ph-briefcase:before {
+.ph-bold.ph-briefcase-metal:before {
+.ph-bold.ph-broadcast:before {
+.ph-bold.ph-broom:before {
+.ph-bold.ph-browser:before {
+.ph-bold.ph-browsers:before {
+.ph-bold.ph-bug:before {
+.ph-bold.ph-bug-beetle:before {
+.ph-bold.ph-bug-droid:before {
+.ph-bold.ph-building:before {
+.ph-bold.ph-building-apartment:before {
+.ph-bold.ph-building-office:before {
+.ph-bold.ph-buildings:before {
+.ph-bold.ph-bulldozer:before {
+.ph-bold.ph-bus:before {
+.ph-bold.ph-butterfly:before {
+.ph-bold.ph-cable-car:before {
+.ph-bold.ph-cactus:before {
+.ph-bold.ph-cake:before {
+.ph-bold.ph-calculator:before {
+.ph-bold.ph-calendar:before {
+.ph-bold.ph-calendar-blank:before {
+.ph-bold.ph-calendar-check:before {
+.ph-bold.ph-calendar-dot:before {
+.ph-bold.ph-calendar-dots:before {
+.ph-bold.ph-calendar-heart:before {
+.ph-bold.ph-calendar-minus:before {
+.ph-bold.ph-calendar-plus:before {
+.ph-bold.ph-calendar-slash:before {
+.ph-bold.ph-calendar-star:before {
+.ph-bold.ph-calendar-x:before {
+.ph-bold.ph-call-bell:before {
+.ph-bold.ph-camera:before {
+.ph-bold.ph-camera-plus:before {
+.ph-bold.ph-camera-rotate:before {
+.ph-bold.ph-camera-slash:before {
+.ph-bold.ph-campfire:before {
+.ph-bold.ph-car:before {
+.ph-bold.ph-car-battery:before {
+.ph-bold.ph-car-profile:before {
+.ph-bold.ph-car-simple:before {
+.ph-bold.ph-cardholder:before {
+.ph-bold.ph-cards:before {
+.ph-bold.ph-cards-three:before {
+.ph-bold.ph-caret-circle-double-down:before {
+.ph-bold.ph-caret-circle-double-left:before {
+.ph-bold.ph-caret-circle-double-right:before {
+.ph-bold.ph-caret-circle-double-up:before {
+.ph-bold.ph-caret-circle-down:before {
+.ph-bold.ph-caret-circle-left:before {
+.ph-bold.ph-caret-circle-right:before {
+.ph-bold.ph-caret-circle-up:before {
+.ph-bold.ph-caret-circle-up-down:before {
+.ph-bold.ph-caret-double-down:before {
+.ph-bold.ph-caret-double-left:before {
+.ph-bold.ph-caret-double-right:before {
+.ph-bold.ph-caret-double-up:before {
+.ph-bold.ph-caret-down:before {
+.ph-bold.ph-caret-left:before {
+.ph-bold.ph-caret-line-down:before {
+.ph-bold.ph-caret-line-left:before {
+.ph-bold.ph-caret-line-right:before {
+.ph-bold.ph-caret-line-up:before {
+.ph-bold.ph-caret-right:before {
+.ph-bold.ph-caret-up:before {
+.ph-bold.ph-caret-up-down:before {
+.ph-bold.ph-carrot:before {
+.ph-bold.ph-cash-register:before {
+.ph-bold.ph-cassette-tape:before {
+.ph-bold.ph-castle-turret:before {
+.ph-bold.ph-cat:before {
+.ph-bold.ph-cell-signal-full:before {
+.ph-bold.ph-cell-signal-high:before {
+.ph-bold.ph-cell-signal-low:before {
+.ph-bold.ph-cell-signal-medium:before {
+.ph-bold.ph-cell-signal-none:before {
+.ph-bold.ph-cell-signal-slash:before {
+.ph-bold.ph-cell-signal-x:before {
+.ph-bold.ph-cell-tower:before {
+.ph-bold.ph-certificate:before {
+.ph-bold.ph-chair:before {
+.ph-bold.ph-chalkboard:before {
+.ph-bold.ph-chalkboard-simple:before {
+.ph-bold.ph-chalkboard-teacher:before {
+.ph-bold.ph-champagne:before {
+.ph-bold.ph-charging-station:before {
+.ph-bold.ph-chart-bar:before {
+.ph-bold.ph-chart-bar-horizontal:before {
+.ph-bold.ph-chart-donut:before {
+.ph-bold.ph-chart-line:before {
+.ph-bold.ph-chart-line-down:before {
+.ph-bold.ph-chart-line-up:before {
+.ph-bold.ph-chart-pie:before {
+.ph-bold.ph-chart-pie-slice:before {
+.ph-bold.ph-chart-polar:before {
+.ph-bold.ph-chart-scatter:before {
+.ph-bold.ph-chat:before {
+.ph-bold.ph-chat-centered:before {
+.ph-bold.ph-chat-centered-dots:before {
+.ph-bold.ph-chat-centered-slash:before {
+.ph-bold.ph-chat-centered-text:before {
+.ph-bold.ph-chat-circle:before {
+.ph-bold.ph-chat-circle-dots:before {
+.ph-bold.ph-chat-circle-slash:before {
+.ph-bold.ph-chat-circle-text:before {
+.ph-bold.ph-chat-dots:before {
+.ph-bold.ph-chat-slash:before {
+.ph-bold.ph-chat-teardrop:before {
+.ph-bold.ph-chat-teardrop-dots:before {
+.ph-bold.ph-chat-teardrop-slash:before {
+.ph-bold.ph-chat-teardrop-text:before {
+.ph-bold.ph-chat-text:before {
+.ph-bold.ph-chats:before {
+.ph-bold.ph-chats-circle:before {
+.ph-bold.ph-chats-teardrop:before {
+.ph-bold.ph-check:before {
+.ph-bold.ph-check-circle:before {
+.ph-bold.ph-check-fat:before {
+.ph-bold.ph-check-square:before {
+.ph-bold.ph-check-square-offset:before {
+.ph-bold.ph-checkerboard:before {
+.ph-bold.ph-checks:before {
+.ph-bold.ph-cheers:before {
+.ph-bold.ph-cheese:before {
+.ph-bold.ph-chef-hat:before {
+.ph-bold.ph-cherries:before {
+.ph-bold.ph-church:before {
+.ph-bold.ph-cigarette:before {
+.ph-bold.ph-cigarette-slash:before {
+.ph-bold.ph-circle:before {
+.ph-bold.ph-circle-dashed:before {
+.ph-bold.ph-circle-half:before {
+.ph-bold.ph-circle-half-tilt:before {
+.ph-bold.ph-circle-notch:before {
+.ph-bold.ph-circles-four:before {
+.ph-bold.ph-circles-three:before {
+.ph-bold.ph-circles-three-plus:before {
+.ph-bold.ph-circuitry:before {
+.ph-bold.ph-city:before {
+.ph-bold.ph-clipboard:before {
+.ph-bold.ph-clipboard-text:before {
+.ph-bold.ph-clock:before {
+.ph-bold.ph-clock-afternoon:before {
+.ph-bold.ph-clock-clockwise:before {
+.ph-bold.ph-clock-countdown:before {
+.ph-bold.ph-clock-counter-clockwise:before {
+.ph-bold.ph-clock-user:before {
+.ph-bold.ph-closed-captioning:before {
+.ph-bold.ph-cloud:before {
+.ph-bold.ph-cloud-arrow-down:before {
+.ph-bold.ph-cloud-arrow-up:before {
+.ph-bold.ph-cloud-check:before {
+.ph-bold.ph-cloud-fog:before {
+.ph-bold.ph-cloud-lightning:before {
+.ph-bold.ph-cloud-moon:before {
+.ph-bold.ph-cloud-rain:before {
+.ph-bold.ph-cloud-slash:before {
+.ph-bold.ph-cloud-snow:before {
+.ph-bold.ph-cloud-sun:before {
+.ph-bold.ph-cloud-warning:before {
+.ph-bold.ph-cloud-x:before {
+.ph-bold.ph-clover:before {
+.ph-bold.ph-club:before {
+.ph-bold.ph-coat-hanger:before {
+.ph-bold.ph-coda-logo:before {
+.ph-bold.ph-code:before {
+.ph-bold.ph-code-block:before {
+.ph-bold.ph-code-simple:before {
+.ph-bold.ph-codepen-logo:before {
+.ph-bold.ph-codesandbox-logo:before {
+.ph-bold.ph-coffee:before {
+.ph-bold.ph-coffee-bean:before {
+.ph-bold.ph-coin:before {
+.ph-bold.ph-coin-vertical:before {
+.ph-bold.ph-coins:before {
+.ph-bold.ph-columns:before {
+.ph-bold.ph-columns-plus-left:before {
+.ph-bold.ph-columns-plus-right:before {
+.ph-bold.ph-command:before {
+.ph-bold.ph-compass:before {
+.ph-bold.ph-compass-rose:before {
+.ph-bold.ph-compass-tool:before {
+.ph-bold.ph-computer-tower:before {
+.ph-bold.ph-confetti:before {
+.ph-bold.ph-contactless-payment:before {
+.ph-bold.ph-control:before {
+.ph-bold.ph-cookie:before {
+.ph-bold.ph-cooking-pot:before {
+.ph-bold.ph-copy:before {
+.ph-bold.ph-copy-simple:before {
+.ph-bold.ph-copyleft:before {
+.ph-bold.ph-copyright:before {
+.ph-bold.ph-corners-in:before {
+.ph-bold.ph-corners-out:before {
+.ph-bold.ph-couch:before {
+.ph-bold.ph-court-basketball:before {
+.ph-bold.ph-cow:before {
+.ph-bold.ph-cowboy-hat:before {
+.ph-bold.ph-cpu:before {
+.ph-bold.ph-crane:before {
+.ph-bold.ph-crane-tower:before {
+.ph-bold.ph-credit-card:before {
+.ph-bold.ph-cricket:before {
+.ph-bold.ph-crop:before {
+.ph-bold.ph-cross:before {
+.ph-bold.ph-crosshair:before {
+.ph-bold.ph-crosshair-simple:before {
+.ph-bold.ph-crown:before {
+.ph-bold.ph-crown-cross:before {
+.ph-bold.ph-crown-simple:before {
+.ph-bold.ph-cube:before {
+.ph-bold.ph-cube-focus:before {
+.ph-bold.ph-cube-transparent:before {
+.ph-bold.ph-currency-btc:before {
+.ph-bold.ph-currency-circle-dollar:before {
+.ph-bold.ph-currency-cny:before {
+.ph-bold.ph-currency-dollar:before {
+.ph-bold.ph-currency-dollar-simple:before {
+.ph-bold.ph-currency-eth:before {
+.ph-bold.ph-currency-eur:before {
+.ph-bold.ph-currency-gbp:before {
+.ph-bold.ph-currency-inr:before {
+.ph-bold.ph-currency-jpy:before {
+.ph-bold.ph-currency-krw:before {
+.ph-bold.ph-currency-kzt:before {
+.ph-bold.ph-currency-ngn:before {
+.ph-bold.ph-currency-rub:before {
+.ph-bold.ph-cursor:before {
+.ph-bold.ph-cursor-click:before {
+.ph-bold.ph-cursor-text:before {
+.ph-bold.ph-cylinder:before {
+.ph-bold.ph-database:before {
+.ph-bold.ph-desk:before {
+.ph-bold.ph-desktop:before {
+.ph-bold.ph-desktop-tower:before {
+.ph-bold.ph-detective:before {
+.ph-bold.ph-dev-to-logo:before {
+.ph-bold.ph-device-mobile:before {
+.ph-bold.ph-device-mobile-camera:before {
+.ph-bold.ph-device-mobile-slash:before {
+.ph-bold.ph-device-mobile-speaker:before {
+.ph-bold.ph-device-rotate:before {
+.ph-bold.ph-device-tablet:before {
+.ph-bold.ph-device-tablet-camera:before {
+.ph-bold.ph-device-tablet-speaker:before {
+.ph-bold.ph-devices:before {
+.ph-bold.ph-diamond:before {
+.ph-bold.ph-diamonds-four:before {
+.ph-bold.ph-dice-five:before {
+.ph-bold.ph-dice-four:before {
+.ph-bold.ph-dice-one:before {
+.ph-bold.ph-dice-six:before {
+.ph-bold.ph-dice-three:before {
+.ph-bold.ph-dice-two:before {
+.ph-bold.ph-disc:before {
+.ph-bold.ph-disco-ball:before {
+.ph-bold.ph-discord-logo:before {
+.ph-bold.ph-divide:before {
+.ph-bold.ph-dna:before {
+.ph-bold.ph-dog:before {
+.ph-bold.ph-door:before {
+.ph-bold.ph-door-open:before {
+.ph-bold.ph-dot:before {
+.ph-bold.ph-dot-outline:before {
+.ph-bold.ph-dots-nine:before {
+.ph-bold.ph-dots-six:before {
+.ph-bold.ph-dots-six-vertical:before {
+.ph-bold.ph-dots-three:before {
+.ph-bold.ph-dots-three-circle:before {
+.ph-bold.ph-dots-three-circle-vertical:before {
+.ph-bold.ph-dots-three-outline:before {
+.ph-bold.ph-dots-three-outline-vertical:before {
+.ph-bold.ph-dots-three-vertical:before {
+.ph-bold.ph-download:before {
+.ph-bold.ph-download-simple:before {
+.ph-bold.ph-dress:before {
+.ph-bold.ph-dresser:before {
+.ph-bold.ph-dribbble-logo:before {
+.ph-bold.ph-drone:before {
+.ph-bold.ph-drop:before {
+.ph-bold.ph-drop-half:before {
+.ph-bold.ph-drop-half-bottom:before {
+.ph-bold.ph-drop-simple:before {
+.ph-bold.ph-drop-slash:before {
+.ph-bold.ph-dropbox-logo:before {
+.ph-bold.ph-ear:before {
+.ph-bold.ph-ear-slash:before {
+.ph-bold.ph-egg:before {
+.ph-bold.ph-egg-crack:before {
+.ph-bold.ph-eject:before {
+.ph-bold.ph-eject-simple:before {
+.ph-bold.ph-elevator:before {
+.ph-bold.ph-empty:before {
+.ph-bold.ph-engine:before {
+.ph-bold.ph-envelope:before {
+.ph-bold.ph-envelope-open:before {
+.ph-bold.ph-envelope-simple:before {
+.ph-bold.ph-envelope-simple-open:before {
+.ph-bold.ph-equalizer:before {
+.ph-bold.ph-equals:before {
+.ph-bold.ph-eraser:before {
+.ph-bold.ph-escalator-down:before {
+.ph-bold.ph-escalator-up:before {
+.ph-bold.ph-exam:before {
+.ph-bold.ph-exclamation-mark:before {
+.ph-bold.ph-exclude:before {
+.ph-bold.ph-exclude-square:before {
+.ph-bold.ph-export:before {
+.ph-bold.ph-eye:before {
+.ph-bold.ph-eye-closed:before {
+.ph-bold.ph-eye-slash:before {
+.ph-bold.ph-eyedropper:before {
+.ph-bold.ph-eyedropper-sample:before {
+.ph-bold.ph-eyeglasses:before {
+.ph-bold.ph-eyes:before {
+.ph-bold.ph-face-mask:before {
+.ph-bold.ph-facebook-logo:before {
+.ph-bold.ph-factory:before {
+.ph-bold.ph-faders:before {
+.ph-bold.ph-faders-horizontal:before {
+.ph-bold.ph-fallout-shelter:before {
+.ph-bold.ph-fan:before {
+.ph-bold.ph-farm:before {
+.ph-bold.ph-fast-forward:before {
+.ph-bold.ph-fast-forward-circle:before {
+.ph-bold.ph-feather:before {
+.ph-bold.ph-fediverse-logo:before {
+.ph-bold.ph-figma-logo:before {
+.ph-bold.ph-file:before {
+.ph-bold.ph-file-archive:before {
+.ph-bold.ph-file-arrow-down:before {
+.ph-bold.ph-file-arrow-up:before {
+.ph-bold.ph-file-audio:before {
+.ph-bold.ph-file-c:before {
+.ph-bold.ph-file-c-sharp:before {
+.ph-bold.ph-file-cloud:before {
+.ph-bold.ph-file-code:before {
+.ph-bold.ph-file-cpp:before {
+.ph-bold.ph-file-css:before {
+.ph-bold.ph-file-csv:before {
+.ph-bold.ph-file-dashed:before {
+.ph-bold.ph-file-dotted:before {
+.ph-bold.ph-file-doc:before {
+.ph-bold.ph-file-html:before {
+.ph-bold.ph-file-image:before {
+.ph-bold.ph-file-ini:before {
+.ph-bold.ph-file-jpg:before {
+.ph-bold.ph-file-js:before {
+.ph-bold.ph-file-jsx:before {
+.ph-bold.ph-file-lock:before {
+.ph-bold.ph-file-magnifying-glass:before {
+.ph-bold.ph-file-search:before {
+.ph-bold.ph-file-md:before {
+.ph-bold.ph-file-minus:before {
+.ph-bold.ph-file-pdf:before {
+.ph-bold.ph-file-plus:before {
+.ph-bold.ph-file-png:before {
+.ph-bold.ph-file-ppt:before {
+.ph-bold.ph-file-py:before {
+.ph-bold.ph-file-rs:before {
+.ph-bold.ph-file-sql:before {
+.ph-bold.ph-file-svg:before {
+.ph-bold.ph-file-text:before {
+.ph-bold.ph-file-ts:before {
+.ph-bold.ph-file-tsx:before {
+.ph-bold.ph-file-txt:before {
+.ph-bold.ph-file-video:before {
+.ph-bold.ph-file-vue:before {
+.ph-bold.ph-file-x:before {
+.ph-bold.ph-file-xls:before {
+.ph-bold.ph-file-zip:before {
+.ph-bold.ph-files:before {
+.ph-bold.ph-film-reel:before {
+.ph-bold.ph-film-script:before {
+.ph-bold.ph-film-slate:before {
+.ph-bold.ph-film-strip:before {
+.ph-bold.ph-fingerprint:before {
+.ph-bold.ph-fingerprint-simple:before {
+.ph-bold.ph-finn-the-human:before {
+.ph-bold.ph-fire:before {
+.ph-bold.ph-fire-extinguisher:before {
+.ph-bold.ph-fire-simple:before {
+.ph-bold.ph-fire-truck:before {
+.ph-bold.ph-first-aid:before {
+.ph-bold.ph-first-aid-kit:before {
+.ph-bold.ph-fish:before {
+.ph-bold.ph-fish-simple:before {
+.ph-bold.ph-flag:before {
+.ph-bold.ph-flag-banner:before {
+.ph-bold.ph-flag-banner-fold:before {
+.ph-bold.ph-flag-checkered:before {
+.ph-bold.ph-flag-pennant:before {
+.ph-bold.ph-flame:before {
+.ph-bold.ph-flashlight:before {
+.ph-bold.ph-flask:before {
+.ph-bold.ph-flip-horizontal:before {
+.ph-bold.ph-flip-vertical:before {
+.ph-bold.ph-floppy-disk:before {
+.ph-bold.ph-floppy-disk-back:before {
+.ph-bold.ph-flow-arrow:before {
+.ph-bold.ph-flower:before {
+.ph-bold.ph-flower-lotus:before {
+.ph-bold.ph-flower-tulip:before {
+.ph-bold.ph-flying-saucer:before {
+.ph-bold.ph-folder:before {
+.ph-bold.ph-folder-notch:before {
+.ph-bold.ph-folder-dashed:before {
+.ph-bold.ph-folder-dotted:before {
+.ph-bold.ph-folder-lock:before {
+.ph-bold.ph-folder-minus:before {
+.ph-bold.ph-folder-notch-minus:before {
+.ph-bold.ph-folder-open:before {
+.ph-bold.ph-folder-notch-open:before {
+.ph-bold.ph-folder-plus:before {
+.ph-bold.ph-folder-notch-plus:before {
+.ph-bold.ph-folder-simple:before {
+.ph-bold.ph-folder-simple-dashed:before {
+.ph-bold.ph-folder-simple-dotted:before {
+.ph-bold.ph-folder-simple-lock:before {
+.ph-bold.ph-folder-simple-minus:before {
+.ph-bold.ph-folder-simple-plus:before {
+.ph-bold.ph-folder-simple-star:before {
+.ph-bold.ph-folder-simple-user:before {
+.ph-bold.ph-folder-star:before {
+.ph-bold.ph-folder-user:before {
+.ph-bold.ph-folders:before {
+.ph-bold.ph-football:before {
+.ph-bold.ph-football-helmet:before {
+.ph-bold.ph-footprints:before {
+.ph-bold.ph-fork-knife:before {
+.ph-bold.ph-four-k:before {
+.ph-bold.ph-frame-corners:before {
+.ph-bold.ph-framer-logo:before {
+.ph-bold.ph-function:before {
+.ph-bold.ph-funnel:before {
+.ph-bold.ph-funnel-simple:before {
+.ph-bold.ph-funnel-simple-x:before {
+.ph-bold.ph-funnel-x:before {
+.ph-bold.ph-game-controller:before {
+.ph-bold.ph-garage:before {
+.ph-bold.ph-gas-can:before {
+.ph-bold.ph-gas-pump:before {
+.ph-bold.ph-gauge:before {
+.ph-bold.ph-gavel:before {
+.ph-bold.ph-gear:before {
+.ph-bold.ph-gear-fine:before {
+.ph-bold.ph-gear-six:before {
+.ph-bold.ph-gender-female:before {
+.ph-bold.ph-gender-intersex:before {
+.ph-bold.ph-gender-male:before {
+.ph-bold.ph-gender-neuter:before {
+.ph-bold.ph-gender-nonbinary:before {
+.ph-bold.ph-gender-transgender:before {
+.ph-bold.ph-ghost:before {
+.ph-bold.ph-gif:before {
+.ph-bold.ph-gift:before {
+.ph-bold.ph-git-branch:before {
+.ph-bold.ph-git-commit:before {
+.ph-bold.ph-git-diff:before {
+.ph-bold.ph-git-fork:before {
+.ph-bold.ph-git-merge:before {
+.ph-bold.ph-git-pull-request:before {
+.ph-bold.ph-github-logo:before {
+.ph-bold.ph-gitlab-logo:before {
+.ph-bold.ph-gitlab-logo-simple:before {
+.ph-bold.ph-globe:before {
+.ph-bold.ph-globe-hemisphere-east:before {
+.ph-bold.ph-globe-hemisphere-west:before {
+.ph-bold.ph-globe-simple:before {
+.ph-bold.ph-globe-simple-x:before {
+.ph-bold.ph-globe-stand:before {
+.ph-bold.ph-globe-x:before {
+.ph-bold.ph-goggles:before {
+.ph-bold.ph-golf:before {
+.ph-bold.ph-goodreads-logo:before {
+.ph-bold.ph-google-cardboard-logo:before {
+.ph-bold.ph-google-chrome-logo:before {
+.ph-bold.ph-google-drive-logo:before {
+.ph-bold.ph-google-logo:before {
+.ph-bold.ph-google-photos-logo:before {
+.ph-bold.ph-google-play-logo:before {
+.ph-bold.ph-google-podcasts-logo:before {
+.ph-bold.ph-gps:before {
+.ph-bold.ph-gps-fix:before {
+.ph-bold.ph-gps-slash:before {
+.ph-bold.ph-gradient:before {
+.ph-bold.ph-graduation-cap:before {
+.ph-bold.ph-grains:before {
+.ph-bold.ph-grains-slash:before {
+.ph-bold.ph-graph:before {
+.ph-bold.ph-graphics-card:before {
+.ph-bold.ph-greater-than:before {
+.ph-bold.ph-greater-than-or-equal:before {
+.ph-bold.ph-grid-four:before {
+.ph-bold.ph-grid-nine:before {
+.ph-bold.ph-guitar:before {
+.ph-bold.ph-hair-dryer:before {
+.ph-bold.ph-hamburger:before {
+.ph-bold.ph-hammer:before {
+.ph-bold.ph-hand:before {
+.ph-bold.ph-hand-arrow-down:before {
+.ph-bold.ph-hand-arrow-up:before {
+.ph-bold.ph-hand-coins:before {
+.ph-bold.ph-hand-deposit:before {
+.ph-bold.ph-hand-eye:before {
+.ph-bold.ph-hand-fist:before {
+.ph-bold.ph-hand-grabbing:before {
+.ph-bold.ph-hand-heart:before {
+.ph-bold.ph-hand-palm:before {
+.ph-bold.ph-hand-peace:before {
+.ph-bold.ph-hand-pointing:before {
+.ph-bold.ph-hand-soap:before {
+.ph-bold.ph-hand-swipe-left:before {
+.ph-bold.ph-hand-swipe-right:before {
+.ph-bold.ph-hand-tap:before {
+.ph-bold.ph-hand-waving:before {
+.ph-bold.ph-hand-withdraw:before {
+.ph-bold.ph-handbag:before {
+.ph-bold.ph-handbag-simple:before {
+.ph-bold.ph-hands-clapping:before {
+.ph-bold.ph-hands-praying:before {
+.ph-bold.ph-handshake:before {
+.ph-bold.ph-hard-drive:before {
+.ph-bold.ph-hard-drives:before {
+.ph-bold.ph-hard-hat:before {
+.ph-bold.ph-hash:before {
+.ph-bold.ph-hash-straight:before {
+.ph-bold.ph-head-circuit:before {
+.ph-bold.ph-headlights:before {
+.ph-bold.ph-headphones:before {
+.ph-bold.ph-headset:before {
+.ph-bold.ph-heart:before {
+.ph-bold.ph-heart-break:before {
+.ph-bold.ph-heart-half:before {
+.ph-bold.ph-heart-straight:before {
+.ph-bold.ph-heart-straight-break:before {
+.ph-bold.ph-heartbeat:before {
+.ph-bold.ph-hexagon:before {
+.ph-bold.ph-high-definition:before {
+.ph-bold.ph-high-heel:before {
+.ph-bold.ph-highlighter:before {
+.ph-bold.ph-highlighter-circle:before {
+.ph-bold.ph-hockey:before {
+.ph-bold.ph-hoodie:before {
+.ph-bold.ph-horse:before {
+.ph-bold.ph-hospital:before {
+.ph-bold.ph-hourglass:before {
+.ph-bold.ph-hourglass-high:before {
+.ph-bold.ph-hourglass-low:before {
+.ph-bold.ph-hourglass-medium:before {
+.ph-bold.ph-hourglass-simple:before {
+.ph-bold.ph-hourglass-simple-high:before {
+.ph-bold.ph-hourglass-simple-low:before {
+.ph-bold.ph-hourglass-simple-medium:before {
+.ph-bold.ph-house:before {
+.ph-bold.ph-house-line:before {
+.ph-bold.ph-house-simple:before {
+.ph-bold.ph-hurricane:before {
+.ph-bold.ph-ice-cream:before {
+.ph-bold.ph-identification-badge:before {
+.ph-bold.ph-identification-card:before {
+.ph-bold.ph-image:before {
+.ph-bold.ph-image-broken:before {
+.ph-bold.ph-image-square:before {
+.ph-bold.ph-images:before {
+.ph-bold.ph-images-square:before {
+.ph-bold.ph-infinity:before {
+.ph-bold.ph-lemniscate:before {
+.ph-bold.ph-info:before {
+.ph-bold.ph-instagram-logo:before {
+.ph-bold.ph-intersect:before {
+.ph-bold.ph-intersect-square:before {
+.ph-bold.ph-intersect-three:before {
+.ph-bold.ph-intersection:before {
+.ph-bold.ph-invoice:before {
+.ph-bold.ph-island:before {
+.ph-bold.ph-jar:before {
+.ph-bold.ph-jar-label:before {
+.ph-bold.ph-jeep:before {
+.ph-bold.ph-joystick:before {
+.ph-bold.ph-kanban:before {
+.ph-bold.ph-key:before {
+.ph-bold.ph-key-return:before {
+.ph-bold.ph-keyboard:before {
+.ph-bold.ph-keyhole:before {
+.ph-bold.ph-knife:before {
+.ph-bold.ph-ladder:before {
+.ph-bold.ph-ladder-simple:before {
+.ph-bold.ph-lamp:before {
+.ph-bold.ph-lamp-pendant:before {
+.ph-bold.ph-laptop:before {
+.ph-bold.ph-lasso:before {
+.ph-bold.ph-lastfm-logo:before {
+.ph-bold.ph-layout:before {
+.ph-bold.ph-leaf:before {
+.ph-bold.ph-lectern:before {
+.ph-bold.ph-lego:before {
+.ph-bold.ph-lego-smiley:before {
+.ph-bold.ph-less-than:before {
+.ph-bold.ph-less-than-or-equal:before {
+.ph-bold.ph-letter-circle-h:before {
+.ph-bold.ph-letter-circle-p:before {
+.ph-bold.ph-letter-circle-v:before {
+.ph-bold.ph-lifebuoy:before {
+.ph-bold.ph-lightbulb:before {
+.ph-bold.ph-lightbulb-filament:before {
+.ph-bold.ph-lighthouse:before {
+.ph-bold.ph-lightning:before {
+.ph-bold.ph-lightning-a:before {
+.ph-bold.ph-lightning-slash:before {
+.ph-bold.ph-line-segment:before {
+.ph-bold.ph-line-segments:before {
+.ph-bold.ph-line-vertical:before {
+.ph-bold.ph-link:before {
+.ph-bold.ph-link-break:before {
+.ph-bold.ph-link-simple:before {
+.ph-bold.ph-link-simple-break:before {
+.ph-bold.ph-link-simple-horizontal:before {
+.ph-bold.ph-link-simple-horizontal-break:before {
+.ph-bold.ph-linkedin-logo:before {
+.ph-bold.ph-linktree-logo:before {
+.ph-bold.ph-linux-logo:before {
+.ph-bold.ph-list:before {
+.ph-bold.ph-list-bullets:before {
+.ph-bold.ph-list-checks:before {
+.ph-bold.ph-list-dashes:before {
+.ph-bold.ph-list-heart:before {
+.ph-bold.ph-list-magnifying-glass:before {
+.ph-bold.ph-list-numbers:before {
+.ph-bold.ph-list-plus:before {
+.ph-bold.ph-list-star:before {
+.ph-bold.ph-lock:before {
+.ph-bold.ph-lock-key:before {
+.ph-bold.ph-lock-key-open:before {
+.ph-bold.ph-lock-laminated:before {
+.ph-bold.ph-lock-laminated-open:before {
+.ph-bold.ph-lock-open:before {
+.ph-bold.ph-lock-simple:before {
+.ph-bold.ph-lock-simple-open:before {
+.ph-bold.ph-lockers:before {
+.ph-bold.ph-log:before {
+.ph-bold.ph-magic-wand:before {
+.ph-bold.ph-magnet:before {
+.ph-bold.ph-magnet-straight:before {
+.ph-bold.ph-magnifying-glass:before {
+.ph-bold.ph-magnifying-glass-minus:before {
+.ph-bold.ph-magnifying-glass-plus:before {
+.ph-bold.ph-mailbox:before {
+.ph-bold.ph-map-pin:before {
+.ph-bold.ph-map-pin-area:before {
+.ph-bold.ph-map-pin-line:before {
+.ph-bold.ph-map-pin-plus:before {
+.ph-bold.ph-map-pin-simple:before {
+.ph-bold.ph-map-pin-simple-area:before {
+.ph-bold.ph-map-pin-simple-line:before {
+.ph-bold.ph-map-trifold:before {
+.ph-bold.ph-markdown-logo:before {
+.ph-bold.ph-marker-circle:before {
+.ph-bold.ph-martini:before {
+.ph-bold.ph-mask-happy:before {
+.ph-bold.ph-mask-sad:before {
+.ph-bold.ph-mastodon-logo:before {
+.ph-bold.ph-math-operations:before {
+.ph-bold.ph-matrix-logo:before {
+.ph-bold.ph-medal:before {
+.ph-bold.ph-medal-military:before {
+.ph-bold.ph-medium-logo:before {
+.ph-bold.ph-megaphone:before {
+.ph-bold.ph-megaphone-simple:before {
+.ph-bold.ph-member-of:before {
+.ph-bold.ph-memory:before {
+.ph-bold.ph-messenger-logo:before {
+.ph-bold.ph-meta-logo:before {
+.ph-bold.ph-meteor:before {
+.ph-bold.ph-metronome:before {
+.ph-bold.ph-microphone:before {
+.ph-bold.ph-microphone-slash:before {
+.ph-bold.ph-microphone-stage:before {
+.ph-bold.ph-microscope:before {
+.ph-bold.ph-microsoft-excel-logo:before {
+.ph-bold.ph-microsoft-outlook-logo:before {
+.ph-bold.ph-microsoft-powerpoint-logo:before {
+.ph-bold.ph-microsoft-teams-logo:before {
+.ph-bold.ph-microsoft-word-logo:before {
+.ph-bold.ph-minus:before {
+.ph-bold.ph-minus-circle:before {
+.ph-bold.ph-minus-square:before {
+.ph-bold.ph-money:before {
+.ph-bold.ph-money-wavy:before {
+.ph-bold.ph-monitor:before {
+.ph-bold.ph-monitor-arrow-up:before {
+.ph-bold.ph-monitor-play:before {
+.ph-bold.ph-moon:before {
+.ph-bold.ph-moon-stars:before {
+.ph-bold.ph-moped:before {
+.ph-bold.ph-moped-front:before {
+.ph-bold.ph-mosque:before {
+.ph-bold.ph-motorcycle:before {
+.ph-bold.ph-mountains:before {
+.ph-bold.ph-mouse:before {
+.ph-bold.ph-mouse-left-click:before {
+.ph-bold.ph-mouse-middle-click:before {
+.ph-bold.ph-mouse-right-click:before {
+.ph-bold.ph-mouse-scroll:before {
+.ph-bold.ph-mouse-simple:before {
+.ph-bold.ph-music-note:before {
+.ph-bold.ph-music-note-simple:before {
+.ph-bold.ph-music-notes:before {
+.ph-bold.ph-music-notes-minus:before {
+.ph-bold.ph-music-notes-plus:before {
+.ph-bold.ph-music-notes-simple:before {
+.ph-bold.ph-navigation-arrow:before {
+.ph-bold.ph-needle:before {
+.ph-bold.ph-network:before {
+.ph-bold.ph-network-slash:before {
+.ph-bold.ph-network-x:before {
+.ph-bold.ph-newspaper:before {
+.ph-bold.ph-newspaper-clipping:before {
+.ph-bold.ph-not-equals:before {
+.ph-bold.ph-not-member-of:before {
+.ph-bold.ph-not-subset-of:before {
+.ph-bold.ph-not-superset-of:before {
+.ph-bold.ph-notches:before {
+.ph-bold.ph-note:before {
+.ph-bold.ph-note-blank:before {
+.ph-bold.ph-note-pencil:before {
+.ph-bold.ph-notebook:before {
+.ph-bold.ph-notepad:before {
+.ph-bold.ph-notification:before {
+.ph-bold.ph-notion-logo:before {
+.ph-bold.ph-nuclear-plant:before {
+.ph-bold.ph-number-circle-eight:before {
+.ph-bold.ph-number-circle-five:before {
+.ph-bold.ph-number-circle-four:before {
+.ph-bold.ph-number-circle-nine:before {
+.ph-bold.ph-number-circle-one:before {
+.ph-bold.ph-number-circle-seven:before {
+.ph-bold.ph-number-circle-six:before {
+.ph-bold.ph-number-circle-three:before {
+.ph-bold.ph-number-circle-two:before {
+.ph-bold.ph-number-circle-zero:before {
+.ph-bold.ph-number-eight:before {
+.ph-bold.ph-number-five:before {
+.ph-bold.ph-number-four:before {
+.ph-bold.ph-number-nine:before {
+.ph-bold.ph-number-one:before {
+.ph-bold.ph-number-seven:before {
+.ph-bold.ph-number-six:before {
+.ph-bold.ph-number-square-eight:before {
+.ph-bold.ph-number-square-five:before {
+.ph-bold.ph-number-square-four:before {
+.ph-bold.ph-number-square-nine:before {
+.ph-bold.ph-number-square-one:before {
+.ph-bold.ph-number-square-seven:before {
+.ph-bold.ph-number-square-six:before {
+.ph-bold.ph-number-square-three:before {
+.ph-bold.ph-number-square-two:before {
+.ph-bold.ph-number-square-zero:before {
+.ph-bold.ph-number-three:before {
+.ph-bold.ph-number-two:before {
+.ph-bold.ph-number-zero:before {
+.ph-bold.ph-numpad:before {
+.ph-bold.ph-nut:before {
+.ph-bold.ph-ny-times-logo:before {
+.ph-bold.ph-octagon:before {
+.ph-bold.ph-office-chair:before {
+.ph-bold.ph-onigiri:before {
+.ph-bold.ph-open-ai-logo:before {
+.ph-bold.ph-option:before {
+.ph-bold.ph-orange:before {
+.ph-bold.ph-orange-slice:before {
+.ph-bold.ph-oven:before {
+.ph-bold.ph-package:before {
+.ph-bold.ph-paint-brush:before {
+.ph-bold.ph-paint-brush-broad:before {
+.ph-bold.ph-paint-brush-household:before {
+.ph-bold.ph-paint-bucket:before {
+.ph-bold.ph-paint-roller:before {
+.ph-bold.ph-palette:before {
+.ph-bold.ph-panorama:before {
+.ph-bold.ph-pants:before {
+.ph-bold.ph-paper-plane:before {
+.ph-bold.ph-paper-plane-right:before {
+.ph-bold.ph-paper-plane-tilt:before {
+.ph-bold.ph-paperclip:before {
+.ph-bold.ph-paperclip-horizontal:before {
+.ph-bold.ph-parachute:before {
+.ph-bold.ph-paragraph:before {
+.ph-bold.ph-parallelogram:before {
+.ph-bold.ph-park:before {
+.ph-bold.ph-password:before {
+.ph-bold.ph-path:before {
+.ph-bold.ph-patreon-logo:before {
+.ph-bold.ph-pause:before {
+.ph-bold.ph-pause-circle:before {
+.ph-bold.ph-paw-print:before {
+.ph-bold.ph-paypal-logo:before {
+.ph-bold.ph-peace:before {
+.ph-bold.ph-pen:before {
+.ph-bold.ph-pen-nib:before {
+.ph-bold.ph-pen-nib-straight:before {
+.ph-bold.ph-pencil:before {
+.ph-bold.ph-pencil-circle:before {
+.ph-bold.ph-pencil-line:before {
+.ph-bold.ph-pencil-ruler:before {
+.ph-bold.ph-pencil-simple:before {
+.ph-bold.ph-pencil-simple-line:before {
+.ph-bold.ph-pencil-simple-slash:before {
+.ph-bold.ph-pencil-slash:before {
+.ph-bold.ph-pentagon:before {
+.ph-bold.ph-pentagram:before {
+.ph-bold.ph-pepper:before {
+.ph-bold.ph-percent:before {
+.ph-bold.ph-person:before {
+.ph-bold.ph-person-arms-spread:before {
+.ph-bold.ph-person-simple:before {
+.ph-bold.ph-person-simple-bike:before {
+.ph-bold.ph-person-simple-circle:before {
+.ph-bold.ph-person-simple-hike:before {
+.ph-bold.ph-person-simple-run:before {
+.ph-bold.ph-person-simple-ski:before {
+.ph-bold.ph-person-simple-snowboard:before {
+.ph-bold.ph-person-simple-swim:before {
+.ph-bold.ph-person-simple-tai-chi:before {
+.ph-bold.ph-person-simple-throw:before {
+.ph-bold.ph-person-simple-walk:before {
+.ph-bold.ph-perspective:before {
+.ph-bold.ph-phone:before {
+.ph-bold.ph-phone-call:before {
+.ph-bold.ph-phone-disconnect:before {
+.ph-bold.ph-phone-incoming:before {
+.ph-bold.ph-phone-list:before {
+.ph-bold.ph-phone-outgoing:before {
+.ph-bold.ph-phone-pause:before {
+.ph-bold.ph-phone-plus:before {
+.ph-bold.ph-phone-slash:before {
+.ph-bold.ph-phone-transfer:before {
+.ph-bold.ph-phone-x:before {
+.ph-bold.ph-phosphor-logo:before {
+.ph-bold.ph-pi:before {
+.ph-bold.ph-piano-keys:before {
+.ph-bold.ph-picnic-table:before {
+.ph-bold.ph-picture-in-picture:before {
+.ph-bold.ph-piggy-bank:before {
+.ph-bold.ph-pill:before {
+.ph-bold.ph-ping-pong:before {
+.ph-bold.ph-pint-glass:before {
+.ph-bold.ph-pinterest-logo:before {
+.ph-bold.ph-pinwheel:before {
+.ph-bold.ph-pipe:before {
+.ph-bold.ph-pipe-wrench:before {
+.ph-bold.ph-pix-logo:before {
+.ph-bold.ph-pizza:before {
+.ph-bold.ph-placeholder:before {
+.ph-bold.ph-planet:before {
+.ph-bold.ph-plant:before {
+.ph-bold.ph-play:before {
+.ph-bold.ph-play-circle:before {
+.ph-bold.ph-play-pause:before {
+.ph-bold.ph-playlist:before {
+.ph-bold.ph-plug:before {
+.ph-bold.ph-plug-charging:before {
+.ph-bold.ph-plugs:before {
+.ph-bold.ph-plugs-connected:before {
+.ph-bold.ph-plus:before {
+.ph-bold.ph-plus-circle:before {
+.ph-bold.ph-plus-minus:before {
+.ph-bold.ph-plus-square:before {
+.ph-bold.ph-poker-chip:before {
+.ph-bold.ph-police-car:before {
+.ph-bold.ph-polygon:before {
+.ph-bold.ph-popcorn:before {
+.ph-bold.ph-popsicle:before {
+.ph-bold.ph-potted-plant:before {
+.ph-bold.ph-power:before {
+.ph-bold.ph-prescription:before {
+.ph-bold.ph-presentation:before {
+.ph-bold.ph-presentation-chart:before {
+.ph-bold.ph-printer:before {
+.ph-bold.ph-prohibit:before {
+.ph-bold.ph-prohibit-inset:before {
+.ph-bold.ph-projector-screen:before {
+.ph-bold.ph-projector-screen-chart:before {
+.ph-bold.ph-pulse:before {
+.ph-bold.ph-activity:before {
+.ph-bold.ph-push-pin:before {
+.ph-bold.ph-push-pin-simple:before {
+.ph-bold.ph-push-pin-simple-slash:before {
+.ph-bold.ph-push-pin-slash:before {
+.ph-bold.ph-puzzle-piece:before {
+.ph-bold.ph-qr-code:before {
+.ph-bold.ph-question:before {
+.ph-bold.ph-question-mark:before {
+.ph-bold.ph-queue:before {
+.ph-bold.ph-quotes:before {
+.ph-bold.ph-rabbit:before {
+.ph-bold.ph-racquet:before {
+.ph-bold.ph-radical:before {
+.ph-bold.ph-radio:before {
+.ph-bold.ph-radio-button:before {
+.ph-bold.ph-radioactive:before {
+.ph-bold.ph-rainbow:before {
+.ph-bold.ph-rainbow-cloud:before {
+.ph-bold.ph-ranking:before {
+.ph-bold.ph-read-cv-logo:before {
+.ph-bold.ph-receipt:before {
+.ph-bold.ph-receipt-x:before {
+.ph-bold.ph-record:before {
+.ph-bold.ph-rectangle:before {
+.ph-bold.ph-rectangle-dashed:before {
+.ph-bold.ph-recycle:before {
+.ph-bold.ph-reddit-logo:before {
+.ph-bold.ph-repeat:before {
+.ph-bold.ph-repeat-once:before {
+.ph-bold.ph-replit-logo:before {
+.ph-bold.ph-resize:before {
+.ph-bold.ph-rewind:before {
+.ph-bold.ph-rewind-circle:before {
+.ph-bold.ph-road-horizon:before {
+.ph-bold.ph-robot:before {
+.ph-bold.ph-rocket:before {
+.ph-bold.ph-rocket-launch:before {
+.ph-bold.ph-rows:before {
+.ph-bold.ph-rows-plus-bottom:before {
+.ph-bold.ph-rows-plus-top:before {
+.ph-bold.ph-rss:before {
+.ph-bold.ph-rss-simple:before {
+.ph-bold.ph-rug:before {
+.ph-bold.ph-ruler:before {
+.ph-bold.ph-sailboat:before {
+.ph-bold.ph-scales:before {
+.ph-bold.ph-scan:before {
+.ph-bold.ph-scan-smiley:before {
+.ph-bold.ph-scissors:before {
+.ph-bold.ph-scooter:before {
+.ph-bold.ph-screencast:before {
+.ph-bold.ph-screwdriver:before {
+.ph-bold.ph-scribble:before {
+.ph-bold.ph-scribble-loop:before {
+.ph-bold.ph-scroll:before {
+.ph-bold.ph-seal:before {
+.ph-bold.ph-circle-wavy:before {
+.ph-bold.ph-seal-check:before {
+.ph-bold.ph-circle-wavy-check:before {
+.ph-bold.ph-seal-percent:before {
+.ph-bold.ph-seal-question:before {
+.ph-bold.ph-circle-wavy-question:before {
+.ph-bold.ph-seal-warning:before {
+.ph-bold.ph-circle-wavy-warning:before {
+.ph-bold.ph-seat:before {
+.ph-bold.ph-seatbelt:before {
+.ph-bold.ph-security-camera:before {
+.ph-bold.ph-selection:before {
+.ph-bold.ph-selection-all:before {
+.ph-bold.ph-selection-background:before {
+.ph-bold.ph-selection-foreground:before {
+.ph-bold.ph-selection-inverse:before {
+.ph-bold.ph-selection-plus:before {
+.ph-bold.ph-selection-slash:before {
+.ph-bold.ph-shapes:before {
+.ph-bold.ph-share:before {
+.ph-bold.ph-share-fat:before {
+.ph-bold.ph-share-network:before {
+.ph-bold.ph-shield:before {
+.ph-bold.ph-shield-check:before {
+.ph-bold.ph-shield-checkered:before {
+.ph-bold.ph-shield-chevron:before {
+.ph-bold.ph-shield-plus:before {
+.ph-bold.ph-shield-slash:before {
+.ph-bold.ph-shield-star:before {
+.ph-bold.ph-shield-warning:before {
+.ph-bold.ph-shipping-container:before {
+.ph-bold.ph-shirt-folded:before {
+.ph-bold.ph-shooting-star:before {
+.ph-bold.ph-shopping-bag:before {
+.ph-bold.ph-shopping-bag-open:before {
+.ph-bold.ph-shopping-cart:before {
+.ph-bold.ph-shopping-cart-simple:before {
+.ph-bold.ph-shovel:before {
+.ph-bold.ph-shower:before {
+.ph-bold.ph-shrimp:before {
+.ph-bold.ph-shuffle:before {
+.ph-bold.ph-shuffle-angular:before {
+.ph-bold.ph-shuffle-simple:before {
+.ph-bold.ph-sidebar:before {
+.ph-bold.ph-sidebar-simple:before {
+.ph-bold.ph-sigma:before {
+.ph-bold.ph-sign-in:before {
+.ph-bold.ph-sign-out:before {
+.ph-bold.ph-signature:before {
+.ph-bold.ph-signpost:before {
+.ph-bold.ph-sim-card:before {
+.ph-bold.ph-siren:before {
+.ph-bold.ph-sketch-logo:before {
+.ph-bold.ph-skip-back:before {
+.ph-bold.ph-skip-back-circle:before {
+.ph-bold.ph-skip-forward:before {
+.ph-bold.ph-skip-forward-circle:before {
+.ph-bold.ph-skull:before {
+.ph-bold.ph-skype-logo:before {
+.ph-bold.ph-slack-logo:before {
+.ph-bold.ph-sliders:before {
+.ph-bold.ph-sliders-horizontal:before {
+.ph-bold.ph-slideshow:before {
+.ph-bold.ph-smiley:before {
+.ph-bold.ph-smiley-angry:before {
+.ph-bold.ph-smiley-blank:before {
+.ph-bold.ph-smiley-meh:before {
+.ph-bold.ph-smiley-melting:before {
+.ph-bold.ph-smiley-nervous:before {
+.ph-bold.ph-smiley-sad:before {
+.ph-bold.ph-smiley-sticker:before {
+.ph-bold.ph-smiley-wink:before {
+.ph-bold.ph-smiley-x-eyes:before {
+.ph-bold.ph-snapchat-logo:before {
+.ph-bold.ph-sneaker:before {
+.ph-bold.ph-sneaker-move:before {
+.ph-bold.ph-snowflake:before {
+.ph-bold.ph-soccer-ball:before {
+.ph-bold.ph-sock:before {
+.ph-bold.ph-solar-panel:before {
+.ph-bold.ph-solar-roof:before {
+.ph-bold.ph-sort-ascending:before {
+.ph-bold.ph-sort-descending:before {
+.ph-bold.ph-soundcloud-logo:before {
+.ph-bold.ph-spade:before {
+.ph-bold.ph-sparkle:before {
+.ph-bold.ph-speaker-hifi:before {
+.ph-bold.ph-speaker-high:before {
+.ph-bold.ph-speaker-low:before {
+.ph-bold.ph-speaker-none:before {
+.ph-bold.ph-speaker-simple-high:before {
+.ph-bold.ph-speaker-simple-low:before {
+.ph-bold.ph-speaker-simple-none:before {
+.ph-bold.ph-speaker-simple-slash:before {
+.ph-bold.ph-speaker-simple-x:before {
+.ph-bold.ph-speaker-slash:before {
+.ph-bold.ph-speaker-x:before {
+.ph-bold.ph-speedometer:before {
+.ph-bold.ph-sphere:before {
+.ph-bold.ph-spinner:before {
+.ph-bold.ph-spinner-ball:before {
+.ph-bold.ph-spinner-gap:before {
+.ph-bold.ph-spiral:before {
+.ph-bold.ph-split-horizontal:before {
+.ph-bold.ph-split-vertical:before {
+.ph-bold.ph-spotify-logo:before {
+.ph-bold.ph-spray-bottle:before {
+.ph-bold.ph-square:before {
+.ph-bold.ph-square-half:before {
+.ph-bold.ph-square-half-bottom:before {
+.ph-bold.ph-square-logo:before {
+.ph-bold.ph-square-split-horizontal:before {
+.ph-bold.ph-square-split-vertical:before {
+.ph-bold.ph-squares-four:before {
+.ph-bold.ph-stack:before {
+.ph-bold.ph-stack-minus:before {
+.ph-bold.ph-stack-overflow-logo:before {
+.ph-bold.ph-stack-plus:before {
+.ph-bold.ph-stack-simple:before {
+.ph-bold.ph-stairs:before {
+.ph-bold.ph-stamp:before {
+.ph-bold.ph-standard-definition:before {
+.ph-bold.ph-star:before {
+.ph-bold.ph-star-and-crescent:before {
+.ph-bold.ph-star-four:before {
+.ph-bold.ph-star-half:before {
+.ph-bold.ph-star-of-david:before {
+.ph-bold.ph-steam-logo:before {
+.ph-bold.ph-steering-wheel:before {
+.ph-bold.ph-steps:before {
+.ph-bold.ph-stethoscope:before {
+.ph-bold.ph-sticker:before {
+.ph-bold.ph-stool:before {
+.ph-bold.ph-stop:before {
+.ph-bold.ph-stop-circle:before {
+.ph-bold.ph-storefront:before {
+.ph-bold.ph-strategy:before {
+.ph-bold.ph-stripe-logo:before {
+.ph-bold.ph-student:before {
+.ph-bold.ph-subset-of:before {
+.ph-bold.ph-subset-proper-of:before {
+.ph-bold.ph-subtitles:before {
+.ph-bold.ph-subtitles-slash:before {
+.ph-bold.ph-subtract:before {
+.ph-bold.ph-subtract-square:before {
+.ph-bold.ph-subway:before {
+.ph-bold.ph-suitcase:before {
+.ph-bold.ph-suitcase-rolling:before {
+.ph-bold.ph-suitcase-simple:before {
+.ph-bold.ph-sun:before {
+.ph-bold.ph-sun-dim:before {
+.ph-bold.ph-sun-horizon:before {
+.ph-bold.ph-sunglasses:before {
+.ph-bold.ph-superset-of:before {
+.ph-bold.ph-superset-proper-of:before {
+.ph-bold.ph-swap:before {
+.ph-bold.ph-swatches:before {
+.ph-bold.ph-swimming-pool:before {
+.ph-bold.ph-sword:before {
+.ph-bold.ph-synagogue:before {
+.ph-bold.ph-syringe:before {
+.ph-bold.ph-t-shirt:before {
+.ph-bold.ph-table:before {
+.ph-bold.ph-tabs:before {
+.ph-bold.ph-tag:before {
+.ph-bold.ph-tag-chevron:before {
+.ph-bold.ph-tag-simple:before {
+.ph-bold.ph-target:before {
+.ph-bold.ph-taxi:before {
+.ph-bold.ph-tea-bag:before {
+.ph-bold.ph-telegram-logo:before {
+.ph-bold.ph-television:before {
+.ph-bold.ph-television-simple:before {
+.ph-bold.ph-tennis-ball:before {
+.ph-bold.ph-tent:before {
+.ph-bold.ph-terminal:before {
+.ph-bold.ph-terminal-window:before {
+.ph-bold.ph-test-tube:before {
+.ph-bold.ph-text-a-underline:before {
+.ph-bold.ph-text-aa:before {
+.ph-bold.ph-text-align-center:before {
+.ph-bold.ph-text-align-justify:before {
+.ph-bold.ph-text-align-left:before {
+.ph-bold.ph-text-align-right:before {
+.ph-bold.ph-text-b:before {
+.ph-bold.ph-text-bolder:before {
+.ph-bold.ph-text-columns:before {
+.ph-bold.ph-text-h:before {
+.ph-bold.ph-text-h-five:before {
+.ph-bold.ph-text-h-four:before {
+.ph-bold.ph-text-h-one:before {
+.ph-bold.ph-text-h-six:before {
+.ph-bold.ph-text-h-three:before {
+.ph-bold.ph-text-h-two:before {
+.ph-bold.ph-text-indent:before {
+.ph-bold.ph-text-italic:before {
+.ph-bold.ph-text-outdent:before {
+.ph-bold.ph-text-strikethrough:before {
+.ph-bold.ph-text-subscript:before {
+.ph-bold.ph-text-superscript:before {
+.ph-bold.ph-text-t:before {
+.ph-bold.ph-text-t-slash:before {
+.ph-bold.ph-text-underline:before {
+.ph-bold.ph-textbox:before {
+.ph-bold.ph-thermometer:before {
+.ph-bold.ph-thermometer-cold:before {
+.ph-bold.ph-thermometer-hot:before {
+.ph-bold.ph-thermometer-simple:before {
+.ph-bold.ph-threads-logo:before {
+.ph-bold.ph-three-d:before {
+.ph-bold.ph-thumbs-down:before {
+.ph-bold.ph-thumbs-up:before {
+.ph-bold.ph-ticket:before {
+.ph-bold.ph-tidal-logo:before {
+.ph-bold.ph-tiktok-logo:before {
+.ph-bold.ph-tilde:before {
+.ph-bold.ph-timer:before {
+.ph-bold.ph-tip-jar:before {
+.ph-bold.ph-tipi:before {
+.ph-bold.ph-tire:before {
+.ph-bold.ph-toggle-left:before {
+.ph-bold.ph-toggle-right:before {
+.ph-bold.ph-toilet:before {
+.ph-bold.ph-toilet-paper:before {
+.ph-bold.ph-toolbox:before {
+.ph-bold.ph-tooth:before {
+.ph-bold.ph-tornado:before {
+.ph-bold.ph-tote:before {
+.ph-bold.ph-tote-simple:before {
+.ph-bold.ph-towel:before {
+.ph-bold.ph-tractor:before {
+.ph-bold.ph-trademark:before {
+.ph-bold.ph-trademark-registered:before {
+.ph-bold.ph-traffic-cone:before {
+.ph-bold.ph-traffic-sign:before {
+.ph-bold.ph-traffic-signal:before {
+.ph-bold.ph-train:before {
+.ph-bold.ph-train-regional:before {
+.ph-bold.ph-train-simple:before {
+.ph-bold.ph-tram:before {
+.ph-bold.ph-translate:before {
+.ph-bold.ph-trash:before {
+.ph-bold.ph-trash-simple:before {
+.ph-bold.ph-tray:before {
+.ph-bold.ph-tray-arrow-down:before {
+.ph-bold.ph-archive-tray:before {
+.ph-bold.ph-tray-arrow-up:before {
+.ph-bold.ph-treasure-chest:before {
+.ph-bold.ph-tree:before {
+.ph-bold.ph-tree-evergreen:before {
+.ph-bold.ph-tree-palm:before {
+.ph-bold.ph-tree-structure:before {
+.ph-bold.ph-tree-view:before {
+.ph-bold.ph-trend-down:before {
+.ph-bold.ph-trend-up:before {
+.ph-bold.ph-triangle:before {
+.ph-bold.ph-triangle-dashed:before {
+.ph-bold.ph-trolley:before {
+.ph-bold.ph-trolley-suitcase:before {
+.ph-bold.ph-trophy:before {
+.ph-bold.ph-truck:before {
+.ph-bold.ph-truck-trailer:before {
+.ph-bold.ph-tumblr-logo:before {
+.ph-bold.ph-twitch-logo:before {
+.ph-bold.ph-twitter-logo:before {
+.ph-bold.ph-umbrella:before {
+.ph-bold.ph-umbrella-simple:before {
+.ph-bold.ph-union:before {
+.ph-bold.ph-unite:before {
+.ph-bold.ph-unite-square:before {
+.ph-bold.ph-upload:before {
+.ph-bold.ph-upload-simple:before {
+.ph-bold.ph-usb:before {
+.ph-bold.ph-user:before {
+.ph-bold.ph-user-check:before {
+.ph-bold.ph-user-circle:before {
+.ph-bold.ph-user-circle-check:before {
+.ph-bold.ph-user-circle-dashed:before {
+.ph-bold.ph-user-circle-gear:before {
+.ph-bold.ph-user-circle-minus:before {
+.ph-bold.ph-user-circle-plus:before {
+.ph-bold.ph-user-focus:before {
+.ph-bold.ph-user-gear:before {
+.ph-bold.ph-user-list:before {
+.ph-bold.ph-user-minus:before {
+.ph-bold.ph-user-plus:before {
+.ph-bold.ph-user-rectangle:before {
+.ph-bold.ph-user-sound:before {
+.ph-bold.ph-user-square:before {
+.ph-bold.ph-user-switch:before {
+.ph-bold.ph-users:before {
+.ph-bold.ph-users-four:before {
+.ph-bold.ph-users-three:before {
+.ph-bold.ph-van:before {
+.ph-bold.ph-vault:before {
+.ph-bold.ph-vector-three:before {
+.ph-bold.ph-vector-two:before {
+.ph-bold.ph-vibrate:before {
+.ph-bold.ph-video:before {
+.ph-bold.ph-video-camera:before {
+.ph-bold.ph-video-camera-slash:before {
+.ph-bold.ph-video-conference:before {
+.ph-bold.ph-vignette:before {
+.ph-bold.ph-vinyl-record:before {
+.ph-bold.ph-virtual-reality:before {
+.ph-bold.ph-virus:before {
+.ph-bold.ph-visor:before {
+.ph-bold.ph-voicemail:before {
+.ph-bold.ph-volleyball:before {
+.ph-bold.ph-wall:before {
+.ph-bold.ph-wallet:before {
+.ph-bold.ph-warehouse:before {
+.ph-bold.ph-warning:before {
+.ph-bold.ph-warning-circle:before {
+.ph-bold.ph-warning-diamond:before {
+.ph-bold.ph-warning-octagon:before {
+.ph-bold.ph-washing-machine:before {
+.ph-bold.ph-watch:before {
+.ph-bold.ph-wave-sawtooth:before {
+.ph-bold.ph-wave-sine:before {
+.ph-bold.ph-wave-square:before {
+.ph-bold.ph-wave-triangle:before {
+.ph-bold.ph-waveform:before {
+.ph-bold.ph-waveform-slash:before {
+.ph-bold.ph-waves:before {
+.ph-bold.ph-webcam:before {
+.ph-bold.ph-webcam-slash:before {
+.ph-bold.ph-webhooks-logo:before {
+.ph-bold.ph-wechat-logo:before {
+.ph-bold.ph-whatsapp-logo:before {
+.ph-bold.ph-wheelchair:before {
+.ph-bold.ph-wheelchair-motion:before {
+.ph-bold.ph-wifi-high:before {
+.ph-bold.ph-wifi-low:before {
+.ph-bold.ph-wifi-medium:before {
+.ph-bold.ph-wifi-none:before {
+.ph-bold.ph-wifi-slash:before {
+.ph-bold.ph-wifi-x:before {
+.ph-bold.ph-wind:before {
+.ph-bold.ph-windmill:before {
+.ph-bold.ph-windows-logo:before {
+.ph-bold.ph-wine:before {
+.ph-bold.ph-wrench:before {
+.ph-bold.ph-x:before {
+.ph-bold.ph-x-circle:before {
+.ph-bold.ph-x-logo:before {
+.ph-bold.ph-x-square:before {
+.ph-bold.ph-yarn:before {
+.ph-bold.ph-yin-yang:before {
+.ph-bold.ph-youtube-logo:before {

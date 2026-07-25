@@ -1,681 +1,294 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk" data-accent="blue">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#000000" />
-<link rel="manifest" href="/manifest.json" />
-<title>Energy Controller</title>
-<link href="/tokens.css" rel="stylesheet" />
-<link href="/vendor/bootstrap.min.css" rel="stylesheet" />
-<link href="/vendor/bootstrap-icons.css" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="/manifest.json">
+<title>Струм — енергомоніторинг</title>
+<link href="/tokens.css" rel="stylesheet">
+<link href="/vendor/phosphor-icons.css" rel="stylesheet">
 <script src="/vendor/chart.umd.min.js"></script>
-<link href="/style.css" rel="stylesheet" />
-
+<link href="/style.css" rel="stylesheet">
 </head>
 <body>
-<aside class="sidebar open">
-<div class="sidebar-brand"><i class="bi bi-lightning-charge-fill"></i><span class="brand-main">Energy</span><span class="brand-version" id="sidebar-version"></span></div>
-<ul class="sidebar-menu">
-<li class="menu-item active" data-tab="status"><i class="bi bi-speedometer2"></i><span>Status</span></li>
-<li class="menu-item" data-tab="devices"><i class="bi bi-cpu"></i><span>Devices</span><span class="badge-hb purple" id="sidebar-device-count">0</span></li>
-<li class="menu-item" data-tab="automations"><i class="bi bi-diagram-3"></i><span>Automations</span><span class="badge-hb purple" id="sidebar-scene-count">0</span></li>
-</ul>
-<ul class="sidebar-menu sidebar-menu-bottom">
-<li class="menu-item" data-tab="notifications"><i class="bi bi-bell"></i><span>Notifications</span><span class="badge-hb unread" id="sidebar-notif-unread" style="display:none">0</span></li>
-<li class="menu-item" data-tab="settings"><i class="bi bi-gear"></i><span>Settings</span></li>
-</ul>
+<div class="stage">
+  <div class="ambient"></div>
+  <div class="glow"></div>
 
-</aside>
-<button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar"><i class="bi bi-chevron-left"></i></button>
-<main class="main">
-<div class="tab-pane active" id="tab-status">
-<div class="page-header"><h1>Status</h1></div>
-
-<div class="tiles-container" id="tilesContainer"></div>
-<div class="flow-section" id="flowSection"><div class="flow-metrics" id="flowMetrics"></div><div class="flow-svg-wrap"><svg id="energyFlow" viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
-<div class="hb-card chart-section collapsed" style="margin-bottom:.75rem">
-<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-cpu" style="margin-right:.5rem"></i>Inverter Debug</div></div>
-<div id="debug-grid" style="padding:.5rem .75rem;font-size:.78rem;font-family:monospace;color:var(--text);display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.25rem .75rem"></div>
-</div>
-<div class="hb-card chart-section">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-graph-up" style="margin-right:.5rem"></i>Power History</div><div class="chart-tabs" id="chartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
-<div class="chart-current" id="historyCurrent"></div>
-<div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="historyChart"></canvas></div></div>
-</div>
-<div class="hb-card chart-section">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-plug" style="margin-right:.5rem"></i>Socket Power History</div><div class="chart-tabs" id="socketChartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
-<div class="chart-current" id="socketCurrent"></div>
-<div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="socketChart"></canvas></div></div>
-</div>
-<div class="hb-card chart-section">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-lightning" style="margin-right:.5rem"></i>Other Load</div><div class="chart-tabs" id="otherChartTabs"><div class="chart-tab" data-period="1h">1h</div><div class="chart-tab" data-period="3h">3h</div><div class="chart-tab" data-period="6h">6h</div><div class="chart-tab" data-period="12h">12h</div><div class="chart-tab active" data-period="day">Day</div><div class="chart-tab" data-period="week">Week</div><div class="chart-tab" data-period="month">Month</div><div class="chart-tab" data-period="year">Year</div></div></div>
-<div class="chart-current" id="otherCurrent"></div>
-<div class="hb-card-body" style="padding:.5rem .75rem"><div class="chart-wrap"><canvas id="otherChart"></canvas></div></div>
-</div>
-<div class="hb-card">
-<div class="hb-card-header"><div class="hb-card-title">Logs</div></div>
-<div class="hb-card-body" style="padding:.5rem"><div class="terminal" id="log-container">Loading logs...</div></div>
-</div>
-<div class="hb-card chart-section">
-<div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-cpu"></i> System Resources</div></div>
-<div class="hb-card-body" id="server-info-body">
-<div style="text-align:center;padding:1rem"><i class="bi bi-hourglass-split"></i> Loading...</div>
-</div>
-</div>
-</div>
-<div class="tab-pane" id="tab-devices">
-<div class="page-header"><h1>Devices</h1></div>
-<div class="hb-card collapsed">
-<div class="hb-card-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')"><div class="hb-card-title"><i class="bi bi-arrow-repeat" style="margin-right:.5rem"></i>Sync with Tuya</div><span><button class="btn-hb btn-hb-outline btn-hb-sm" id="syncBtn" onclick="event.stopPropagation();syncTuya()"><i class="bi bi-arrow-repeat"></i> Sync Devices</button></span></div>
-<div class="hb-card-body"><p class="text-muted-hb">Pull devices from your Tuya account.</p></div>
-</div>
-<div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title">Available Devices</div><span class="badge-hb purple" id="device-count-badge">0</span></div>
-<div class="hb-card-body" id="devices-list"><div class="empty-state"><i class="bi bi-inbox"></i><p>No devices synced yet.</p></div></div>
-</div>
-</div>
-<div class="tab-pane" id="tab-automations">
-<div class="page-header"><h1>Automations</h1></div>
-<div class="hb-card collapsed" id="new-automation-card">
-<div class="hb-card-header" onclick="toggleNewAutomation()"><div class="hb-card-title"><i class="bi bi-plus-circle" style="margin-right:.5rem"></i>New Automation</div><span><button class="btn-hb btn-hb-outline btn-hb-sm save-btn-h" onclick="event.stopPropagation();saveScene()" style="margin-left:.5rem"><i class="bi bi-save"></i> Save</button></span></div>
-<div class="hb-card-body">
-<div class="mb-3"><label class="text-muted-hb" style="font-size:.8rem">Name</label><input type="text" id="scene-name" class="form-hb" placeholder="e.g. Battery Saver" oninput="renderAutomationSummary()" /></div>
-<div id="automation-summary" class="automation-summary">Add a condition and an action to see a preview here.</div>
-<div class="automation-section">
-<div class="automation-section-label"><i class="bi bi-arrow-down-right-circle"></i> WHEN</div>
-<select id="scene-logic" class="form-hb" style="margin-bottom:.6rem;font-size:.8rem" onchange="renderAutomationSummary()"><option value="AND">Match ALL conditions</option><option value="OR">Match ANY condition</option></select>
-<div id="if-conditions"></div>
-<button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addCondition(this)"><i class="bi bi-plus"></i> Add Condition</button>
-</div>
-<div class="automation-section then-section">
-<div class="automation-section-label"><i class="bi bi-lightning-charge-fill"></i> THEN</div>
-<div id="then-actions"></div>
-<button class="btn-hb btn-hb-outline btn-hb-sm mt-2" onclick="addAction(this)"><i class="bi bi-plus"></i> Add Action</button>
-</div>
-</div>
-</div>
-<div class="hb-card" style="margin-top:1rem">
-<div class="hb-card-header"><div class="hb-card-title">Saved Automations</div><span class="badge-hb purple" id="scene-count-badge2">0</span></div>
-<div class="hb-card-body" id="scenes-list"><div class="empty-state"><i class="bi bi-diagram-3"></i><p>No automations yet.</p></div></div>
-</div>
-</div>
-
-<div class="tab-pane" id="tab-notifications"><div class="page-header"><h1>Notifications</h1></div><div class="hb-card"><div class="hb-card-header"><div class="hb-card-title"><i class="bi bi-bell" style="margin-right:.5rem"></i>Notifications</div><span style="display:flex;gap:.3rem"><button class="btn-hb btn-hb-outline btn-hb-sm" onclick="dismissAllNotif()" style="font-size:.7rem;padding:.15rem .5rem"><i class="bi bi-trash3"></i> Dismiss all</button></span></div><div id="notif-list" class="notif-list"><div class="notif-empty">No notifications</div></div></div></div>
-<div class="tab-pane" id="tab-settings">
-<div class="page-header"><h1>Settings</h1></div>
-
-<!-- MAIN MENU -->
-<div id="settings-menu">
-  <div class="settings-group-title" style="padding-top:0">PROFILE</div>
-  <div class="settings-group">
-    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-profile')">
-      <div class="settings-icon" style="width:44px;height:44px;border-radius:22px;background:var(--primary);color:#fff"><i class="bi bi-person-fill" style="font-size:1.15rem"></i></div>
-      <div class="settings-body">
-        <div class="settings-label" style="font-size:1rem"><span id="profile-username">admin</span></div>
-        <div class="settings-desc" id="profile-role-label">Administrator</div>
-      </div>
-      <span class="settings-chevron">›</span>
+  <div class="stage-copy">
+    <div class="brand">
+      <div class="brand-ic"><i class="ph-fill ph-lightning"></i></div>
+      <div><h2>Струм</h2><span>енергомоніторинг</span></div>
     </div>
+    <p>Інвертор як <b>UPS для всієї квартири</b>: рідкий glass-інтерфейс, живий потік енергії та режим виживання, коли зникло світло.</p>
+    <div class="slist">
+      <div><i class="ph-fill ph-battery-charging"></i> Автономія та SOC у реальному часі</div>
+      <div><i class="ph-fill ph-wifi-high"></i> Tuya Local — розетки без хмари</div>
+      <div><i class="ph-fill ph-lifebuoy"></i> Пріоритети: критичне живе довше</div>
+    </div>
+    <div class="stage-note">ENERGY CONTROLLER</div>
   </div>
 
-  <div class="settings-group-title">CONNECTION</div>
-  <div class="settings-group">
-    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-inverter')">
-      <div class="settings-icon"><i class="bi bi-plug"></i></div>
-      <div class="settings-body"><div class="settings-label">Inverter</div><div class="settings-desc">IP, serial, Modbus config</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-tuya')">
-      <div class="settings-icon"><i class="bi bi-cloud"></i></div>
-      <div class="settings-body"><div class="settings-label">Tuya Cloud</div><div class="settings-desc">API keys, country, credentials</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
+  <div class="device">
+    <div class="device-frame">
+      <span class="fbtn l1"></span><span class="fbtn l2"></span><span class="fbtn l3"></span><span class="fbtn r1"></span>
+      <div class="screen">
 
-  <div class="settings-group-title">SERVICES</div>
-  <div class="settings-group">
-    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-integrations')">
-      <div class="settings-icon"><i class="bi bi-puzzle"></i></div>
-      <div class="settings-body"><div class="settings-label">Integrations</div><div class="settings-desc">ntfy, Telegram, NetBird</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-notifications')">
-      <div class="settings-icon"><i class="bi bi-bell"></i></div>
-      <div class="settings-body"><div class="settings-label">Notifications</div><div class="settings-desc">Alerts, health monitoring, grouping</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
+        <div class="statusbar">
+          <span id="sbTime">9:41</span>
+          <span class="sb-r"><i class="ph-fill ph-cell-signal-full"></i><i class="ph-fill ph-wifi-high"></i><span class="sb-batt" id="sbBatt">—</span><i class="ph-fill ph-battery-full"></i></span>
+        </div>
 
-  <div class="settings-group-title">ENERGY</div>
-  <div class="settings-group">
-    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-tariff')">
-      <div class="settings-icon"><i class="bi bi-cash-coin"></i></div>
-      <div class="settings-body"><div class="settings-label">Tariff &amp; Cost</div><div class="settings-desc">Rates, currency, day/night</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
+        <div class="island" id="island">
+          <div class="isl-c">
+            <span class="isl-dot" id="islDot"></span>
+            <span class="isl-w" id="islW">— Вт</span>
+            <span class="isl-soc" id="islSoc">—%</span>
+          </div>
+          <div class="isl-e">
+            <div><i class="ph-fill ph-plug-charging ie-g"></i><b id="iv1">—</b><span>Мережа</span></div>
+            <div><i class="ph-fill ph-battery-charging ie-b"></i><b id="iv2">—%</b><span>Батарея</span></div>
+            <div><i class="ph-fill ph-gauge ie-h"></i><b id="iv3">— Вт</b><span>Дім</span></div>
+          </div>
+        </div>
 
-  <div class="settings-group-title">INTERFACE</div>
-  <div class="settings-group">
-    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-appearance')">
-      <div class="settings-icon"><i class="bi bi-palette"></i></div>
-      <div class="settings-body"><div class="settings-label">Appearance</div><div class="settings-desc">Accent color</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
+        <div class="app">
 
-  <div class="settings-group-title">DEVICE</div>
-  <div class="settings-group">
-    <div class="settings-row settings-row-link" onclick="openSettingsPage('page-system')">
-      <div class="settings-icon"><i class="bi bi-gear"></i></div>
-      <div class="settings-body"><div class="settings-label">System</div><div class="settings-desc">Tiles, password, update, backup, restart</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
+          <!-- ================= ОГЛЯД ================= -->
+          <section class="page active" id="page-overview">
+            <div class="scroll">
+              <div class="navglass"><span class="nv-t">Огляд</span><span class="nv-chip" id="gridChip"><i class="ph-fill ph-plug-charging"></i> Мережа</span></div>
+              <div class="ltitle"><h1>Огляд</h1><span id="dateNote">—</span></div>
 
+              <div class="card rv">
+                <div class="card-head"><span class="card-title">Потік енергії</span><span class="live-dot"><i></i>наживо</span></div>
+                <div class="flow-wrap">
+                  <svg viewBox="0 0 340 212" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <linearGradient id="gGrid" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#64D2FF"/><stop offset="1" stop-color="#0A84FF"/></linearGradient>
+                      <linearGradient id="gHome" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#BF5AF2"/><stop offset="1" stop-color="#FF9F0A"/></linearGradient>
+                      <linearGradient id="gBat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#30D158"/><stop offset="1" stop-color="#FFD60A"/></linearGradient>
+                    </defs>
+                    <path id="flGrid" class="fline act" d="M70,66 C104,74 124,82 148,88" stroke="url(#gGrid)"/>
+                    <path id="flHome" class="fline act" d="M192,88 C216,82 236,74 270,66" stroke="url(#gHome)"/>
+                    <path id="flBat" class="fline" d="M170,116 C170,130 170,138 170,150" stroke="url(#gBat)"/>
+                    <g id="pGrid">
+                      <circle r="3.2" fill="#9BE0FF"><animateMotion dur="1.9s" repeatCount="indefinite" path="M70,66 C104,74 124,82 148,88"/></circle>
+                      <circle r="3.2" fill="#9BE0FF"><animateMotion dur="1.9s" begin="0.63s" repeatCount="indefinite" path="M70,66 C104,74 124,82 148,88"/></circle>
+                      <circle r="3.2" fill="#9BE0FF"><animateMotion dur="1.9s" begin="1.26s" repeatCount="indefinite" path="M70,66 C104,74 124,82 148,88"/></circle>
+                    </g>
+                    <g id="pHome">
+                      <circle r="3.2" fill="#FFC46B"><animateMotion dur="1.7s" repeatCount="indefinite" path="M192,88 C216,82 236,74 270,66"/></circle>
+                      <circle r="3.2" fill="#FFC46B"><animateMotion dur="1.7s" begin="0.57s" repeatCount="indefinite" path="M192,88 C216,82 236,74 270,66"/></circle>
+                      <circle r="3.2" fill="#FFC46B"><animateMotion dur="1.7s" begin="1.13s" repeatCount="indefinite" path="M192,88 C216,82 236,74 270,66"/></circle>
+                    </g>
+                    <g id="pBatC" style="display:none">
+                      <circle r="3" fill="#7CE8A0"><animateMotion dur="2.1s" repeatCount="indefinite" path="M170,116 C170,130 170,138 170,150"/></circle>
+                      <circle r="3" fill="#7CE8A0"><animateMotion dur="2.1s" begin="1.05s" repeatCount="indefinite" path="M170,116 C170,130 170,138 170,150"/></circle>
+                    </g>
+                    <g id="pBatD" style="display:none">
+                      <circle r="3" fill="#7CE8A0"><animateMotion dur="1.6s" repeatCount="indefinite" path="M170,150 C170,138 170,130 170,116"/></circle>
+                      <circle r="3" fill="#7CE8A0"><animateMotion dur="1.6s" begin="0.8s" repeatCount="indefinite" path="M170,150 C170,138 170,130 170,116"/></circle>
+                    </g>
+                  </svg>
+                  <div class="fnode" style="left:17%;top:29%">
+                    <div class="fn-ic" id="fnGridIc" style="--c:#64D2FF"><i class="ph-fill ph-plug-charging"></i></div>
+                    <span class="fn-l">Мережа</span><b class="fn-v" id="fnGrid">—</b>
+                  </div>
+                  <div class="fnode" style="left:50%;top:44%">
+                    <div class="fn-ic big" style="--c:#BF5AF2;position:relative"><span class="fn-pulse"></span><i class="ph-fill ph-lightning"></i></div>
+                    <span class="fn-l">Інвертор</span><b class="fn-v" id="fnInv">— Вт</b>
+                  </div>
+                  <div class="fnode" style="left:83%;top:29%">
+                    <div class="fn-ic" style="--c:#FF9F0A"><i class="ph-fill ph-house"></i></div>
+                    <span class="fn-l">Дім</span><b class="fn-v" id="fnHome">— Вт</b>
+                  </div>
+                  <div class="fnode" style="left:50%;top:79%">
+                    <div class="fn-ic" style="--c:#30D158"><i class="ph-fill ph-battery-charging"></i></div>
+                    <span class="fn-l">Батарея</span><b class="fn-v" id="fnBat">—%</b>
+                  </div>
+                </div>
+                <div class="flow-stats">
+                  <div><span>Імпорт</span><b id="fImport">—</b></div>
+                  <div><span>Батарея</span><b id="fBat">—</b></div>
+                  <div><span>Частота</span><b id="fFreq">— Гц</b></div>
+                </div>
+              </div>
 
-</div>
+              <div class="duo">
+                <div class="card rv" id="batteryCard">
+                  <div class="card-head" style="margin-bottom:4px"><span class="card-title">Батарея</span><span class="mini-badge g" id="batState">—</span></div>
+                  <div class="ring-wrap">
+                    <svg viewBox="0 0 120 120">
+                      <defs><linearGradient id="gradBat" x1="0" y1="0" x2="1" y2="1">
+                        <stop id="gb1" offset="0" stop-color="#30D158"/><stop id="gb2" offset="1" stop-color="#64D2FF"/>
+                      </linearGradient></defs>
+                      <circle class="ring-bg" cx="60" cy="60" r="52"/>
+                      <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+                    </svg>
+                    <div class="ring-center"><b id="socVal">—</b><span>%</span></div>
+                  </div>
+                  <div class="ring-meta">
+                    <div><span>Потужн.</span><b id="batPower">—</b></div>
+                    <div><span>Залишок</span><b id="batWh">—</b></div>
+                    <div><span>Темп.</span><b id="batTemp">—</b></div>
+                  </div>
+                </div>
 
-<!-- SETTINGS SUB-PAGES -->
-<div id="settings-pages">
+                <div class="card survival rv" id="survCard">
+                  <div class="card-head"><span class="card-title">Автономія</span><i class="ph-fill ph-lifebuoy"></i></div>
+                  <div class="surv-time"><b id="survTime">—</b><span id="survLoad">при поточному навантаженні</span></div>
+                  <div class="surv-bar"><i id="survBar" style="width:0%"></i></div>
+                  <div class="surv-hint" id="survHint">—</div>
+                  <button class="btn-surv" id="btnUnload"><i class="ph-bold ph-power"></i> Розвантажити дім</button>
+                </div>
+              </div>
 
-<!-- PAGE: INVERTER -->
-<div class="settings-page" id="page-inverter">
-  <div class="settings-top-bar">
-    <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-      <i class="bi bi-chevron-left"></i>
-    </button>
-  </div>
-  <div class="settings-group-title" style="padding-top:0">INVERTER</div>
-  <div class="settings-group">
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-plug"></i></div>
-      <div class="settings-body"><div class="settings-label">IP Address</div></div>
-      <input type="text" id="cfg-inverter-ip" class="settings-input" style="width:140px;text-align:right" placeholder="192.168.0.116" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-hash"></i></div>
-      <div class="settings-body"><div class="settings-label">Serial Number</div></div>
-      <input type="text" id="cfg-inverter-serial" class="settings-input" style="width:140px;text-align:right" placeholder="2317564280" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-hash"></i></div>
-      <div class="settings-body"><div class="settings-label">Modbus Port</div></div>
-      <input type="number" id="cfg-inverter-port" class="settings-input" style="width:80px;text-align:right" value="8899" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-hash"></i></div>
-      <div class="settings-body"><div class="settings-label">MAC Address</div></div>
-      <input type="text" id="cfg-inverter-mac" class="settings-input" style="width:150px;text-align:right;text-transform:uppercase" placeholder="72:4F:56:8E:BB:40" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-wifi"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">Auto-resolve IP</div>
-        <div class="settings-toggle-desc">Ping sweep when offline</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-inverter-autoResolve"><span class="sw-slider"></span></label>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-action-row" onclick="scanInverterNetwork()">
-      <div class="settings-icon"><i class="bi bi-wifi"></i></div>
-      <div class="settings-body"><div class="settings-action-label">Scan Network</div></div>
-      <span id="scan-status" style="font-size:.75rem;color:var(--muted)"></span>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
+              <div class="tiles">
+                <div class="tile rv"><i class="ph-fill ph-gauge" style="color:var(--orange)"></i><span>Навантаження</span><b id="mLoad">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-arrow-down-to-line" style="color:var(--cyan)"></i><span>Імпорт сьогодні</span><b id="mImport">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-coins" style="color:var(--yellow)"></i><span>Вартість</span><b id="mCost">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-thermometer-simple" style="color:var(--purple)"></i><span>Інвертор</span><b id="mTemp">—</b></div>
+              </div>
 
-</div>
+              <div class="card rv">
+                <div class="card-head"><span class="card-title">Швидкий доступ</span><a class="link" data-goto="devices">Всі <i class="ph ph-caret-right"></i></a></div>
+                <div class="quick-row" id="quickRow"></div>
+              </div>
 
-<!-- PAGE: TUYA CLOUD -->
-<div class="settings-page" id="page-tuya">
-  <div class="settings-top-bar">
-    <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-      <i class="bi bi-chevron-left"></i>
-    </button>
-  </div>
-  <div class="settings-group-title" style="padding-top:0">TUYA CLOUD</div>
-  <div class="settings-group">
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-cloud"></i></div>
-      <div class="settings-body"><div class="settings-label">Access ID</div></div>
-      <input type="text" id="cfg-tuya-accessId" class="settings-input" style="width:160px;text-align:right" placeholder="Enter ID" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-key"></i></div>
-      <div class="settings-body"><div class="settings-label">Access Key</div></div>
-      <input type="password" id="cfg-tuya-accessKey" class="settings-input" style="width:160px;text-align:right" placeholder="Enter Key" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-globe"></i></div>
-      <div class="settings-body"><div class="settings-label">Country Code</div></div>
-      <input type="number" id="cfg-tuya-countryCode" class="settings-input" style="width:80px;text-align:right" value="48" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-person"></i></div>
-      <div class="settings-body"><div class="settings-label">Username / Email</div></div>
-      <input type="text" id="cfg-tuya-username" class="settings-input" style="width:160px;text-align:right" placeholder="user@example.com" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-lock"></i></div>
-      <div class="settings-body"><div class="settings-label">Password</div></div>
-      <input type="password" id="cfg-tuya-password" class="settings-input" style="width:160px;text-align:right" placeholder="••••••••" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-grid"></i></div>
-      <div class="settings-body"><div class="settings-label">App Schema</div></div>
-      <select id="cfg-tuya-appSchema" class="settings-select" style="width:130px;text-align:right">
-        <option value="tuyaSmart">Tuya Smart</option>
-        <option value="smartlife">Smart Life</option>
-      </select>
-    </div>
-  </div>
+              <div class="card rv">
+                <div class="card-head"><span class="card-title">Останні події</span><span class="mini-badge" id="evBadge">0</span></div>
+                <div id="eventsList"></div>
+              </div>
+              <div class="page-end" id="updNote">ЗАВАНТАЖЕННЯ…</div>
+            </div>
+          </section>
 
-</div>
+          <!-- ================= ПРИСТРОЇ ================= -->
+          <section class="page" id="page-devices">
+            <div class="scroll">
+              <div class="navglass"><span class="nv-t">Пристрої</span><span class="nv-chip gray" id="devCountChip">0 пристроїв</span></div>
+              <div class="ltitle"><h1>Пристрої</h1><span>Tuya Smart · локальне керування по LAN</span></div>
+              <div class="card sum-card rv">
+                <div class="sum-l"><span>Споживання зараз</span><b id="sumW">—</b></div>
+                <div class="sum-r"><span>Найбільший споживач</span><b id="sumTop">—</b></div>
+              </div>
+              <div class="search rv"><i class="ph ph-magnifying-glass"></i><input id="devSearch" placeholder="Пошук пристроїв" autocomplete="off"></div>
+              <div class="chips rv">
+                <button class="fchip on" data-filter="all">Всі</button>
+                <button class="fchip" data-filter="critical">Критичні</button>
+                <button class="fchip" data-filter="essential">Важливі</button>
+                <button class="fchip" data-filter="optional">Опціональні</button>
+              </div>
+              <div id="devGroups"></div>
+              <button class="btn danger wide rv" id="btnUnloadAll"><i class="ph-bold ph-power"></i> Вимкнути все некритичне</button>
+              <div class="hint rv"><i class="ph-fill ph-wifi-high"></i><span>Пристрої керуються через Tuya API.</span></div>
+            </div>
+          </section>
 
-<!-- PAGE: INTEGRATIONS -->
-<div class="settings-page" id="page-integrations">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
-  <div class="settings-group-title" style="padding-top:0">INTEGRATIONS</div>
-  <div class="settings-group">
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-bell"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">ntfy.sh</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-ntfy-enabled" onchange="document.getElementById('ntfy-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
-    </div>
-    <div id="ntfy-fields" style="padding:.3rem 1rem .6rem 3.5rem;display:none;flex-direction:column;gap:.4rem">
-      <input type="text" id="cfg-ntfy-topic" class="settings-input" placeholder="Topic" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-telegram"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">Telegram</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-tg-enabled" onchange="document.getElementById('tg-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
-    </div>
-    <div id="tg-fields" style="padding:.3rem 1rem .6rem 3.5rem;display:none;flex-direction:column;gap:.4rem">
-      <input type="password" id="cfg-tg-token" class="settings-input" placeholder="Bot Token" />
-      <input type="text" id="cfg-tg-chat" class="settings-input" placeholder="Chat ID" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-wifi"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">NetBird Mesh</div>
-        <div class="settings-toggle-desc">Secure remote access</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-netbird-enabled" onchange="document.getElementById('netbird-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
-    </div>
-    <div id="netbird-fields" style="padding:.3rem 1rem .6rem 3.5rem;display:none;flex-direction:column;gap:.4rem">
-      <input type="password" id="cfg-netbird-setupKey" class="settings-input" placeholder="Setup Key" />
-      <input type="text" id="cfg-netbird-managementUrl" class="settings-input" placeholder="Management URL" />
-      <div style="display:flex;gap:.5rem;margin-top:.3rem">
-        <button class="settings-btn" onclick="netbirdUp()"><i class="bi bi-wifi"></i> Connect</button>
-        <button class="settings-btn" onclick="netbirdDown()"><i class="bi bi-wifi-off"></i> Disconnect</button>
-      </div>
-      <div id="netbird-status" style="font-size:.78rem;display:none;margin-top:.3rem"></div>
-    </div>
-  </div>
-</div>
+          <!-- ================= АНАЛІТИКА ================= -->
+          <section class="page" id="page-analytics">
+            <div class="scroll">
+              <div class="navglass"><span class="nv-t">Аналітика</span><span class="nv-chip gray">енергія · кошти</span></div>
+              <div class="ltitle"><h1>Аналітика</h1><span>Споживання, батарея та витрати</span></div>
+              <div class="chips rv" id="anaChips">
+                <button class="fchip" data-period="1h">1 год</button>
+                <button class="fchip" data-period="6h">6 год</button>
+                <button class="fchip on" data-period="day">День</button>
+                <button class="fchip" data-period="week">Тиждень</button>
+              </div>
+              <div class="card rv">
+                <div class="card-head"><span class="card-title">Навантаження і SOC</span><span class="live-dot"><i></i>живе</span></div>
+                <div class="chart-h"><canvas id="mainChart"></canvas></div>
+              </div>
+              <div class="tiles4">
+                <div class="tile2 rv"><span>Середнє</span><b id="stAvg">—</b></div>
+                <div class="tile2 rv"><span>Пік</span><b id="stPeak">—</b></div>
+                <div class="tile2 rv"><span>Спожито</span><b id="stKwh">—</b></div>
+                <div class="tile2 rv"><span>Вартість</span><b id="stCost">—</b></div>
+              </div>
+              <div class="card rv">
+                <div class="card-head"><span class="card-title">Витрати за 7 днів</span><span class="mini-badge g" id="costWeekBadge">₴ 0</span></div>
+                <div class="chart-h sm"><canvas id="costChart"></canvas></div>
+              </div>
+            </div>
+          </section>
 
-<!-- PAGE: NOTIFICATIONS -->
-<div class="settings-page" id="page-notifications">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
-  <div class="settings-group-title" style="padding-top:0">NOTIFICATIONS</div>
-  <div class="settings-group">
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-bell"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">Enable Notifications</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-notif-enabled" onchange="var s=document.getElementById('notif-sub-page');if(s)s.style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
-    </div>
-  </div>
-  <div id="notif-sub-page">
-  <div class="settings-group" style="margin-top:0">
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-exclamation-triangle"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">Critical Alerts</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-notif-critical-enabled"><span class="sw-slider"></span></label>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-lightning"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">Grid Outage Report</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-notif-grid-outage"><span class="sw-slider"></span></label>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-cpu"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">Server Health Monitoring</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-health-enabled" onchange="document.getElementById('health-fields').style.display=this.checked?'block':'none'"><span class="sw-slider"></span></label>
-    </div>
-    <div id="health-fields" style="padding:0 1rem .6rem 3.5rem;display:none;flex-direction:column;gap:.4rem">
-      <input type="number" id="cfg-health-disk" class="settings-input" placeholder="Disk free threshold (%)" min="1" max="99" />
-      <input type="number" id="cfg-health-cpu-temp" class="settings-input" placeholder="CPU temp threshold (°C)" min="40" max="100" />
-      <input type="number" step="0.5" id="cfg-health-cpu-load" class="settings-input" placeholder="CPU load threshold (1min avg)" min="0" max="50" />
-      <input type="number" id="cfg-health-mem" class="settings-input" placeholder="Memory free threshold (%)" min="1" max="99" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-toggle-row">
-      <div class="settings-icon"><i class="bi bi-diagram-3"></i></div>
-      <div class="settings-toggle-body">
-        <div class="settings-toggle-label">Group Notifications</div>
-        <div class="settings-toggle-desc">Collapse similar alerts</div>
-      </div>
-      <label class="sw"><input type="checkbox" id="cfg-notif-grouping"><span class="sw-slider"></span></label>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-action-row" onclick="testNotification()">
-      <div class="settings-icon"><i class="bi bi-send"></i></div>
-      <div class="settings-body"><div class="settings-action-label">Send Test Notification</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
-  </div>
-</div>
+          <!-- ================= ПРАВИЛА ================= -->
+          <section class="page" id="page-rules">
+            <div class="scroll">
+              <div class="navglass"><span class="nv-t">Правила</span><span class="nv-chip" id="rulesChip">0 активних</span></div>
+              <div class="ltitle"><h1>Автоматизації</h1><span>Режими виживання та енергоефективність</span></div>
+              <div id="rulesList"></div>
+              <button class="btn wide rv" id="btnAddRule"><i class="ph-bold ph-plus"></i> Додати правило</button>
+              <div class="hint rv"><i class="ph-fill ph-cpu"></i><span>Правила виконуються <b>локально на контролері</b> — спрацюють навіть тоді, коли зовні немає жодного зв'язку.</span></div>
+            </div>
+          </section>
 
-<!-- PAGE: TARIFF -->
-<div class="settings-page" id="page-tariff">
-  <div class="settings-top-bar">
-    <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-      <i class="bi bi-chevron-left"></i>
-    </button>
-  </div>
-  <div class="settings-group-title" style="padding-top:0">TARIFF &amp; COST</div>
-  <div class="settings-group">
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-cash-coin"></i></div>
-      <div class="settings-body"><div class="settings-label">Currency</div></div>
-      <input type="text" id="cfg-tariff-currency" class="settings-input" style="width:80px;text-align:right" placeholder="UAH" maxlength="8" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-bar-chart"></i></div>
-      <div class="settings-body"><div class="settings-label">Tariff Type</div></div>
-      <select id="cfg-tariff-type" class="settings-select" style="width:140px;text-align:right" onchange="toggleTariffFields()">
-        <option value="flat">Flat Rate</option>
-        <option value="daynight">Day / Night</option>
-      </select>
-    </div>
-    <div class="settings-divider"></div>
-    <div id="tariff-flat-fields">
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-coin"></i></div>
-      <div class="settings-body"><div class="settings-label">Rate (per kWh)</div></div>
-      <input type="number" step="0.01" min="0" id="cfg-tariff-flat-rate" class="settings-input" style="width:100px;text-align:right" placeholder="0" />
-    </div>
-    </div>
-    <div id="tariff-daynight-fields">
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-sun"></i></div>
-      <div class="settings-body"><div class="settings-label">Day Rate</div></div>
-      <input type="number" step="0.01" min="0" id="cfg-tariff-day-rate" class="settings-input" style="width:100px;text-align:right" placeholder="0" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-moon"></i></div>
-      <div class="settings-body"><div class="settings-label">Night Rate</div></div>
-      <input type="number" step="0.01" min="0" id="cfg-tariff-night-rate" class="settings-input" style="width:100px;text-align:right" placeholder="0" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-sunrise"></i></div>
-      <div class="settings-body"><div class="settings-label">Day Starts At</div></div>
-      <input type="time" id="cfg-tariff-day-start" class="settings-input" style="width:100px;text-align:right" value="07:00" />
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-moon"></i></div>
-      <div class="settings-body"><div class="settings-label">Night Starts At</div></div>
-      <input type="time" id="cfg-tariff-night-start" class="settings-input" style="width:100px;text-align:right" value="23:00" />
-    </div>
-    </div>
-  </div>
+          <!-- ================= ЩЕ ================= -->
+          <section class="page" id="page-settings">
+            <div class="scroll">
+              <div class="navglass"><span class="nv-t">Ще</span><span class="nv-chip gray" id="settingsUser">admin</span></div>
+              <div class="ltitle"><h1>Ще</h1><span>Налаштування системи</span></div>
 
-</div>
+              <div class="card prof press rv">
+                <div class="dic big" style="--c:linear-gradient(145deg,#0A84FF,#BF5AF2)"><i class="ph-fill ph-lightning"></i></div>
+                <div class="dinfo"><div class="dname">Дім</div><div class="dsub">Струм · <span id="settingsDeviceCount">0</span> пристроїв</div></div>
+              </div>
 
-<!-- PAGE: APPEARANCE -->
-<div class="settings-page" id="page-appearance">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
-  <div class="settings-group-title" style="padding-top:0">APPEARANCE</div>
-  <div class="settings-group">
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-palette"></i></div>
-      <div class="settings-body">
-        <div class="settings-label">Accent Color</div>
-      </div>
-    </div>
-    <div class="settings-divider"></div>
-    <div style="padding:.5rem 1rem .65rem 3.5rem">
-      <div class="settings-colors" id="accent-picker">
-        <div class="settings-color active" data-accent="purple" style="background:#bf5af2" onclick="setAccent('purple')" title="Purple"></div>
-        <div class="settings-color" data-accent="blue" style="background:#0a84ff" onclick="setAccent('blue')" title="Blue"></div>
-        <div class="settings-color" data-accent="green" style="background:#30d158" onclick="setAccent('green')" title="Green"></div>
-        <div class="settings-color" data-accent="orange" style="background:#ff9f0a" onclick="setAccent('orange')" title="Orange"></div>
-        <div class="settings-color" data-accent="pink" style="background:#ff375f" onclick="setAccent('pink')" title="Pink"></div>
-        <div class="settings-color" data-accent="cyan" style="background:#00c7be" onclick="setAccent('cyan')" title="Cyan"></div>
+              <div class="slabel rv">Інвертор</div>
+              <div class="sgroup rv">
+                <div class="srow"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-lightning"></i></span><span class="slb">Статус</span><span class="badge-ok" id="invStatus">—</span></div>
+                <div class="srow"><span class="sic" style="--c:#0A84FF"><i class="ph-fill ph-wifi-high"></i></span><span class="slb">IP-адреса</span><span class="sval mono" id="invIp">—</span></div>
+                <div class="srow"><span class="sic" style="--c:#BF5AF2"><i class="ph-fill ph-barcode"></i></span><span class="slb">Серійний номер</span><span class="sval mono" id="invSerial">—</span></div>
+                <button class="srow" id="btnScan"><span class="sic" style="--c:#64D2FF"><i class="ph-fill ph-magnifying-glass"></i></span><span class="slb act-lb">Сканувати мережу</span><i class="ph ph-caret-right chev"></i></button>
+              </div>
+
+              <div class="slabel rv">Тариф</div>
+              <div class="sgroup rv">
+                <div class="srow"><span class="sic" style="--c:#FF9F0A"><i class="ph-fill ph-sun"></i></span><span class="slb">День</span><input class="sinput" id="tDay" type="number" step="0.01"><span class="sunit">₴/кВт·год</span></div>
+                <div class="srow"><span class="sic" style="--c:#5E5CE6"><i class="ph-fill ph-moon"></i></span><span class="slb">Ніч</span><input class="sinput" id="tNight" type="number" step="0.01"><span class="sunit">₴/кВт·год</span></div>
+                <div class="srow"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-receipt"></i></span><span class="slb">Сьогодні</span><span class="sval" id="tToday">—</span></div>
+              </div>
+
+              <div class="slabel rv">Сповіщення</div>
+              <div class="sgroup rv">
+                <button class="srow" id="btnTestNotif"><span class="sic" style="--c:#BF5AF2"><i class="ph-fill ph-chat-circle-dots"></i></span><span class="slb act-lb">Надіслати тест</span><i class="ph ph-caret-right chev"></i></button>
+              </div>
+
+              <div class="slabel rv">Система</div>
+              <div class="sgroup rv">
+                <div class="srow"><span class="sic" style="--c:#8E8E93"><i class="ph-fill ph-info"></i></span><span class="slb">Версія</span><span class="sval mono" id="sysVersion">—</span></div>
+                <button class="srow" id="btnUpdate"><span class="sic" style="--c:#0A84FF"><i class="ph-fill ph-arrow-circle-up"></i></span><span class="slb act-lb">Перевірити оновлення</span><i class="ph ph-caret-right chev"></i></button>
+                <button class="srow" id="btnBackup"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-download-simple"></i></span><span class="slb act-lb">Створити резервну копію</span><i class="ph ph-caret-right chev"></i></button>
+                <button class="srow" id="btnRestart"><span class="sic" style="--c:#FF9F0A"><i class="ph-fill ph-arrows-clockwise"></i></span><span class="slb act-lb">Перезапустити</span><i class="ph ph-caret-right chev"></i></button>
+                <button class="srow red" id="btnLogout"><span class="sic" style="--c:#FF453A"><i class="ph-fill ph-sign-out"></i></span><span class="slb act-lb" style="color:var(--red)">Вийти</span><i class="ph ph-caret-right chev"></i></button>
+              </div>
+              <div class="foot">СТРУМ · ENERGY CONTROLLER<br>ЗРОБЛЕНО З ⚡ В УКРАЇНІ</div>
+            </div>
+          </section>
+        </div>
+
+        <!-- tabbar -->
+        <nav class="tabbar">
+          <button class="tab active" data-tab="overview"><i class="ph-fill ph-lightning"></i><span>Огляд</span></button>
+          <button class="tab" data-tab="devices"><i class="ph-fill ph-plugs-connected"></i><span>Пристрої</span></button>
+          <button class="tab" data-tab="analytics"><i class="ph-fill ph-chart-line-up"></i><span>Аналітика</span></button>
+          <button class="tab" data-tab="rules"><i class="ph-fill ph-flow-arrow"></i><span>Правила</span></button>
+          <button class="tab" data-tab="settings"><i class="ph-fill ph-gear-six"></i><span>Ще</span></button>
+        </nav>
+
+        <div class="banners" id="banners"></div>
+        <div class="sheet-bk" id="sheetBk"></div>
+        <div class="sheet" id="sheet"><div id="sheetBody"></div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- PAGE: SYSTEM -->
-<div class="settings-page" id="page-system">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
-  <div class="settings-group-title" style="padding-top:0">SYSTEM</div>
-  <div class="settings-group">
-    <div class="settings-row" onclick="document.getElementById('tile-edit-inline').classList.toggle('open')">
-      <div class="settings-icon"><i class="bi bi-pencil-square"></i></div>
-      <div class="settings-body"><div class="settings-label">Status Tiles</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-    <div id="tile-edit-inline">
-    <div class="settings-divider"></div>
-    <div style="padding:.5rem 1rem .5rem 3.5rem">
-      <div class="tile-edit-grid" id="tileEditGrid"></div>
-    </div>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-arrow-clockwise"></i></div>
-      <div class="settings-body"><div class="settings-label">Restart UI</div></div>
-      <span style="margin-left:auto"><button class="settings-btn" onclick="location.reload()" style="font-size:.75rem">Reload</button></span>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-cloud-download"></i></div>
-      <div class="settings-body">
-        <div class="settings-label">Application Update</div>
-      </div>
-      <span style="margin-left:auto;display:flex;gap:.3rem">
-        <button class="settings-btn" id="btn-check-update" onclick="checkForUpdates()"><i class="bi bi-arrow-clockwise"></i> Check</button>
-        <button class="settings-btn settings-btn-primary" id="btn-apply-update" onclick="applyUpdate()" style="display:none"><i class="bi bi-download"></i> Update</button>
-      </span>
-    </div>
-    <div id="update-info" style="padding:0 1rem .5rem 3.5rem;font-size:.78rem;color:var(--muted)">Loading...</div>
-    <div id="update-branches" style="display:none;padding:0 1rem .3rem 3.5rem"></div>
-    <div id="update-tags" style="display:none;padding:0 1rem .3rem 3.5rem"></div>
-    <div id="update-status" style="padding:0 1rem .5rem 3.5rem;font-size:.75rem;display:none"></div>
-    <div class="settings-divider"></div>
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-archive"></i></div>
-      <div class="settings-body"><div class="settings-label">Backup &amp; Restore</div></div>
-      <span style="margin-left:auto;display:flex;gap:.3rem">
-        <button class="settings-btn" onclick="createBackup()"><i class="bi bi-download"></i> Backup</button>
-        <button class="settings-btn" onclick="document.getElementById('restoreInput').click()"><i class="bi bi-upload"></i> Restore</button>
-        <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreBackup(this.files[0])" />
-      </span>
-    </div>
-    <div id="backup-status" style="padding:.3rem 1rem .5rem 3.5rem;font-size:.78rem;display:none"></div>
-
-    <div class="settings-divider"></div>
-    <div class="settings-row" onclick="restartApp()">
-      <div class="settings-icon"><i class="bi bi-arrow-repeat"></i></div>
-      <div class="settings-body"><div class="settings-label">Restart App</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row" onclick="logout()" style="cursor:pointer">
-      <div class="settings-icon"><i class="bi bi-box-arrow-right"></i></div>
-      <div class="settings-body"><div class="settings-label" style="color:#ff453a">Log Out</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
-</div>
-
-<!-- PAGE: ADMIN -->
-<div class="settings-page" id="page-admin" style="display:none">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
-  <div class="settings-group-title" style="padding-top:0">ADMIN</div>
-  <div class="settings-group">
-    <div class="settings-row">
-      <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
-      <div class="settings-body"><div class="settings-label">User Management</div></div>
-    </div>
-  </div>
-  <div class="settings-group" style="margin-top:0">
-    <div id="users-list" style="padding:.5rem 1rem"></div>
-    <div class="settings-divider"></div>
-    <div style="padding:.5rem 1rem .75rem 1rem;display:flex;flex-direction:column;gap:.5rem">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-        <input type="text" id="new-user-name" class="settings-input" placeholder="Username" />
-        <input type="password" id="new-user-pass" class="settings-input" placeholder="Password" />
-      </div>
-      <div style="display:flex;gap:.5rem;align-items:center">
-        <select id="new-user-role" class="settings-select" style="flex:1">
-          <option value="admin">Admin</option>
-          <option value="viewer" selected>Viewer</option>
-        </select>
-        <button class="settings-btn settings-btn-primary" onclick="createUser()"><i class="bi bi-plus-lg"></i> Add</button>
-      </div>
-      <div id="user-create-status" style="font-size:.78rem;color:#ef4444;display:none"></div>
-    </div>
-  </div>
-</div>
-
-
-<!-- PAGE: PROFILE -->
-<div class="settings-page" id="page-profile" style="display:none">
-  <button class="settings-back-btn" onclick="closeSettingsPage()" aria-label="Back">
-    <i class="bi bi-chevron-left"></i>
-  </button>
-  <div class="settings-group-title" style="padding-top:0">PROFILE</div>
-  <div class="settings-group">
-    <div class="settings-row">
-      <div class="settings-icon" style="width:44px;height:44px;border-radius:22px;background:var(--primary);color:#fff"><i class="bi bi-person-fill" style="font-size:1.15rem"></i></div>
-      <div class="settings-body">
-        <div class="settings-label" style="font-size:1rem"><span id="profile-username-page">admin</span></div>
-        <div class="settings-desc" id="profile-role-page">Administrator</div>
-      </div>
-    </div>
-  </div>
-  <div class="settings-group" style="margin-top:0">
-    <div class="settings-row" onclick="document.getElementById('profile-username-fields').classList.toggle('open')">
-      <div class="settings-icon"><i class="bi bi-person-gear"></i></div>
-      <div class="settings-body"><div class="settings-label">Change Username</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-    <div id="profile-username-fields">
-    <div class="settings-divider"></div>
-    <div style="padding:.3rem 1rem .3rem 3.5rem;display:flex;flex-direction:column;gap:.4rem">
-      <input type="password" id="cu-current-pass" class="settings-input" placeholder="Current password" autocomplete="current-password" />
-      <input type="text" id="cu-new-username" class="settings-input" placeholder="New username" autocomplete="username" />
-    </div>
-    <div style="padding:.3rem 1rem .6rem 3.5rem">
-      <button class="settings-btn settings-btn-primary" onclick="changeUsername()"><i class="bi bi-person-check"></i> Change Username</button>
-    </div>
-    </div>
-    <div class="settings-divider"></div>
-    <div class="settings-row" onclick="document.getElementById('profile-pw-fields').classList.toggle('open')">
-      <div class="settings-icon"><i class="bi bi-shield-lock"></i></div>
-      <div class="settings-body"><div class="settings-label">Change Password</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-    <div id="profile-pw-fields">
-    <div class="settings-divider"></div>
-    <div style="padding:.3rem 1rem .3rem 3.5rem;display:flex;flex-direction:column;gap:.4rem">
-      <input type="password" id="cp-current" class="settings-input" placeholder="Current password" autocomplete="current-password" />
-      <input type="password" id="cp-new" class="settings-input" placeholder="New password" autocomplete="new-password" />
-      <input type="password" id="cp-confirm" class="settings-input" placeholder="Confirm new password" autocomplete="new-password" />
-    </div>
-    <div style="padding:.3rem 1rem .6rem 3.5rem">
-      <button class="settings-btn settings-btn-primary" onclick="changePassword()"><i class="bi bi-key"></i> Change Password</button>
-    </div>
-    </div>
-    <div class="settings-divider" id="profile-admin-divider" style="display:none"></div>
-    <div class="settings-row settings-row-link" id="profile-admin-row" onclick="openSettingsPage('page-admin')" style="display:none">
-      <div class="settings-icon"><i class="bi bi-people"></i></div>
-      <div class="settings-body"><div class="settings-label">User Management</div><div class="settings-desc">Create or remove users</div></div>
-      <span class="settings-chevron">›</span>
-    </div>
-  </div>
-</div>
-
-<!-- backward-compat hidden fields for loadPluginConfig -->
-<div style="display:none">
-  <input type="number" id="cfg-inverter-resolveAfterFails" value="10" />
-  <div id="resolveAfterFails-row"></div>
-  <input type="number" id="cfg-webPort" value="8583" />
-  <input type="checkbox" id="cfg-ntfy-notif-enabled" checked />
-  <input type="checkbox" id="cfg-tg-notif-enabled" checked />
-  <div id="notif-ntfy-row" style="display:flex"></div>
-  <div id="notif-tg-row" style="display:flex"></div>
-  <input type="number" id="cfg-soc-alert" value="20" />
-  <input type="number" id="cfg-conn-timeout" value="10" />
-  <div id="critical-fields"></div>
-  <div id="notif-status" style="display:none"></div>
-  <div id="tariff-status" style="display:none"></div>
-  <input type="time" id="cfg-tariff-day-start" value="07:00" />
-  <input type="time" id="cfg-tariff-night-start" value="23:00" />
-  <input type="number" id="cfg-tariff-day-rate-backup" />
-  <input type="number" id="cfg-tariff-night-rate-backup" />
-</div>
-</div><!-- /settings-pages -->
-
-</div>
-<div class="hb-toast" id="toast"><div class="toast-title" id="toastTitle">Success</div><div class="toast-body" id="toastBody">Done.</div><div class="toast-actions" id="toastActions" style="display:none"><button class="btn-hb btn-hb-outline btn-hb-sm" id="toastUndoBtn">Undo</button></div></div>
-<div id="restartOverlay"><div class="restart-spinner"></div><h3>Restarting<span class="restart-dots"></span></h3><p>Waiting for server to come back online</p></div>
-<div class="modal-backdrop" id="tileDetailModal" style="background:rgba(0,0,0,.6)!important" onclick="if(event.target===this)closeTileDetail()"><div class="modal-box" style="background:#1c1c1e!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:14px!important;padding:1.2rem!important;max-width:420px;width:92%;box-shadow:0 12px 48px rgba(0,0,0,.7)!important">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem"><h3 id="tileDetailTitle" style="margin:0;font-size:1rem;color:#f5f5f7!important">\u2014</h3><button class="btn-hb btn-hb-sm btn-hb-icon btn-hb-outline" onclick="closeTileDetail()"><i class="bi bi-x"></i></button></div>
-<div id="tileDetailStats" style="display:flex;gap:.8rem;margin-bottom:.8rem;font-size:.78rem;color:#a1a1a6"></div>
-<div style="height:180px"><canvas id="tileDetailChart"></canvas></div>
-</div></div>
-</main>
 <script src="/app.js"></script>
 </body>
 </html>

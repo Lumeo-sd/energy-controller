@@ -1,23 +1,32 @@
-/* ====== Energy Controller Shared Tokens ====== */
-:root {
-  --text: #f5f5f7;
-  --muted: #98989f;
-  --primary: #bf5af2;
-  --primary-dark: #a742d6;
-  --primary-light: #d18ffb;
-  --primary-rgb: 191, 90, 242;
-  --success: #30d158;
-  --danger: #ff453a;
-  --blue: #0a84ff;
+/* ====== Струм Design Tokens ====== */
+:root{
+  --bg:#000;
+  --label:#F5F5F7;
+  --label2:rgba(235,235,245,.62);
+  --label3:rgba(235,235,245,.36);
+  --sep:rgba(84,84,88,.5);
+  --card:rgba(28,28,32,.62);
+  --glass:rgba(24,24,28,.72);
+  --blue:#0A84FF;--cyan:#64D2FF;--green:#30D158;--yellow:#FFD60A;
+  --orange:#FF9F0A;--red:#FF453A;--purple:#BF5AF2;--pink:#FF375F;--teal:#40C8E0;
+  --r-lg:24px;--r-md:18px;--r-sm:12px;
+  --fb:'Figtree Variable','Figtree',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+  --fd:'Familjen Grotesk Variable','Familjen Grotesk',-apple-system,'SF Pro Display',sans-serif;
+  --fm:'JetBrains Mono Variable','JetBrains Mono',ui-monospace,'SF Mono',monospace;
+  --spring:cubic-bezier(.32,.72,0,1);
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
 }
 
 /* ====== Accent color themes ====== */
-html[data-accent="purple"]{--primary:#bf5af2;--primary-dark:#a742d6;--primary-light:#d18ffb;--primary-rgb:191,90,242}
-html[data-accent="blue"]{--primary:#0a84ff;--primary-dark:#0060c0;--primary-light:#40a9ff;--primary-rgb:10,132,255}
-html[data-accent="green"]{--primary:#30d158;--primary-dark:#1a9e3e;--primary-light:#5be87a;--primary-rgb:48,209,88}
-html[data-accent="orange"]{--primary:#ff9f0a;--primary-dark:#cc7a00;--primary-light:#ffb340;--primary-rgb:255,159,10}
-html[data-accent="pink"]{--primary:#ff375f;--primary-dark:#cc0030;--primary-light:#ff6b85;--primary-rgb:255,55,95}
-html[data-accent="cyan"]{--primary:#00c7be;--primary-dark:#009e97;--primary-light:#33e0d8;--primary-rgb:0,199,190}
+html[data-accent="purple"]{--accent:#BF5AF2;--accent-rgb:191,90,242}
+html[data-accent="blue"]{--accent:#0A84FF;--accent-rgb:10,132,255}
+html[data-accent="green"]{--accent:#30D158;--accent-rgb:48,209,88}
+html[data-accent="orange"]{--accent:#FF9F0A;--accent-rgb:255,159,10}
+html[data-accent="pink"]{--accent:#FF375F;--accent-rgb:255,55,95}
+html[data-accent="cyan"]{--accent:#00C7BE;--accent-rgb:0,199,190}
 
-/* ====== Quiet theme global colour overrides ====== */
-
+/* ====== Web Fonts ====== */
+@font-face{font-family:'Figtree Variable';src:url('./vendor/fonts/figtree-variable.woff2') format('woff2');font-weight:300 900;font-display:swap}
+@font-face{font-family:'Familjen Grotesk Variable';src:url('./vendor/fonts/familjen-grotesk-variable.woff2') format('woff2');font-weight:400 700;font-display:swap}
+@font-face{font-family:'JetBrains Mono Variable';src:url('./vendor/fonts/jetbrains-mono-variable.woff2') format('woff2');font-weight:300 800;font-display:swap}
