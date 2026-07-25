@@ -397,7 +397,43 @@ async function loadSettings(){
   if(v){const sv=$('#sysVersion');if(sv)sv.textContent=v.version||'—';}
   const inv=$('#invIp');if(inv)inv.textContent=S.config.inverter?.ip||'—';
   const sn=$('#invSerial');if(sn)sn.textContent=S.config.inverter?.serial||'—';
+  const ts=$('#tuyaStatus');if(ts){const hasTuya=!!(S.config.tuya?.username);ts.textContent=hasTuya?'Configured':'Not Set';ts.className=hasTuya?'badge-ok':'badge-ok';ts.style.cssText=hasTuya?'':'background:rgba(255,69,58,.15);color:var(--red)';}
+  const ta=$('#tuyaAccessId');if(ta)ta.textContent=S.config.tuya?.accessId||'—';
+  const tu=$('#tuyaUsername');if(tu)tu.textContent=S.config.tuya?.username||'—';
+  const tc=$('#tuyaDeviceCount');if(tc)tc.textContent=S.devices.length||0;
+  const modeResult=await api('/api/tuya-mode');
+  if(modeResult&&modeResult.mode){
+    $$('#tuyaModeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.mode===modeResult.mode));
+    updateTuyaModeHint(modeResult.mode);
+  }
+  // Auto-scan
+  const as=await api('/api/inverter/autoscan');
+  if(as&&as.success!==false){
+    $$('#invScanSeg button').forEach(b=>b.classList.toggle('on',b.dataset.scan===(as.enabled?'auto':'off')));
+    updateInvScanHint(as.enabled?'auto':'off');
+  }
+  // NetBird
+  const nb=await api('/api/netbird/status');
+  if(nb){
+    const ns=$('#nbStatus');if(ns){ns.textContent=nb.success?'Connected':'Disconnected';ns.className='badge-ok';ns.style.cssText=nb.success?'':'background:rgba(255,69,58,.15);color:var(--red)';}
+    const nip=$('#nbIp');if(nip)nip.textContent=nb.status?nb.status.match(/IP:\s*(\S+)/)?.[1]||'—':'—';
+  }
+  // Notifications
+  const ncfg=S.config.notifications||{};
+  const ntfyOn=ncfg.ntfyEnabled!==false&&ncfg.notifEnabled!==false;
+  const tgOn=ncfg.telegramEnabled!==false&&ncfg.notifEnabled!==false;
+  $$('#ntfySeg button').forEach(b=>b.classList.toggle('on',b.dataset.ntfy===(ntfyOn?'on':'off')));
+  $$('#tgSeg button').forEach(b=>b.classList.toggle('on',b.dataset.tg===(tgOn?'on':'off')));
+  const ntopic=$('#ntfyTopic');if(ntopic)ntopic.textContent=ncfg.ntfyTopic||'—';
+  const nls=$('#ntfyLowSoc');if(nls)nls.value=ncfg.lowSocAlert||20;
+  const tcid=$('#tgChatId');if(tcid)tcid.textContent=ncfg.telegramChatId||'—';
 }
+
+const MODE_HINTS={local:'LAN only — no cloud fallback',auto:'Local-first with cloud fallback',cloud:'Cloud only — no local control'};
+function updateTuyaModeHint(mode){const el=$('#tuyaModeHint');if(el)el.textContent=MODE_HINTS[mode]||'';}
+
+const SCAN_HINTS={off:'Off — manual scan only',auto:'Auto — scan on connection failure'};
+function updateInvScanHint(mode){const el=$('#invScanHint');if(el)el.textContent=SCAN_HINTS[mode]||'';}
 
 // ─── Tab switching ─────────────────────────────────────────
 function switchTab(id){
@@ -493,6 +529,62 @@ document.addEventListener('click',e=>{
   if(f){devFilter=f.dataset.filter;$$('[data-filter]').forEach(x=>x.classList.toggle('on',x===f));renderDevices();vib(8);return;}
   const cp=e.target.closest('[data-period]');
   if(cp){$$('[data-period]').forEach(x=>x.classList.toggle('on',x===cp));drawMain(cp.dataset.period);vib(8);return;}
+  const tm=e.target.closest('#tuyaModeSeg button');
+  if(tm){const m=tm.dataset.mode;vib(10);
+    $$('#tuyaModeSeg button').forEach(b=>b.classList.toggle('on',b===tm));
+    updateTuyaModeHint(m);
+    api('/api/tuya-mode',{method:'POST',body:JSON.stringify({mode:m})}).then(r=>{
+      if(r&&r.success)banner('Mode','Control mode: '+m,'success');
+      else banner('Error',r?.message||'Failed','error');
+    });
+    return;
+  }
+  const is=e.target.closest('#invScanSeg button');
+  if(is){const m=is.dataset.scan;vib(10);
+    $$('#invScanSeg button').forEach(b=>b.classList.toggle('on',b===is));
+    updateInvScanHint(m);
+    api('/api/inverter/autoscan',{method:'POST',body:JSON.stringify({enabled:m==='auto'})}).then(r=>{
+      if(r&&r.success)banner('Auto-Scan',m==='auto'?'Enabled — scans on failure':'Disabled','success');
+      else banner('Error',r?.message||'Failed','error');
+    });
+    return;
+  }
+  const nbUp=e.target.closest('#btnNbUp');
+  if(nbUp){vib(12);banner('VPN','Connecting to NetBird…','info');
+    api('/api/netbird/up',{method:'POST'}).then(r=>{
+      if(r&&r.success)banner('VPN','Connected','success');
+      else banner('VPN',r?.message||'Failed','error');
+      loadSettings();
+    });return;}
+  const nbDown=e.target.closest('#btnNbDown');
+  if(nbDown){vib(12);banner('VPN','Disconnecting…','info');
+    api('/api/netbird/down',{method:'POST'}).then(r=>{
+      if(r&&r.success)banner('VPN','Disconnected','success');
+      else banner('VPN',r?.message||'Failed','error');
+      loadSettings();
+    });return;}
+  const nf=e.target.closest('#ntfySeg button');
+  if(nf){const on=nf.dataset.ntfy==='on';vib(10);
+    $$('#ntfySeg button').forEach(b=>b.classList.toggle('on',b===nf));
+    api('/api/plugin-config',{method:'POST',body:JSON.stringify({config:{notifications:{ntfyEnabled:on,notifEnabled:on}}})}).then(r=>{
+      if(r&&r.success)banner('ntfy',on?'Enabled':'Disabled','success');
+    });return;}
+  const tg=e.target.closest('#tgSeg button');
+  if(tg){const on=tg.dataset.tg==='on';vib(10);
+    $$('#tgSeg button').forEach(b=>b.classList.toggle('on',b===tg));
+    api('/api/plugin-config',{method:'POST',body:JSON.stringify({config:{notifications:{telegramEnabled:on,notifEnabled:on}}})}).then(r=>{
+      if(r&&r.success)banner('Telegram',on?'Enabled':'Disabled','success');
+    });return;}
+  const tn=e.target.closest('#btnTestNtfy');
+  if(tn){vib(10);banner('ntfy','Sending test…','info');
+    api('/api/test-notification',{method:'POST'}).then(r=>{
+      if(r)banner('ntfy',r.results?r.results.join(', '):'Sent','success');
+    });return;}
+  const tt=e.target.closest('#btnTestTg');
+  if(tt){vib(10);banner('Telegram','Sending test…','info');
+    api('/api/test-notification',{method:'POST'}).then(r=>{
+      if(r)banner('Telegram',r.results?r.results.join(', '):'Sent','success');
+    });return;}
   const g=e.target.closest('[data-goto]');
   if(g){const t=$(`.tab[data-tab="${g.dataset.goto}"]`);if(t)t.click();return;}
 });
@@ -512,14 +604,20 @@ $('#island').addEventListener('click',()=>{
 $('#btnUnload')?.addEventListener('click',unloadOptional);
 $('#btnUnloadAll')?.addEventListener('click',unloadOptional);
 $('#btnAddRule')?.addEventListener('click',openAddRule);
-$('#btnTestNotif')?.addEventListener('click',async()=>{
-  const r=await api('/api/test-notification',{method:'POST'});
-  if(r)banner('Test',r.results?r.results.join(', '):'Sent','success');
-});
 $('#btnScan')?.addEventListener('click',async e=>{
   const t=e.currentTarget.querySelector('.act-lb');
   if(t)t.innerHTML='<span class="spin"></span>Searching…';
   banner('Scanning','Inverter network scan initiated…','info');
+});
+$('#btnSyncTuya')?.addEventListener('click',async e=>{
+  const t=e.currentTarget.querySelector('.act-lb');
+  if(t)t.innerHTML='<span class="spin"></span>Syncing…';
+  try{
+    const r=await api('/api/sync-tuya',{method:'POST'});
+    if(r&&r.success){banner('Tuya',r.message||'Synced','success');const d=await api('/api/tuya-devices');if(Array.isArray(d)){S.devices=d;const tc=$('#tuyaDeviceCount');if(tc)tc.textContent=d.length;}}
+    else banner('Tuya',r?.message||'Sync failed','error');
+  }catch(err){banner('Tuya','Sync failed: '+err.message,'error');}
+  if(t)t.innerHTML='Sync Devices';
 });
 $('#btnBackup')?.addEventListener('click',async()=>{
   const r=await api('/api/backup',{method:'POST',body:JSON.stringify({scope:['config','scenes','history']})});
@@ -541,5 +639,9 @@ $('#btnLogout')?.addEventListener('click',async()=>{
 });
 $('#tDay')?.addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isNaN(v))S.tariff.day=v;});
 $('#tNight')?.addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isNaN(v))S.tariff.night=v;});
+$('#ntfyLowSoc')?.addEventListener('change',e=>{
+  const v=parseInt(e.target.value);if(isNaN(v))return;
+  api('/api/plugin-config',{method:'POST',body:JSON.stringify({config:{notifications:{lowSocAlert:v}}})});
+});
 
 document.addEventListener('DOMContentLoaded',init);
