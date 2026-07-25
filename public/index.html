@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk" data-accent="blue">
+<html lang="en" data-accent="blue">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="/manifest.json">
-<title>Струм — енергомоніторинг</title>
+<title>Strum — Energy Monitor</title>
 <link href="/tokens.css" rel="stylesheet">
 <link href="/vendor/phosphor-icons.css" rel="stylesheet">
 <script src="/vendor/chart.umd.min.js"></script>
@@ -21,13 +21,13 @@
   <div class="stage-copy">
     <div class="brand">
       <div class="brand-ic"><i class="ph-fill ph-lightning"></i></div>
-      <div><h2>Струм</h2><span>енергомоніторинг</span></div>
+      <div><h2>Strum</h2><span>energy monitor</span></div>
     </div>
-    <p>Інвертор як <b>UPS для всієї квартири</b>: рідкий glass-інтерфейс, живий потік енергії та режим виживання, коли зникло світло.</p>
+    <p>An inverter that doubles as a <b>whole-apartment UPS</b>: a fluid glass UI, live energy flow, and survival mode when the grid goes down.</p>
     <div class="slist">
-      <div><i class="ph-fill ph-battery-charging"></i> Автономія та SOC у реальному часі</div>
-      <div><i class="ph-fill ph-wifi-high"></i> Tuya Local — розетки без хмари</div>
-      <div><i class="ph-fill ph-lifebuoy"></i> Пріоритети: критичне живе довше</div>
+      <div><i class="ph-fill ph-battery-charging"></i> Autonomy & SOC in real time</div>
+      <div><i class="ph-fill ph-wifi-high"></i> Tuya Local — sockets without the cloud</div>
+      <div><i class="ph-fill ph-lifebuoy"></i> Priorities: critical loads last longer</div>
     </div>
     <div class="stage-note">ENERGY CONTROLLER</div>
   </div>
@@ -45,26 +45,26 @@
         <div class="island" id="island">
           <div class="isl-c">
             <span class="isl-dot" id="islDot"></span>
-            <span class="isl-w" id="islW">— Вт</span>
+            <span class="isl-w" id="islW">— W</span>
             <span class="isl-soc" id="islSoc">—%</span>
           </div>
           <div class="isl-e">
-            <div><i class="ph-fill ph-plug-charging ie-g"></i><b id="iv1">—</b><span>Мережа</span></div>
-            <div><i class="ph-fill ph-battery-charging ie-b"></i><b id="iv2">—%</b><span>Батарея</span></div>
-            <div><i class="ph-fill ph-gauge ie-h"></i><b id="iv3">— Вт</b><span>Дім</span></div>
+            <div><i class="ph-fill ph-plug-charging ie-g"></i><b id="iv1">—</b><span>Grid</span></div>
+            <div><i class="ph-fill ph-battery-charging ie-b"></i><b id="iv2">—%</b><span>Battery</span></div>
+            <div><i class="ph-fill ph-gauge ie-h"></i><b id="iv3">— W</b><span>Load</span></div>
           </div>
         </div>
 
         <div class="app">
 
-          <!-- ================= ОГЛЯД ================= -->
+          <!-- ================= OVERVIEW ================= -->
           <section class="page active" id="page-overview">
             <div class="scroll">
-              <div class="navglass"><span class="nv-t">Огляд</span><span class="nv-chip" id="gridChip"><i class="ph-fill ph-plug-charging"></i> Мережа</span></div>
-              <div class="ltitle"><h1>Огляд</h1><span id="dateNote">—</span></div>
+              <div class="navglass"><span class="nv-t">Overview</span><span class="nv-chip" id="gridChip"><i class="ph-fill ph-plug-charging"></i> Grid</span></div>
+              <div class="ltitle"><h1>Overview</h1><span id="dateNote">—</span></div>
 
               <div class="card rv">
-                <div class="card-head"><span class="card-title">Потік енергії</span><span class="live-dot"><i></i>наживо</span></div>
+                <div class="card-head"><span class="card-title">Energy Flow</span><span class="live-dot"><i></i>live</span></div>
                 <div class="flow-wrap">
                   <svg viewBox="0 0 340 212" preserveAspectRatio="xMidYMid meet">
                     <defs>
@@ -96,31 +96,31 @@
                   </svg>
                   <div class="fnode" style="left:17%;top:29%">
                     <div class="fn-ic" id="fnGridIc" style="--c:#64D2FF"><i class="ph-fill ph-plug-charging"></i></div>
-                    <span class="fn-l">Мережа</span><b class="fn-v" id="fnGrid">—</b>
+                    <span class="fn-l">Grid</span><b class="fn-v" id="fnGrid">—</b>
                   </div>
                   <div class="fnode" style="left:50%;top:44%">
                     <div class="fn-ic big" style="--c:#BF5AF2;position:relative"><span class="fn-pulse"></span><i class="ph-fill ph-lightning"></i></div>
-                    <span class="fn-l">Інвертор</span><b class="fn-v" id="fnInv">— Вт</b>
+                    <span class="fn-l">Inverter</span><b class="fn-v" id="fnInv">— W</b>
                   </div>
                   <div class="fnode" style="left:83%;top:29%">
                     <div class="fn-ic" style="--c:#FF9F0A"><i class="ph-fill ph-house"></i></div>
-                    <span class="fn-l">Дім</span><b class="fn-v" id="fnHome">— Вт</b>
+                    <span class="fn-l">Home</span><b class="fn-v" id="fnHome">— W</b>
                   </div>
                   <div class="fnode" style="left:50%;top:79%">
                     <div class="fn-ic" style="--c:#30D158"><i class="ph-fill ph-battery-charging"></i></div>
-                    <span class="fn-l">Батарея</span><b class="fn-v" id="fnBat">—%</b>
+                    <span class="fn-l">Battery</span><b class="fn-v" id="fnBat">—%</b>
                   </div>
                 </div>
                 <div class="flow-stats">
-                  <div><span>Імпорт</span><b id="fImport">—</b></div>
-                  <div><span>Батарея</span><b id="fBat">—</b></div>
-                  <div><span>Частота</span><b id="fFreq">— Гц</b></div>
+                  <div><span>Import</span><b id="fImport">—</b></div>
+                  <div><span>Battery</span><b id="fBat">—</b></div>
+                  <div><span>Frequency</span><b id="fFreq">— Hz</b></div>
                 </div>
               </div>
 
               <div class="duo">
                 <div class="card rv" id="batteryCard">
-                  <div class="card-head" style="margin-bottom:4px"><span class="card-title">Батарея</span><span class="mini-badge g" id="batState">—</span></div>
+                  <div class="card-head" style="margin-bottom:4px"><span class="card-title">Battery</span><span class="mini-badge g" id="batState">—</span></div>
                   <div class="ring-wrap">
                     <svg viewBox="0 0 120 120">
                       <defs><linearGradient id="gradBat" x1="0" y1="0" x2="1" y2="1">
@@ -132,153 +132,153 @@
                     <div class="ring-center"><b id="socVal">—</b><span>%</span></div>
                   </div>
                   <div class="ring-meta">
-                    <div><span>Потужн.</span><b id="batPower">—</b></div>
-                    <div><span>Залишок</span><b id="batWh">—</b></div>
-                    <div><span>Темп.</span><b id="batTemp">—</b></div>
+                    <div><span>Power</span><b id="batPower">—</b></div>
+                    <div><span>Stored</span><b id="batWh">—</b></div>
+                    <div><span>Temp</span><b id="batTemp">—</b></div>
                   </div>
                 </div>
 
                 <div class="card survival rv" id="survCard">
-                  <div class="card-head"><span class="card-title">Автономія</span><i class="ph-fill ph-lifebuoy"></i></div>
-                  <div class="surv-time"><b id="survTime">—</b><span id="survLoad">при поточному навантаженні</span></div>
+                  <div class="card-head"><span class="card-title">Autonomy</span><i class="ph-fill ph-lifebuoy"></i></div>
+                  <div class="surv-time"><b id="survTime">—</b><span id="survLoad">at current load</span></div>
                   <div class="surv-bar"><i id="survBar" style="width:0%"></i></div>
                   <div class="surv-hint" id="survHint">—</div>
-                  <button class="btn-surv" id="btnUnload"><i class="ph-bold ph-power"></i> Розвантажити дім</button>
+                  <button class="btn-surv" id="btnUnload"><i class="ph-bold ph-power"></i> Unload Home</button>
                 </div>
               </div>
 
               <div class="tiles">
-                <div class="tile rv"><i class="ph-fill ph-gauge" style="color:var(--orange)"></i><span>Навантаження</span><b id="mLoad">—</b></div>
-                <div class="tile rv"><i class="ph-fill ph-arrow-down-to-line" style="color:var(--cyan)"></i><span>Імпорт сьогодні</span><b id="mImport">—</b></div>
-                <div class="tile rv"><i class="ph-fill ph-coins" style="color:var(--yellow)"></i><span>Вартість</span><b id="mCost">—</b></div>
-                <div class="tile rv"><i class="ph-fill ph-thermometer-simple" style="color:var(--purple)"></i><span>Інвертор</span><b id="mTemp">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-gauge" style="color:var(--orange)"></i><span>Load</span><b id="mLoad">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-arrow-down-to-line" style="color:var(--cyan)"></i><span>Imported Today</span><b id="mImport">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-coins" style="color:var(--yellow)"></i><span>Cost</span><b id="mCost">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-thermometer-simple" style="color:var(--purple)"></i><span>Inverter</span><b id="mTemp">—</b></div>
               </div>
 
               <div class="card rv">
-                <div class="card-head"><span class="card-title">Швидкий доступ</span><a class="link" data-goto="devices">Всі <i class="ph ph-caret-right"></i></a></div>
+                <div class="card-head"><span class="card-title">Quick Access</span><a class="link" data-goto="devices">All <i class="ph ph-caret-right"></i></a></div>
                 <div class="quick-row" id="quickRow"></div>
               </div>
 
               <div class="card rv">
-                <div class="card-head"><span class="card-title">Останні події</span><span class="mini-badge" id="evBadge">0</span></div>
+                <div class="card-head"><span class="card-title">Recent Events</span><span class="mini-badge" id="evBadge">0</span></div>
                 <div id="eventsList"></div>
               </div>
-              <div class="page-end" id="updNote">ЗАВАНТАЖЕННЯ…</div>
+              <div class="page-end" id="updNote">LOADING…</div>
             </div>
           </section>
 
-          <!-- ================= ПРИСТРОЇ ================= -->
+          <!-- ================= DEVICES ================= -->
           <section class="page" id="page-devices">
             <div class="scroll">
-              <div class="navglass"><span class="nv-t">Пристрої</span><span class="nv-chip gray" id="devCountChip">0 пристроїв</span></div>
-              <div class="ltitle"><h1>Пристрої</h1><span>Tuya Smart · локальне керування по LAN</span></div>
+              <div class="navglass"><span class="nv-t">Devices</span><span class="nv-chip gray" id="devCountChip">0 devices</span></div>
+              <div class="ltitle"><h1>Devices</h1><span>Tuya Smart · local LAN control</span></div>
               <div class="card sum-card rv">
-                <div class="sum-l"><span>Споживання зараз</span><b id="sumW">—</b></div>
-                <div class="sum-r"><span>Найбільший споживач</span><b id="sumTop">—</b></div>
+                <div class="sum-l"><span>Current Draw</span><b id="sumW">—</b></div>
+                <div class="sum-r"><span>Top Consumer</span><b id="sumTop">—</b></div>
               </div>
-              <div class="search rv"><i class="ph ph-magnifying-glass"></i><input id="devSearch" placeholder="Пошук пристроїв" autocomplete="off"></div>
+              <div class="search rv"><i class="ph ph-magnifying-glass"></i><input id="devSearch" placeholder="Search devices" autocomplete="off"></div>
               <div class="chips rv">
-                <button class="fchip on" data-filter="all">Всі</button>
-                <button class="fchip" data-filter="critical">Критичні</button>
-                <button class="fchip" data-filter="essential">Важливі</button>
-                <button class="fchip" data-filter="optional">Опціональні</button>
+                <button class="fchip on" data-filter="all">All</button>
+                <button class="fchip" data-filter="critical">Critical</button>
+                <button class="fchip" data-filter="essential">Essential</button>
+                <button class="fchip" data-filter="optional">Optional</button>
               </div>
               <div id="devGroups"></div>
-              <button class="btn danger wide rv" id="btnUnloadAll"><i class="ph-bold ph-power"></i> Вимкнути все некритичне</button>
-              <div class="hint rv"><i class="ph-fill ph-wifi-high"></i><span>Пристрої керуються через Tuya API.</span></div>
+              <button class="btn danger wide rv" id="btnUnloadAll"><i class="ph-bold ph-power"></i> Turn Off All Non-Critical</button>
+              <div class="hint rv"><i class="ph-fill ph-wifi-high"></i><span>Devices are controlled via the Tuya API.</span></div>
             </div>
           </section>
 
-          <!-- ================= АНАЛІТИКА ================= -->
+          <!-- ================= ANALYTICS ================= -->
           <section class="page" id="page-analytics">
             <div class="scroll">
-              <div class="navglass"><span class="nv-t">Аналітика</span><span class="nv-chip gray">енергія · кошти</span></div>
-              <div class="ltitle"><h1>Аналітика</h1><span>Споживання, батарея та витрати</span></div>
+              <div class="navglass"><span class="nv-t">Analytics</span><span class="nv-chip gray">energy · cost</span></div>
+              <div class="ltitle"><h1>Analytics</h1><span>Consumption, battery & cost</span></div>
               <div class="chips rv" id="anaChips">
-                <button class="fchip" data-period="1h">1 год</button>
-                <button class="fchip" data-period="6h">6 год</button>
-                <button class="fchip on" data-period="day">День</button>
-                <button class="fchip" data-period="week">Тиждень</button>
+                <button class="fchip" data-period="1h">1 hr</button>
+                <button class="fchip" data-period="6h">6 hrs</button>
+                <button class="fchip on" data-period="day">Day</button>
+                <button class="fchip" data-period="week">Week</button>
               </div>
               <div class="card rv">
-                <div class="card-head"><span class="card-title">Навантаження і SOC</span><span class="live-dot"><i></i>живе</span></div>
+                <div class="card-head"><span class="card-title">Load & SOC</span><span class="live-dot"><i></i>live</span></div>
                 <div class="chart-h"><canvas id="mainChart"></canvas></div>
               </div>
               <div class="tiles4">
-                <div class="tile2 rv"><span>Середнє</span><b id="stAvg">—</b></div>
-                <div class="tile2 rv"><span>Пік</span><b id="stPeak">—</b></div>
-                <div class="tile2 rv"><span>Спожито</span><b id="stKwh">—</b></div>
-                <div class="tile2 rv"><span>Вартість</span><b id="stCost">—</b></div>
+                <div class="tile2 rv"><span>Average</span><b id="stAvg">—</b></div>
+                <div class="tile2 rv"><span>Peak</span><b id="stPeak">—</b></div>
+                <div class="tile2 rv"><span>Consumed</span><b id="stKwh">—</b></div>
+                <div class="tile2 rv"><span>Cost</span><b id="stCost">—</b></div>
               </div>
               <div class="card rv">
-                <div class="card-head"><span class="card-title">Витрати за 7 днів</span><span class="mini-badge g" id="costWeekBadge">₴ 0</span></div>
+                <div class="card-head"><span class="card-title">Cost · 7 Days</span><span class="mini-badge g" id="costWeekBadge">$ 0</span></div>
                 <div class="chart-h sm"><canvas id="costChart"></canvas></div>
               </div>
             </div>
           </section>
 
-          <!-- ================= ПРАВИЛА ================= -->
+          <!-- ================= RULES ================= -->
           <section class="page" id="page-rules">
             <div class="scroll">
-              <div class="navglass"><span class="nv-t">Правила</span><span class="nv-chip" id="rulesChip">0 активних</span></div>
-              <div class="ltitle"><h1>Автоматизації</h1><span>Режими виживання та енергоефективність</span></div>
+              <div class="navglass"><span class="nv-t">Rules</span><span class="nv-chip" id="rulesChip">0 active</span></div>
+              <div class="ltitle"><h1>Automations</h1><span>Survival modes & energy efficiency</span></div>
               <div id="rulesList"></div>
-              <button class="btn wide rv" id="btnAddRule"><i class="ph-bold ph-plus"></i> Додати правило</button>
-              <div class="hint rv"><i class="ph-fill ph-cpu"></i><span>Правила виконуються <b>локально на контролері</b> — спрацюють навіть тоді, коли зовні немає жодного зв'язку.</span></div>
+              <button class="btn wide rv" id="btnAddRule"><i class="ph-bold ph-plus"></i> Add Rule</button>
+              <div class="hint rv"><i class="ph-fill ph-cpu"></i><span>Rules run <b>locally on the controller</b> — they work even when there's no external connectivity.</span></div>
             </div>
           </section>
 
-          <!-- ================= ЩЕ ================= -->
+          <!-- ================= MORE ================= -->
           <section class="page" id="page-settings">
             <div class="scroll">
-              <div class="navglass"><span class="nv-t">Ще</span><span class="nv-chip gray" id="settingsUser">admin</span></div>
-              <div class="ltitle"><h1>Ще</h1><span>Налаштування системи</span></div>
+              <div class="navglass"><span class="nv-t">More</span><span class="nv-chip gray" id="settingsUser">admin</span></div>
+              <div class="ltitle"><h1>More</h1><span>System Settings</span></div>
 
               <div class="card prof press rv">
                 <div class="dic big" style="--c:linear-gradient(145deg,#0A84FF,#BF5AF2)"><i class="ph-fill ph-lightning"></i></div>
-                <div class="dinfo"><div class="dname">Дім</div><div class="dsub">Струм · <span id="settingsDeviceCount">0</span> пристроїв</div></div>
+                <div class="dinfo"><div class="dname">Home</div><div class="dsub">Strum · <span id="settingsDeviceCount">0</span> devices</div></div>
               </div>
 
-              <div class="slabel rv">Інвертор</div>
+              <div class="slabel rv">Inverter</div>
               <div class="sgroup rv">
-                <div class="srow"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-lightning"></i></span><span class="slb">Статус</span><span class="badge-ok" id="invStatus">—</span></div>
-                <div class="srow"><span class="sic" style="--c:#0A84FF"><i class="ph-fill ph-wifi-high"></i></span><span class="slb">IP-адреса</span><span class="sval mono" id="invIp">—</span></div>
-                <div class="srow"><span class="sic" style="--c:#BF5AF2"><i class="ph-fill ph-barcode"></i></span><span class="slb">Серійний номер</span><span class="sval mono" id="invSerial">—</span></div>
-                <button class="srow" id="btnScan"><span class="sic" style="--c:#64D2FF"><i class="ph-fill ph-magnifying-glass"></i></span><span class="slb act-lb">Сканувати мережу</span><i class="ph ph-caret-right chev"></i></button>
+                <div class="srow"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-lightning"></i></span><span class="slb">Status</span><span class="badge-ok" id="invStatus">—</span></div>
+                <div class="srow"><span class="sic" style="--c:#0A84FF"><i class="ph-fill ph-wifi-high"></i></span><span class="slb">IP Address</span><span class="sval mono" id="invIp">—</span></div>
+                <div class="srow"><span class="sic" style="--c:#BF5AF2"><i class="ph-fill ph-barcode"></i></span><span class="slb">Serial Number</span><span class="sval mono" id="invSerial">—</span></div>
+                <button class="srow" id="btnScan"><span class="sic" style="--c:#64D2FF"><i class="ph-fill ph-magnifying-glass"></i></span><span class="slb act-lb">Scan Network</span><i class="ph ph-caret-right chev"></i></button>
               </div>
 
-              <div class="slabel rv">Тариф</div>
+              <div class="slabel rv">Tariff</div>
               <div class="sgroup rv">
-                <div class="srow"><span class="sic" style="--c:#FF9F0A"><i class="ph-fill ph-sun"></i></span><span class="slb">День</span><input class="sinput" id="tDay" type="number" step="0.01"><span class="sunit">₴/кВт·год</span></div>
-                <div class="srow"><span class="sic" style="--c:#5E5CE6"><i class="ph-fill ph-moon"></i></span><span class="slb">Ніч</span><input class="sinput" id="tNight" type="number" step="0.01"><span class="sunit">₴/кВт·год</span></div>
-                <div class="srow"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-receipt"></i></span><span class="slb">Сьогодні</span><span class="sval" id="tToday">—</span></div>
+                <div class="srow"><span class="sic" style="--c:#FF9F0A"><i class="ph-fill ph-sun"></i></span><span class="slb">Day</span><input class="sinput" id="tDay" type="number" step="0.01"><span class="sunit">$/kWh</span></div>
+                <div class="srow"><span class="sic" style="--c:#5E5CE6"><i class="ph-fill ph-moon"></i></span><span class="slb">Night</span><input class="sinput" id="tNight" type="number" step="0.01"><span class="sunit">$/kWh</span></div>
+                <div class="srow"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-receipt"></i></span><span class="slb">Today</span><span class="sval" id="tToday">—</span></div>
               </div>
 
-              <div class="slabel rv">Сповіщення</div>
+              <div class="slabel rv">Notifications</div>
               <div class="sgroup rv">
-                <button class="srow" id="btnTestNotif"><span class="sic" style="--c:#BF5AF2"><i class="ph-fill ph-chat-circle-dots"></i></span><span class="slb act-lb">Надіслати тест</span><i class="ph ph-caret-right chev"></i></button>
+                <button class="srow" id="btnTestNotif"><span class="sic" style="--c:#BF5AF2"><i class="ph-fill ph-chat-circle-dots"></i></span><span class="slb act-lb">Send Test</span><i class="ph ph-caret-right chev"></i></button>
               </div>
 
-              <div class="slabel rv">Система</div>
+              <div class="slabel rv">System</div>
               <div class="sgroup rv">
-                <div class="srow"><span class="sic" style="--c:#8E8E93"><i class="ph-fill ph-info"></i></span><span class="slb">Версія</span><span class="sval mono" id="sysVersion">—</span></div>
-                <button class="srow" id="btnUpdate"><span class="sic" style="--c:#0A84FF"><i class="ph-fill ph-arrow-circle-up"></i></span><span class="slb act-lb">Перевірити оновлення</span><i class="ph ph-caret-right chev"></i></button>
-                <button class="srow" id="btnBackup"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-download-simple"></i></span><span class="slb act-lb">Створити резервну копію</span><i class="ph ph-caret-right chev"></i></button>
-                <button class="srow" id="btnRestart"><span class="sic" style="--c:#FF9F0A"><i class="ph-fill ph-arrows-clockwise"></i></span><span class="slb act-lb">Перезапустити</span><i class="ph ph-caret-right chev"></i></button>
-                <button class="srow red" id="btnLogout"><span class="sic" style="--c:#FF453A"><i class="ph-fill ph-sign-out"></i></span><span class="slb act-lb" style="color:var(--red)">Вийти</span><i class="ph ph-caret-right chev"></i></button>
+                <div class="srow"><span class="sic" style="--c:#8E8E93"><i class="ph-fill ph-info"></i></span><span class="slb">Version</span><span class="sval mono" id="sysVersion">—</span></div>
+                <button class="srow" id="btnUpdate"><span class="sic" style="--c:#0A84FF"><i class="ph-fill ph-arrow-circle-up"></i></span><span class="slb act-lb">Check for Updates</span><i class="ph ph-caret-right chev"></i></button>
+                <button class="srow" id="btnBackup"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-download-simple"></i></span><span class="slb act-lb">Create Backup</span><i class="ph ph-caret-right chev"></i></button>
+                <button class="srow" id="btnRestart"><span class="sic" style="--c:#FF9F0A"><i class="ph-fill ph-arrows-clockwise"></i></span><span class="slb act-lb">Restart</span><i class="ph ph-caret-right chev"></i></button>
+                <button class="srow red" id="btnLogout"><span class="sic" style="--c:#FF453A"><i class="ph-fill ph-sign-out"></i></span><span class="slb act-lb" style="color:var(--red)">Log Out</span><i class="ph ph-caret-right chev"></i></button>
               </div>
-              <div class="foot">СТРУМ · ENERGY CONTROLLER<br>ЗРОБЛЕНО З ⚡ В УКРАЇНІ</div>
+              <div class="foot">STRUM · ENERGY CONTROLLER<br>BUILT WITH ⚡ IN UKRAINE</div>
             </div>
           </section>
         </div>
 
         <!-- tabbar -->
         <nav class="tabbar">
-          <button class="tab active" data-tab="overview"><i class="ph-fill ph-lightning"></i><span>Огляд</span></button>
-          <button class="tab" data-tab="devices"><i class="ph-fill ph-plugs-connected"></i><span>Пристрої</span></button>
-          <button class="tab" data-tab="analytics"><i class="ph-fill ph-chart-line-up"></i><span>Аналітика</span></button>
-          <button class="tab" data-tab="rules"><i class="ph-fill ph-flow-arrow"></i><span>Правила</span></button>
-          <button class="tab" data-tab="settings"><i class="ph-fill ph-gear-six"></i><span>Ще</span></button>
+          <button class="tab active" data-tab="overview"><i class="ph-fill ph-lightning"></i><span>Overview</span></button>
+          <button class="tab" data-tab="devices"><i class="ph-fill ph-plugs-connected"></i><span>Devices</span></button>
+          <button class="tab" data-tab="analytics"><i class="ph-fill ph-chart-line-up"></i><span>Analytics</span></button>
+          <button class="tab" data-tab="rules"><i class="ph-fill ph-flow-arrow"></i><span>Rules</span></button>
+          <button class="tab" data-tab="settings"><i class="ph-fill ph-gear-six"></i><span>More</span></button>
         </nav>
 
         <div class="banners" id="banners"></div>

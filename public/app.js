@@ -1,10 +1,10 @@
 'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const fmt=(n,d=0)=>Number(n).toLocaleString('uk-UA',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt=(n,d=0)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const timeStr=d=>(d||new Date()).toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'});
+const timeStr=d=>(d||new Date()).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 
 window._csrf='';
 const CAP_WH=5120,EFF=0.92;
@@ -12,17 +12,17 @@ const S={grid:true,gridV:0,gridHz:50,soc:0,storedWh:0,batW:0,load:0,
   pvPower:0,invTemp:0,batTemp:0,importToday:0,costToday:0,
   tariff:{day:4.32,night:2.16},devices:[],scenes:[],events:[],config:null};
 
-const PRI={critical:{label:'Критичні',color:'#FF453A',icon:'ph-shield-check'},
-  essential:{label:'Важливі',color:'#FFD60A',icon:'ph-star'},
-  optional:{label:'Опціональні',color:'#8E8E93',icon:'ph-dots-three'}};
+const PRI={critical:{label:'Critical',color:'#FF453A',icon:'ph-shield-check'},
+  essential:{label:'Essential',color:'#FFD60A',icon:'ph-star'},
+  optional:{label:'Optional',color:'#8E8E93',icon:'ph-dots-three'}};
 
 function getPriorities(){try{return JSON.parse(localStorage.getItem('strum_priorities')||'{}');}catch{return {};}}
 function setPriority(id,p){const all=getPriorities();all[id]=p;localStorage.setItem('strum_priorities',JSON.stringify(all));}
 function getDevicePriority(d){
   const stored=getPriorities();if(stored[d.id])return stored[d.id];
   const n=(d.name||'').toLowerCase();
-  if(/холодильник|котел|роутер|насос|nas/i.test(n))return'critical';
-  if(/світл|освітлен|ноутбук|laptop|заряд|charger/i.test(n))return'essential';
+  if(/fridge|freezer|boiler|router|pump|nas/i.test(n))return'critical';
+  if(/light|lamp|laptop|charger/i.test(n))return'essential';
   return'optional';
 }
 
@@ -55,7 +55,7 @@ async function api(path,opts={}){
     const r=await fetch(path,{credentials:'same-origin',...opts,headers:{...headers,...opts.headers}});
     if(r.status===401||r.status===302){window.location.href='/login';return null;}
     return r.json();
-  }catch(e){banner('Помилка',e.message,'error');return null;}
+  }catch(e){banner('Error',e.message,'error');return null;}
 }
 
 function addEvent(icon,color,text){S.events.unshift({t:timeStr(),icon,color,text});S.events=S.events.slice(0,8);renderEvents();}
@@ -74,13 +74,13 @@ function updateFlow(){
   $('#pBatC').style.display=chg?'':'none';
   $('#pBatD').style.display=dis?'':'none';
   $('#fnGridIc').classList.toggle('off',!g);
-  const fg=$('#fnGrid');fg.textContent=g?fmt(S.gridV,1)+' В':'—';fg.classList.toggle('bad',!g);
-  $('#fnInv').textContent=fmt(S.load)+' Вт';
-  $('#fnHome').textContent=fmt(S.load)+' Вт';
+  const fg=$('#fnGrid');fg.textContent=g?fmt(S.gridV,1)+' V':'—';fg.classList.toggle('bad',!g);
+  $('#fnInv').textContent=fmt(S.load)+' W';
+  $('#fnHome').textContent=fmt(S.load)+' W';
   $('#fnBat').textContent=fmt(S.soc)+'%';
-  $('#fImport').textContent=g?fmt(S.load+(chg?Math.abs(S.batW):0))+' Вт':'0 Вт';
-  $('#fBat').textContent=(S.batW>0?'+':S.batW<0?'−':'')+(Math.abs(S.batW)/1000).toFixed(2)+' кВт';
-  $('#fFreq').textContent=g?S.gridHz.toFixed(1)+' Гц':'—';
+  $('#fImport').textContent=g?fmt(S.load+(chg?Math.abs(S.batW):0))+' W':'0 W';
+  $('#fBat').textContent=(S.batW>0?'+':S.batW<0?'−':'')+(Math.abs(S.batW)/1000).toFixed(2)+' kWh';
+  $('#fFreq').textContent=g?S.gridHz.toFixed(1)+' Hz':'—';
 }
 
 // ─── Battery ───────────────────────────────────────────────
@@ -92,27 +92,27 @@ function updateBattery(){
   $('#gb1').setAttribute('stop-color',c);
   $('#gb2').setAttribute('stop-color',S.soc>50?'#64D2FF':S.soc>20?'#FF9F0A':'#FF6961');
   $('#socVal').textContent=fmt(S.soc);
-  $('#batPower').textContent=(S.batW>0?'+':S.batW<0?'−':'0')+(Math.abs(S.batW)/1000).toFixed(2)+' кВт';
-  $('#batWh').textContent=(S.storedWh/1000).toFixed(1)+' кВт·г';
+  $('#batPower').textContent=(S.batW>0?'+':S.batW<0?'−':'0')+(Math.abs(S.batW)/1000).toFixed(2)+' kWh';
+  $('#batWh').textContent=(S.storedWh/1000).toFixed(1)+' kWh';
   $('#batTemp').textContent=fmt(S.batTemp,1)+'°';
   const st=$('#batState');
-  if(S.batW<-5){st.textContent='Заряд';st.className='mini-badge g';}
-  else if(S.batW>5){st.textContent='Розряд';st.className='mini-badge';st.style.cssText='background:rgba(255,159,10,.15);color:var(--orange)';}
-  else{st.textContent='Очікує';st.className='mini-badge';st.style.cssText='';}
+  if(S.batW<-5){st.textContent='Charging';st.className='mini-badge g';}
+  else if(S.batW>5){st.textContent='Discharging';st.className='mini-badge';st.style.cssText='background:rgba(255,159,10,.15);color:var(--orange)';}
+  else{st.textContent='Idle';st.className='mini-badge';st.style.cssText='';}
   $('#batteryCard').classList.toggle('low',S.soc<20);
 }
 
 // ─── Survival ──────────────────────────────────────────────
 function updateSurvival(){
-  if(S.load<10){$('#survTime').textContent='∞';$('#survBar').style.width='100%';$('#survHint').textContent='Навантаження мінімальне';return;}
+  if(S.load<10){$('#survTime').textContent='∞';$('#survBar').style.width='100%';$('#survHint').textContent='Load is minimal';return;}
   const hrs=S.storedWh*EFF/Math.max(30,S.load);
   const el=$('#survTime');
-  if(hrs>=48)el.textContent='понад 2 доби';
-  else el.textContent=fmt(Math.floor(hrs))+':'+String(Math.round((hrs%1)*60)).padStart(2,'0')+' год';
-  $('#survLoad').textContent='при '+fmt(S.load)+' Вт зараз';
+  if(hrs>=48)el.textContent='over 2 days';
+  else el.textContent=fmt(Math.floor(hrs))+':'+String(Math.round((hrs%1)*60)).padStart(2,'0')+' hrs';
+  $('#survLoad').textContent='at '+fmt(S.load)+' W now';
   $('#survBar').style.width=clamp(hrs/24*100,4,100)+'%';
   const until=new Date(Date.now()+hrs*36e5);
-  $('#survHint').textContent=S.grid?'Достатньо до ~'+timeStr(until)+' · заряд '+fmt(S.soc)+'%':'Мережі немає! Економте.';
+  $('#survHint').textContent=S.grid?'Enough until ~'+timeStr(until)+' · '+fmt(S.soc)+'% SOC':'Grid is down! Save energy.';
   $('#survCard').classList.toggle('alert',!S.grid);
 }
 
@@ -120,36 +120,36 @@ function updateSurvival(){
 function updateIsland(){
   const dot=$('#islDot');
   dot.className='isl-dot '+(S.grid?(S.batW<-5?'chg':S.batW>5?'idle':'idle'):'bad');
-  $('#islW').textContent=fmt(S.load)+' Вт';
+  $('#islW').textContent=fmt(S.load)+' W';
   $('#islSoc').textContent=fmt(S.soc)+'%';
-  $('#iv1').textContent=S.grid?fmt(S.gridV,1)+' В':'OFF';
+  $('#iv1').textContent=S.grid?fmt(S.gridV,1)+' V':'OFF';
   $('#iv2').textContent=fmt(S.soc)+'%';
-  $('#iv3').textContent=fmt(S.load)+' Вт';
+  $('#iv3').textContent=fmt(S.load)+' W';
   $('#sbBatt').textContent=fmt(S.soc)+'%';
 }
 
 // ─── Tiles ─────────────────────────────────────────────────
 function updateTiles(){
-  $('#mLoad').textContent=fmt(S.load)+' Вт';
-  $('#mImport').textContent=S.importToday.toFixed(1)+' кВт·год';
-  $('#mCost').textContent='₴ '+S.costToday.toFixed(1);
+  $('#mLoad').textContent=fmt(S.load)+' W';
+  $('#mImport').textContent=S.importToday.toFixed(1)+' kWh';
+  $('#mCost').textContent='$ '+S.costToday.toFixed(1);
   $('#mTemp').textContent=fmt(S.invTemp)+'°';
-  const t=$('#tToday');if(t)t.textContent='₴ '+S.costToday.toFixed(1);
+  const t=$('#tToday');if(t)t.textContent='$ '+S.costToday.toFixed(1);
 }
 
 // ─── Grid Chip ─────────────────────────────────────────────
 function updateChip(){
   const c=$('#gridChip');
-  if(S.grid){c.className='nv-chip';c.innerHTML=`<i class="ph-fill ph-plug-charging"></i> Мережа · ${fmt(S.gridV,1)} В`;}
-  else{c.className='nv-chip bad';c.innerHTML='<i class="ph-fill ph-lightning-slash"></i> Немає мережі';}
+  if(S.grid){c.className='nv-chip';c.innerHTML=`<i class="ph-fill ph-plug-charging"></i> Grid · ${fmt(S.gridV,1)} V`;}
+  else{c.className='nv-chip bad';c.innerHTML='<i class="ph-fill ph-lightning-slash"></i> No Grid';}
   const inv=$('#invStatus');
-  if(inv){inv.textContent=S.grid?'Онлайн':'Від батареї';inv.className=S.grid?'badge-ok':'badge-ok';inv.style.cssText=S.grid?'':'background:rgba(255,159,10,.15);color:var(--orange)';}
+  if(inv){inv.textContent=S.grid?'Online':'On Battery';inv.className=S.grid?'badge-ok':'badge-ok';inv.style.cssText=S.grid?'':'background:rgba(255,159,10,.15);color:var(--orange)';}
 }
 
 function updateAll(){updateFlow();updateBattery();updateSurvival();updateIsland();updateTiles();updateChip();}
 
 // ─── Clock ─────────────────────────────────────────────────
-function updateClock(){$('#sbTime').textContent=new Date().toLocaleTimeString('uk-UA',{hour:'numeric',minute:'2-digit'}).replace(/^0/,'');}
+function updateClock(){$('#sbTime').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).replace(/^0/,'');}
 
 // ─── Devices ───────────────────────────────────────────────
 let devFilter='all',devQuery='';
@@ -159,8 +159,8 @@ function dcardHTML(d){
   return`<div class="dcard ${d.switch?'on':''}" data-dev="${d.id}">
     <div class="dic" style="--c:${PRI[p].color}"><i class="ph-fill ph-plugs"></i></div>
     <div class="dinfo">
-      <div class="dname">${d.name||d.id}<span class="dbadge ${d.online?'loc':'cld'}"><i class="ph-bold ph-${d.online?'wifi-high':'cloud'}"></i>${d.online?'Онлайн':'Офлайн'}</span></div>
-      <div class="dsub">${fmt(livePower(d))} Вт · ${d.voltage?fmt(d.voltage,1)+' В':'—'} · ${d.current?fmt(d.current,2)+' А':'—'}</div>
+      <div class="dname">${d.name||d.id}<span class="dbadge ${d.online?'loc':'cld'}"><i class="ph-bold ph-${d.online?'wifi-high':'cloud'}"></i>${d.online?'Online':'Offline'}</span></div>
+      <div class="dsub">${fmt(livePower(d))} W · ${d.voltage?fmt(d.voltage,1)+' V':'—'} · ${d.current?fmt(d.current,2)+' A':'—'}</div>
     </div>
     <label class="sw"><input type="checkbox" data-sw="${d.id}" ${d.switch?'checked':''}><span class="knob"></span></label>
   </div>`;
@@ -173,19 +173,19 @@ function renderDevices(){
     const ds=S.devices.filter(d=>getDevicePriority(d)===p&&(d.name||'').toLowerCase().includes(devQuery));
     if(!ds.length)continue;
     const tot=ds.reduce((a,d)=>a+livePower(d),0);
-    html+=`<div class="dgroup"><div class="dgroup-h"><span class="dg-ic" style="--c:${PRI[p].color}"><i class="ph-fill ${PRI[p].icon}"></i></span><b>${PRI[p].label}</b><span class="dg-meta">${ds.length} · ${fmt(tot)} Вт</span></div>
+    html+=`<div class="dgroup"><div class="dgroup-h"><span class="dg-ic" style="--c:${PRI[p].color}"><i class="ph-fill ${PRI[p].icon}"></i></span><b>${PRI[p].label}</b><span class="dg-meta">${ds.length} · ${fmt(tot)} W</span></div>
       <div class="dlist">${ds.map(dcardHTML).join('')}</div></div>`;
   }
-  wrap.innerHTML=html||`<div class="empty">Нічого не знайдено</div>`;
+  wrap.innerHTML=html||`<div class="empty">No devices found</div>`;
   updateDevSummary();
 }
 function updateDevSummary(){
   const on=S.devices.filter(d=>d.switch);
   const tot=on.reduce((a,d)=>a+livePower(d),0);
   const top=[...on].sort((a,b)=>livePower(b)-livePower(a))[0];
-  const sw=$('#sumW');if(sw)sw.textContent=fmt(tot)+' Вт';
-  const st=$('#sumTop');if(st)st.textContent=top?`${top.name} · ${fmt(livePower(top))} Вт`:'—';
-  const dc=$('#devCountChip');if(dc)dc.textContent=S.devices.length+' пристроїв';
+  const sw=$('#sumW');if(sw)sw.textContent=fmt(tot)+' W';
+  const st=$('#sumTop');if(st)st.textContent=top?`${top.name} · ${fmt(livePower(top))} W`:'—';
+  const dc=$('#devCountChip');if(dc)dc.textContent=S.devices.length+' devices';
   const sdc=$('#settingsDeviceCount');if(sdc)sdc.textContent=S.devices.length;
 }
 function renderQuick(){
@@ -195,7 +195,7 @@ function renderQuick(){
     return`<button class="qchip ${d.switch?'on':''}" data-q="${d.id}">
       <i class="ph-fill ph-plugs" style="color:${PRI[getDevicePriority(d)].color}"></i>
       <span class="qn">${(d.name||'?').split(' ')[0]}</span>
-      <b class="qw">${d.switch?fmt(p)+' Вт':'off'}</b></button>`;
+      <b class="qw">${d.switch?fmt(p)+' W':'off'}</b></button>`;
   }).join('');
 }
 
@@ -207,16 +207,16 @@ async function setDevice(id,on){
     $$(`input[data-sw="${id}"]`).forEach(i=>i.checked=on);
     const card=$(`[data-dev="${id}"]`);if(card)card.classList.toggle('on',on);
     renderQuick();updateDevSummary();
-    addEvent('ph-plugs',on?'#30D158':'#FF453A',`${d?d.name:id} ${on?'увімкнено':'вимкнено'}`);
+    addEvent('ph-plugs',on?'#30D158':'#FF453A',`${d?d.name:id} ${on?'turned on':'turned off'}`);
   }
 }
 
 function unloadOptional(){
   const prev=S.devices.filter(d=>getDevicePriority(d)==='optional'&&d.switch);
-  if(!prev.length){banner('Все вже вимкнено','Опціональні пристрої не споживають енергію','info');return;}
+  if(!prev.length){banner('All Off','Optional devices are not drawing power','info');return;}
   prev.forEach(d=>setDevice(d.id,false));
   renderDevices();renderQuick();
-  banner(`Вимкнено ${prev.length} пристроїв`,'Автономія зросла','success');
+  banner(`Turned off ${prev.length} device(s)`,'Battery autonomy increased','success');
 }
 
 function openDevice(id){
@@ -225,24 +225,24 @@ function openDevice(id){
   const p=livePower(d),pri=getDevicePriority(d);
   openSheet(`<div class="grab"></div>
     <div class="sh-head"><div class="dic big" style="--c:${PRI[pri].color}"><i class="ph-fill ph-plugs"></i></div>
-      <div><b class="sh-title">${d.name||d.id}</b><span class="sh-sub">${d.switch?'увімкнено':'вимкнено'} · ${d.online?'онлайн':'офлайн'}</span></div>
+      <div><b class="sh-title">${d.name||d.id}</b><span class="sh-sub">${d.switch?'on':'off'} · ${d.online?'online':'offline'}</span></div>
       <label class="sw"><input type="checkbox" data-sw="${d.id}" ${d.switch?'checked':''}><span class="knob"></span></label></div>
     <div class="sh-stats">
-      <div><span>Зараз</span><b>${fmt(p)} Вт</b></div>
-      <div><span>Напруга</span><b>${d.voltage?fmt(d.voltage,1)+' В':'—'}</b></div>
-      <div><span>Струм</span><b>${d.current?fmt(d.current,2)+' А':'—'}</b></div>
+      <div><span>Now</span><b>${fmt(p)} W</b></div>
+      <div><span>Voltage</span><b>${d.voltage?fmt(d.voltage,1)+' V':'—'}</b></div>
+      <div><span>Current</span><b>${d.current?fmt(d.current,2)+' A':'—'}</b></div>
     </div>
-    <div class="sh-row"><span>Протокол</span><b class="prot ${d.online?'loc':'cld'}"><i class="ph-bold ph-${d.online?'wifi-high':'cloud'}"></i> ${d.online?'Tuya Local':'Tuya Cloud'}</b></div>
-    <div class="sh-lbl">Пріоритет у режимі виживання</div>
+    <div class="sh-row"><span>Protocol</span><b class="prot ${d.online?'loc':'cld'}"><i class="ph-bold ph-${d.online?'wifi-high':'cloud'}"></i> ${d.online?'Tuya Local':'Tuya Cloud'}</b></div>
+    <div class="sh-lbl">Survival Priority</div>
     <div class="seg" id="priSeg">${['critical','essential','optional'].map(k=>`<button data-pri="${k}" class="${pri===k?'on':''}">${PRI[k].label}</button>`).join('')}</div>
-    <button class="btn wide" id="shClose" style="margin-top:18px">Готово</button>`);
+    <button class="btn wide" id="shClose" style="margin-top:18px">Done</button>`);
   $('#shClose').onclick=closeSheet;
   $('#priSeg').onclick=e=>{
     const b=e.target.closest('button');if(!b)return;vib(8);
     setPriority(d.id,b.dataset.pri);
     $$('#priSeg button').forEach(x=>x.classList.toggle('on',x===b));
     renderDevices();renderQuick();
-    banner('Пріоритет змінено',`${d.name} → ${PRI[b.dataset.pri].label}`,'success');
+    banner('Priority Updated',`${d.name} → ${PRI[b.dataset.pri].label}`,'success');
   };
 }
 
@@ -252,25 +252,25 @@ function renderRules(){
   el.innerHTML=S.scenes.map(r=>{
     const en=r.enabled!==false;
     const cond=r.if&&r.if.conditions?r.if.conditions.map(c=>{
-      if(c.type==='grid')return'Мережа відсутня';
+      if(c.type==='grid')return'Grid is down';
       if(c.type==='battery')return'SOC '+c.operator+' '+c.value+'%';
       if(c.type==='time')return c.after+'–'+c.before;
-      if(c.type==='weekday')return'Дні тижня';
+      if(c.type==='weekday')return'Weekdays';
       return c.type;
     }).join(', '):'—';
     const act=r.then&&r.then.actions?r.then.actions.map(a=>{
-      if(a.type==='tuya')return'Пристрій';
-      if(a.type==='notify')return'Sповіщення';
+      if(a.type==='tuya')return'Device';
+      if(a.type==='notify')return'Notification';
       return a.type;
     }).join(', '):'—';
     return`<div class="rcard ${en?'':'dis'} rv in">
       <div class="ric" style="--c:${en?'#0A84FF':'#8E8E93'}"><i class="ph-fill ph-flow-arrow"></i></div>
-      <div class="rinfo"><div class="rname">${r.name}</div><div class="rsub">Якщо <b>${cond}</b> → ${act}</div>
-      <div class="rmeta">${en?'Активно':'Вимкнено'}</div></div>
+      <div class="rinfo"><div class="rname">${r.name}</div><div class="rsub">If <b>${cond}</b> → ${act}</div>
+      <div class="rmeta">${en?'Active':'Disabled'}</div></div>
       <label class="sw"><input type="checkbox" data-rule="${r.name}" ${en?'checked':''}><span class="knob"></span></label></div>`;
   }).join('');
   const n=S.scenes.filter(r=>r.enabled!==false).length;
-  const chip=$('#rulesChip');if(chip)chip.textContent=n+' активні';
+  const chip=$('#rulesChip');if(chip)chip.textContent=n+' active';
 }
 
 async function toggleScene(name,en){
@@ -280,31 +280,31 @@ async function toggleScene(name,en){
 async function runScene(name){
   vib(15);
   const r=await api('/api/scenes/'+encodeURIComponent(name)+'/run',{method:'POST'});
-  if(r&&r.success)banner('Виконано',`Правило «${name}» виконано`,'success');
-  else banner('Помилка',r?.message||'Не вдалося виконати','error');
+  if(r&&r.success)banner('Executed',`Rule "${name}" executed`,'success');
+  else banner('Error',r?.message||'Failed to execute','error');
 }
 async function deleteScene(name){
-  if(!confirm(`Видалити «${name}»?`))return;
+  if(!confirm(`Delete "${name}"?`))return;
   await api('/api/scenes/'+encodeURIComponent(name),{method:'DELETE'});
   S.scenes=S.scenes.filter(r=>r.name!==name);renderRules();
-  banner('Видалено',`Правило «${name}» видалено`,'success');
+  banner('Deleted',`Rule "${name}" deleted`,'success');
 }
 
 function openAddRule(){
-  openSheet(`<div class="grab"></div><b class="sh-title" style="display:block;text-align:center;margin:4px 0 14px">Нове правило</b>
-    <div class="sh-lbl" style="margin-top:0">Назва</div><input class="sinput2" id="nrName" placeholder="Напр. Економія ввечері" maxlength="40">
-    <div class="sh-lbl">Умова · ЯКЩО</div><select class="ssel" id="nrWhen">
-      <option value="grid">Зникла мережа</option>
-      <option value="soc_low">SOC батареї нижче 20%</option>
-      <option value="soc_high">SOC батареї вище 80%</option>
+  openSheet(`<div class="grab"></div><b class="sh-title" style="display:block;text-align:center;margin:4px 0 14px">New Rule</b>
+    <div class="sh-lbl" style="margin-top:0">Name</div><input class="sinput2" id="nrName" placeholder="e.g. Evening Savings" maxlength="40">
+    <div class="sh-lbl">Condition · IF</div><select class="ssel" id="nrWhen">
+      <option value="grid">Grid goes down</option>
+      <option value="soc_low">Battery SOC below 20%</option>
+      <option value="soc_high">Battery SOC above 80%</option>
     </select>
-    <div class="sh-lbl">Дія · ТО</div><select class="ssel" id="nrThen">
-      <option value="notify">Надіслати сповіщення</option>
-      <option value="off_optional">Вимкнути опціональні</option>
+    <div class="sh-lbl">Action · THEN</div><select class="ssel" id="nrThen">
+      <option value="notify">Send notification</option>
+      <option value="off_optional">Turn off optional devices</option>
     </select>
-    <button class="btn wide" id="nrSave" style="margin-top:18px"><i class="ph-bold ph-check"></i> Створити</button>`);
+    <button class="btn wide" id="nrSave" style="margin-top:18px"><i class="ph-bold ph-check"></i> Create</button>`);
   $('#nrSave').onclick=async()=>{
-    const name=$('#nrName').value.trim()||'Моє правило';
+    const name=$('#nrName').value.trim()||'My Rule';
     const whenVal=$('#nrWhen').value;
     const thenVal=$('#nrThen').value;
     const conditions=[];
@@ -312,14 +312,14 @@ function openAddRule(){
     else if(whenVal==='soc_low')conditions.push({type:'battery',operator:'<',value:20});
     else if(whenVal==='soc_high')conditions.push({type:'battery',operator:'>',value:80});
     const actions=[];
-    if(thenVal==='notify')actions.push({type:'notify',title:name,message:'Спрацювало правило'});
+    if(thenVal==='notify')actions.push({type:'notify',title:name,message:'Rule triggered'});
     else if(thenVal==='off_optional')actions.push({type:'tuya',device:'*',value:false});
     const r=await api('/api/scenes',{method:'POST',body:JSON.stringify({name,if:{logic:'AND',conditions},then:{actions}})});
     if(r&&r.success!==false){
       S.scenes.push({name,enabled:true,if:{logic:'AND',conditions},then:{actions}});
       renderRules();closeSheet();vib(15);
-      banner('Правило створено',`«${name}» активовано`,'success');
-      addEvent('ph-flow-arrow','#BF5AF2',`Створено правило «${name}»`);
+      banner('Rule Created',`"${name}" activated`,'success');
+      addEvent('ph-flow-arrow','#BF5AF2',`Rule "${name}" created`);
     }
   };
 }
@@ -333,25 +333,25 @@ async function initAnalytics(){
   Chart.defaults.color='rgba(235,235,245,.5)';
   const mainCtx=$('#mainChart');if(!mainCtx)return;
   mainChart=new Chart(mainCtx.getContext('2d'),{type:'line',data:{labels:[],datasets:[
-    {label:'Навантаження, Вт',data:[],borderColor:'#0A84FF',borderWidth:2,tension:.35,pointRadius:0,fill:true,yAxisID:'y',
+    {label:'Load, W',data:[],borderColor:'#0A84FF',borderWidth:2,tension:.35,pointRadius:0,fill:true,yAxisID:'y',
       backgroundColor:c=>{const{ctx:cc,chartArea}=c.chart;if(!chartArea)return'rgba(10,132,255,.1)';
         const g=cc.createLinearGradient(0,chartArea.top,0,chartArea.bottom);g.addColorStop(0,'rgba(10,132,255,.32)');g.addColorStop(1,'rgba(10,132,255,0)');return g;}},
-    {label:'Батарея, %',data:[],borderColor:'#30D158',borderWidth:1.6,tension:.35,pointRadius:0,fill:false,yAxisID:'y1'}]},
+    {label:'Battery, %',data:[],borderColor:'#30D158',borderWidth:1.6,tension:.35,pointRadius:0,fill:false,yAxisID:'y1'}]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:450},interaction:{mode:'index',intersect:false},
       plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:7,boxHeight:7,usePointStyle:true,pointStyle:'circle',color:'rgba(235,235,245,.6)',font:{size:10,weight:'600'}}},
         tooltip:{backgroundColor:'rgba(28,28,32,.96)',borderColor:'rgba(255,255,255,.12)',borderWidth:.5,cornerRadius:12,padding:10}},
       scales:{x:{ticks:{maxTicksLimit:6,font:{size:9.5}},grid:{display:false}},
-        y:{ticks:{font:{size:9.5},callback:v=>v>=1000?(v/1000)+'к':v},grid:{color:'rgba(255,255,255,.05)'}},
+        y:{ticks:{font:{size:9.5},callback:v=>v>=1000?(v/1000)+'k':v},grid:{color:'rgba(255,255,255,.05)'}},
         y1:{position:'right',min:0,max:100,ticks:{color:'rgba(48,209,88,.75)',font:{size:9.5},callback:v=>v+'%'},grid:{display:false}}}}});
   drawMain('day');
   const costCtx=$('#costChart');
   if(costCtx){
-    const days=[...Array(7)].map((_,i)=>new Date(Date.now()-(6-i)*864e5).toLocaleDateString('uk-UA',{weekday:'short'}));
+    const days=[...Array(7)].map((_,i)=>new Date(Date.now()-(6-i)*864e5).toLocaleDateString('en-US',{weekday:'short'}));
     costChart=new Chart(costCtx.getContext('2d'),{type:'bar',
       data:{labels:days,datasets:[{data:Array(7).fill(0),backgroundColor:'rgba(10,132,255,.65)',hoverBackgroundColor:'#0A84FF',borderRadius:7,maxBarThickness:26,borderSkipped:false}]},
       options:{responsive:true,maintainAspectRatio:false,animation:{duration:450},
-        plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,32,.96)',borderColor:'rgba(255,255,255,.12)',borderWidth:.5,cornerRadius:12,callbacks:{label:c=>'₴'+c.raw.toFixed(2)}}},
-        scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'600'}}},y:{ticks:{font:{size:9.5},callback:v=>'₴'+v},grid:{color:'rgba(255,255,255,.05)'}}}}});
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,32,.96)',borderColor:'rgba(255,255,255,.12)',borderWidth:.5,cornerRadius:12,callbacks:{label:c=>'$'+c.raw.toFixed(2)}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'600'}}},y:{ticks:{font:{size:9.5},callback:v=>'$'+v},grid:{color:'rgba(255,255,255,.05)'}}}}});
   }
 }
 
@@ -360,7 +360,7 @@ async function drawMain(period){
   const d=await api('/api/history?period='+encodeURIComponent(period));
   if(!d||!d.points||d.points.length<2)return;
   const pts=d.points;
-  const labels=pts.map(p=>{const dt=new Date(p.ts);return period==='week'?dt.toLocaleDateString('uk-UA',{day:'2-digit',month:'2-digit'}):timeStr(dt);});
+  const labels=pts.map(p=>{const dt=new Date(p.ts);return period==='week'?dt.toLocaleDateString('en-US',{day:'2-digit',month:'2-digit'}):timeStr(dt);});
   mainChart.data.labels=labels;
   mainChart.data.datasets[0].data=pts.map(p=>p.load||0);
   mainChart.data.datasets[1].data=pts.map(p=>p.soc||0);
@@ -371,16 +371,15 @@ async function drawMain(period){
   const stepH=(pts[1].ts-pts[0].ts)/36e5;
   const kwh=loads.reduce((a,b)=>a+b,0)*stepH/1000;
   const rate=(S.tariff.day+S.tariff.night)/2;
-  $('#stAvg').textContent=fmt(avg)+' Вт';
-  $('#stPeak').textContent=fmt(peak)+' Вт';
-  $('#stKwh').textContent=kwh.toFixed(1)+' кВт·г';
-  $('#stCost').textContent='₴'+(kwh*rate).toFixed(1);
+  $('#stAvg').textContent=fmt(avg)+' W';
+  $('#stPeak').textContent=fmt(peak)+' W';
+  $('#stKwh').textContent=kwh.toFixed(1)+' kWh';
+  $('#stCost').textContent='$'+(kwh*rate).toFixed(1);
 }
 
 // ─── Events from notifications ─────────────────────────────
 async function pollNotifications(){
   const d=await api('/api/logs');
-  // Logs are text, not structured events. We'll use status changes instead.
 }
 
 // ─── Settings ──────────────────────────────────────────────
@@ -412,7 +411,7 @@ function switchTab(id){
 
 // ─── Init ──────────────────────────────────────────────────
 async function init(){
-  $('#dateNote').textContent=new Date().toLocaleDateString('uk-UA',{weekday:'long',day:'numeric',month:'long'});
+  $('#dateNote').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long'});
   updateClock();
 
   // Auth check
@@ -473,9 +472,9 @@ async function init(){
   setInterval(updateClock,10000);
 
   // Update note
-  setInterval(()=>{$('#updNote').textContent='ОНОВЛЕНО '+timeStr();},5000);
+  setInterval(()=>{$('#updNote').textContent='UPDATED '+timeStr();},5000);
 
-  addEvent('ph-lightning','#30D158','Система запущено · все штатно');
+  addEvent('ph-lightning','#30D158','System started · all OK');
 }
 
 // ─── Global events ─────────────────────────────────────────
@@ -515,25 +514,25 @@ $('#btnUnloadAll')?.addEventListener('click',unloadOptional);
 $('#btnAddRule')?.addEventListener('click',openAddRule);
 $('#btnTestNotif')?.addEventListener('click',async()=>{
   const r=await api('/api/test-notification',{method:'POST'});
-  if(r)banner('Тест',r.results?r.results.join(', '):'Надіслано','success');
+  if(r)banner('Test',r.results?r.results.join(', '):'Sent','success');
 });
 $('#btnScan')?.addEventListener('click',async e=>{
   const t=e.currentTarget.querySelector('.act-lb');
-  if(t)t.innerHTML='<span class="spin"></span>Пошук…';
-  banner('Сканування','Ініційовано пошук інвертора…','info');
+  if(t)t.innerHTML='<span class="spin"></span>Searching…';
+  banner('Scanning','Inverter network scan initiated…','info');
 });
 $('#btnBackup')?.addEventListener('click',async()=>{
   const r=await api('/api/backup',{method:'POST',body:JSON.stringify({scope:['config','scenes','history']})});
   if(r&&r.backup){
     const blob=new Blob([JSON.stringify(r.backup,null,2)],{type:'application/json'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='strum-backup.json';a.click();
-    banner('Резервна копія','Завантажено','success');
+    banner('Backup','Downloaded','success');
   }
 });
 $('#btnRestart')?.addEventListener('click',async()=>{
-  if(!confirm('Перезапустити сервіс?'))return;
+  if(!confirm('Restart the service?'))return;
   await api('/api/restart',{method:'POST'});
-  banner('Перезапуск','Сервіс перезапускається…','info');
+  banner('Restarting','Service is restarting…','info');
   setTimeout(()=>window.location.reload(),5000);
 });
 $('#btnLogout')?.addEventListener('click',async()=>{
