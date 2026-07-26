@@ -578,12 +578,18 @@ body.outage .glow{background:radial-gradient(circle, rgba(255,69,58,.20), rgba(2
   .glow{display:none}
 }
 @media (display-mode:standalone){
-  .statusbar,.island{display:none}
-  .scroll{padding-top:calc(var(--safe-t) + 50px);
-          padding-bottom:calc(40px + var(--safe-b))}
-  .tabbar{bottom:calc(14px + var(--safe-b));
+  .island{display:none!important}
+  .app{bottom:calc(66px + var(--safe-b))}
+  .scroll{padding-top:calc(var(--safe-t) + 8px);
+          padding-bottom:calc(var(--safe-b) + 16px)}
+  .navglass{padding-top:calc(var(--safe-t) + 12px)}
+  .tabbar{position:fixed;
           left:calc(14px + var(--safe-l));
-          right:calc(14px + var(--safe-r))}
+          right:calc(14px + var(--safe-r));
+          bottom:0;
+          height:calc(66px + var(--safe-b));
+          border-radius:22px 22px 0 0;
+          padding-bottom:var(--safe-b)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
