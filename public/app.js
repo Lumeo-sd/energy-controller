@@ -11,7 +11,7 @@ const CAP_WH=5120,EFF=0.92;
 const S={grid:true,gridV:0,gridHz:50,soc:0,storedWh:0,batW:0,batDir:'',load:0,
   pvPower:0,invTemp:0,batTemp:0,importToday:0,costToday:0,
   tariff:{day:4.32,night:2.16},devices:[],scenes:[],events:[],config:null,
-  notifications:[],unreadCount:0,currency:'$'};
+  notifications:[],unreadCount:0,currency:'$',calmMode:false};
 
 const PRI={critical:{label:'Critical',color:'#FF453A',icon:'ph-shield-check'},
   essential:{label:'Essential',color:'#FFD60A',icon:'ph-star'},
@@ -28,9 +28,11 @@ function getDevicePriority(d){
 }
 
 const BANNER={info:['ph-info','#0A84FF'],success:['ph-check-circle','#30D158'],error:['ph-warning-circle','#FF453A'],warn:['ph-warning','#FF9F0A']};
-function banner(title,msg,type='info',action){
+function banner(title,msg,type='info',action,requireTap){
   const[ic,c]=BANNER[type]||BANNER.info;
+  if(type==='error'&&!requireTap)requireTap=true;
   const el=document.createElement('div');el.className='banner';
+  if(requireTap)el.classList.add('critical');
   el.innerHTML=`<span class="bn-ic" style="--c:${c}"><i class="ph-fill ${ic}"></i></span>
     <div class="bn-tx"><b>${title}</b><span>${msg}</span></div>
     ${action?`<button class="bn-act">${action.label}</button>`:''}<button class="bn-x"><i class="ph-bold ph-x"></i></button>`;
@@ -40,8 +42,7 @@ function banner(title,msg,type='info',action){
   const kill=()=>{if(done)return;done=true;el.classList.add('out');setTimeout(()=>el.remove(),350);};
   el.querySelector('.bn-x').onclick=e=>{e.stopPropagation();kill();};
   if(action)el.querySelector('.bn-act').onclick=e=>{e.stopPropagation();action.fn();kill();};
-  el.onclick=kill;
-  setTimeout(kill,action?8000:4600);
+  if(!requireTap){el.onclick=kill;setTimeout(kill,action?8000:4600);}
   vib(type==='error'?[30,40,30]:10);
 }
 
@@ -722,17 +723,17 @@ async function loadSettings(){
   if(d.config.tariff){
     S.tariff.day=d.config.tariff.dayRate||S.tariff.day;
     S.tariff.night=d.config.tariff.nightRate||S.tariff.night;
-    const td=$('#tDay');if(td)td.value=S.tariff.day;
-    const tn=$('#tNight');if(tn)tn.value=S.tariff.night;
   }
   const v=await api('/api/app-version');
   if(v){const sv=$('#sysVersion');if(sv)sv.textContent=v.version||'—';}
-  const inv=$('#invIp');if(inv)inv.textContent=S.config.inverter?.ip||'—';
-  const sn=$('#invSerial');if(sn)sn.textContent=S.config.inverter?.serial||'—';
-  const ts=$('#tuyaStatus');if(ts){const hasTuya=!!(S.config.tuya?.username);ts.textContent=hasTuya?'Configured':'Not Set';ts.className=hasTuya?'badge-ok':'badge-ok';ts.style.cssText=hasTuya?'':'background:rgba(255,69,58,.15);color:var(--red)';}
-  const ta=$('#tuyaAccessId');if(ta)ta.textContent=S.config.tuya?.accessId||'—';
-  const tu=$('#tuyaUsername');if(tu)tu.textContent=S.config.tuya?.username||'—';
-  const tc=$('#tuyaDeviceCount');if(tc)tc.textContent=S.devices.length||0;
+
+  // Summary rows
+  const invOk=!!S.config.inverter?.ip;
+  const si=$('#setInvSt');if(si)si.textContent=invOk?'Online':'Offline';
+  const tuyaOk=!!S.config.tuya?.username;
+  const st=$('#setTuyaSt');if(st)st.textContent=tuyaOk?'Configured':'Not set';
+
+  // Tuya mode
   const modeResult=await api('/api/tuya-mode');
   if(modeResult&&modeResult.mode){
     $$('#tuyaModeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.mode===modeResult.mode));
@@ -747,8 +748,7 @@ async function loadSettings(){
   // NetBird
   const nb=await api('/api/netbird/status');
   if(nb){
-    const ns=$('#nbStatus');if(ns){ns.textContent=nb.success?'Connected':'Disconnected';ns.className='badge-ok';ns.style.cssText=nb.success?'':'background:rgba(255,69,58,.15);color:var(--red)';}
-    const nip=$('#nbIp');if(nip)nip.textContent=nb.status?nb.status.match(/IP:\s*(\S+)/)?.[1]||'—':'—';
+    const snb=$('#setNbSt');if(snb)snb.textContent=nb.success?'Connected':'Disconnected';
   }
   // Notifications
   const ncfg=S.config.notifications||{};
@@ -756,26 +756,33 @@ async function loadSettings(){
   const tgOn=ncfg.telegramEnabled!==false&&ncfg.notifEnabled!==false;
   $$('#ntfySeg button').forEach(b=>b.classList.toggle('on',b.dataset.ntfy===(ntfyOn?'on':'off')));
   $$('#tgSeg button').forEach(b=>b.classList.toggle('on',b.dataset.tg===(tgOn?'on':'off')));
-  const ntopic=$('#ntfyTopic');if(ntopic)ntopic.textContent=ncfg.ntfyTopic||'—';
-  const nls=$('#ntfyLowSoc');if(nls)nls.value=ncfg.lowSocAlert||20;
-  const tcid=$('#tgChatId');if(tcid)tcid.textContent=ncfg.telegramChatId||'—';
+  const snn=$('#setNotifSt');if(snn)snn.textContent=(ntfyOn||tgOn)?'On':'Off';
+
+  // Tariff summary
+  const sty=$('#setTariffSt');if(sty)sty.textContent=S.currency+' '+S.tariff.day+'/'+S.tariff.night;
 
   // Integrations grid status
-  const intTuya=$('#intTuya');if(intTuya){const ok=!!S.config.tuya?.username;intTuya.textContent=ok?'Connected':'Not set';intTuya.className='int-st'+(ok?'':' off');}
+  const intTuya=$('#intTuya');if(intTuya){intTuya.textContent=tuyaOk?'Connected':'Not set';intTuya.className='int-st'+(tuyaOk?'':' off');}
   const intNb=$('#intNb');if(intNb){const ok=nb&&nb.success;intNb.textContent=ok?'Connected':'Disconnected';intNb.className='int-st'+(ok?'':' off');}
   const intTg=$('#intTg');if(intTg){const ok=tgOn&&ncfg.telegramChatId;intTg.textContent=ok?'Connected':'Not set';intTg.className='int-st'+(ok?'':' off');}
   const intNtfy=$('#intNtfy');if(intNtfy){const ok=ntfyOn&&ncfg.ntfyTopic;intNtfy.textContent=ok?'Connected':'Not set';intNtfy.className='int-st'+(ok?'':' off');}
   const intProm=$('#intProm');if(intProm){const ok=!!S.config.metricsToken;intProm.textContent=ok?'Configured':'Not set';intProm.className='int-st'+(ok?'':' off');}
-  const intInv=$('#intInv');if(intInv){const ok=!!S.config.inverter?.ip;intInv.textContent=ok?'Online':'Offline';intInv.className='int-st'+(ok?'':' off');}
+  const intInv=$('#intInv');if(intInv){intInv.textContent=invOk?'Online':'Offline';intInv.className='int-st'+(invOk?'':' off');}
 
   // Currency
   const saved=localStorage.getItem('strum_currency')||'$';
   S.currency=saved;
   $$('#currencySeg button').forEach(b=>b.classList.toggle('on',b.dataset.cur===saved));
+
+  // Calm mode
+  S.calmMode=localStorage.getItem('strum_calm')==='true'||window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  applyCalmMode();
+  $$('#calmSeg button').forEach(b=>b.classList.toggle('on',b.dataset.calm===(S.calmMode?'on':'off')));
 }
 
 const MODE_HINTS={local:'LAN only — no cloud fallback',auto:'Local-first with cloud fallback',cloud:'Cloud only — no local control'};
 function updateTuyaModeHint(mode){const el=$('#tuyaModeHint');if(el)el.textContent=MODE_HINTS[mode]||'';}
+function applyCalmMode(){document.documentElement.classList.toggle('calm',S.calmMode);}
 
 const SCAN_HINTS={off:'Off — manual scan only',auto:'Auto — scan on connection failure'};
 function updateInvScanHint(mode){const el=$('#invScanHint');if(el)el.textContent=SCAN_HINTS[mode]||'';}
@@ -876,6 +883,143 @@ document.addEventListener('change',e=>{
   const rl=e.target.closest('input[data-rule]');
   if(rl){toggleScene(rl.dataset.rule,rl.checked);vib(10);return;}
 });
+
+function openSettingsSheet(section){
+  const sheets={
+    inverter:()=>{
+      const inv=S.config?.inverter||{};
+      return`<div class="grab"></div><b class="sh-title" style="display:block;margin:4px 0 14px">Inverter</b>
+        <div class="sgroup">
+          <div class="sh-row"><span>Status</span><span class="badge-ok" id="invStatus">${inv.ip?'Online':'Offline'}</span></div>
+          <div class="sh-row"><span>IP Address</span><b class="mono" style="font-size:12px">${inv.ip||'—'}</b></div>
+          <div class="sh-row"><span>Serial</span><b class="mono" style="font-size:12px">${inv.serial||'—'}</b></div>
+        </div>
+        <button class="btn wide" id="btnScanSheet" style="margin-top:14px"><i class="ph-bold ph-magnifying-glass"></i> Scan Network</button>
+        <div class="sgroup" style="margin-top:14px">
+          <div class="sh-row"><span>Auto-Scan</span>
+            <div class="seg" id="invScanSeg"><button data-scan="off" class="on">Off</button><button data-scan="auto">Auto</button></div>
+          </div>
+          <div class="sh-row" style="font-size:12px;color:var(--label2)">${inv.autoScan?'Auto — scans on failure':'Off — manual scan only'}</div>
+        </div>
+        <button class="btn wide" id="shClose" style="margin-top:18px">Done</button>`;
+    },
+    tuya:()=>{
+      const ty=S.config?.tuya||{};
+      return`<div class="grab"></div><b class="sh-title" style="display:block;margin:4px 0 14px">Tuya Cloud</b>
+        <div class="sgroup">
+          <div class="sh-row"><span>Status</span><span class="badge-ok">${ty.accessId?'Connected':'Not configured'}</span></div>
+          <div class="sh-row"><span>Access ID</span><b class="mono" style="font-size:12px">${ty.accessId||'—'}</b></div>
+          <div class="sh-row"><span>Username</span><b>${ty.username||'—'}</b></div>
+          <div class="sh-row"><span>Devices</span><b>${S.devices.length}</b></div>
+        </div>
+        <button class="btn wide" id="btnSyncTuyaSheet" style="margin-top:14px"><i class="ph-bold ph-arrows-clockwise"></i> Sync Devices</button>
+        <div class="sgroup" style="margin-top:14px">
+          <div class="sh-row"><span>Control Mode</span>
+            <div class="seg" id="tuyaModeSeg"><button data-mode="local">Local</button><button data-mode="auto" class="${ty.controlMode==='auto'?'on':''}">Auto</button><button data-mode="cloud">Cloud</button></div>
+          </div>
+          <div class="sh-row" style="font-size:12px;color:var(--label2)" id="tuyaModeHint">${MODE_HINTS[ty.controlMode||'auto']||''}</div>
+        </div>
+        <button class="btn wide" id="shClose" style="margin-top:18px">Done</button>`;
+    },
+    vpn:()=>{
+      const nb=S.config?.netbird||{};
+      return`<div class="grab"></div><b class="sh-title" style="display:block;margin:4px 0 14px">VPN · NetBird</b>
+        <div class="sgroup">
+          <div class="sh-row"><span>Status</span><span class="badge-ok">${nb.connected?'Connected':'Disconnected'}</span></div>
+          <div class="sh-row"><span>IP Address</span><b class="mono" style="font-size:12px">${nb.ip||'—'}</b></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="btn" id="btnNbUpSheet" style="flex:1"><i class="ph-bold ph-play"></i> Connect</button>
+          <button class="btn danger" id="btnNbDownSheet" style="flex:1"><i class="ph-bold ph-stop"></i> Disconnect</button>
+        </div>
+        <button class="btn wide" id="shClose" style="margin-top:18px">Done</button>`;
+    },
+    tariff:()=>{
+      return`<div class="grab"></div><b class="sh-title" style="display:block;margin:4px 0 14px">Tariff</b>
+        <div class="sgroup">
+          <div class="sh-row"><span>Currency</span>
+            <div class="seg" id="currencySeg">
+              <button data-cur="₴" class="${S.currency==='₴'?'on':''}">₴ UAH</button>
+              <button data-cur="$" class="${S.currency==='$'?'on':''}">$ USD</button>
+              <button data-cur="€" class="${S.currency==='€'?'on':''}">€ EUR</button>
+              <button data-cur="zł" class="${S.currency==='zł'?'on':''}">zł PLN</button>
+            </div>
+          </div>
+          <div class="sh-row"><span>Day Rate</span><input class="sinput" id="tDay" type="number" step="0.01" value="${S.tariff.day}"><span class="sunit">${S.currency}/kWh</span></div>
+          <div class="sh-row"><span>Night Rate</span><input class="sinput" id="tNight" type="number" step="0.01" value="${S.tariff.night}"><span class="sunit">${S.currency}/kWh</span></div>
+          <div class="sh-row"><span>Today</span><b>${S.currency} ${S.costToday.toFixed(1)}</b></div>
+        </div>
+        <button class="btn wide" id="shClose" style="margin-top:18px">Done</button>`;
+    },
+    notifications:()=>{
+      const ntfy=S.config?.notifications?.ntfy||{};
+      const tg=S.config?.notifications?.telegram||{};
+      return`<div class="grab"></div><b class="sh-title" style="display:block;margin:4px 0 14px">Notifications</b>
+        <div class="slabel">ntfy</div>
+        <div class="sgroup">
+          <div class="sh-row"><span>Enabled</span>
+            <div class="seg" id="ntfySeg"><button data-ntfy="off" class="${ntfy.enabled?'':'on'}">Off</button><button data-ntfy="on" class="${ntfy.enabled?'on':''}">On</button></div>
+          </div>
+          <div class="sh-row"><span>Topic</span><b class="mono" style="font-size:12px">${ntfy.topic||'—'}</b></div>
+          <div class="sh-row"><span>Low SOC Alert</span><input class="sinput sm" id="ntfyLowSoc" type="number" min="5" max="50" step="5" value="${ntfy.lowSoc||15}"><span class="sunit">%</span></div>
+          <button class="btn" id="btnTestNtfySheet"><i class="ph-bold ph-paper-plane-tilt"></i> Send Test</button>
+        </div>
+        <div class="slabel" style="margin-top:14px">Telegram</div>
+        <div class="sgroup">
+          <div class="sh-row"><span>Enabled</span>
+            <div class="seg" id="tgSeg"><button data-tg="off" class="${tg.enabled?'':'on'}">Off</button><button data-tg="on" class="${tg.enabled?'on':''}">On</button></div>
+          </div>
+          <div class="sh-row"><span>Chat ID</span><b class="mono" style="font-size:12px">${tg.chatId||'—'}</b></div>
+          <button class="btn" id="btnTestTgSheet"><i class="ph-bold ph-paper-plane-tilt"></i> Send Test</button>
+        </div>
+        <button class="btn wide" id="shClose" style="margin-top:18px">Done</button>`;
+    },
+    system:()=>{
+      return`<div class="grab"></div><b class="sh-title" style="display:block;margin:4px 0 14px">System</b>
+        <div class="sgroup">
+          <div class="sh-row"><span>Version</span><b class="mono">${$('#sysVersion')?.textContent||'—'}</b></div>
+          <div class="sh-row"><span>Calm Mode</span>
+            <div class="seg" id="calmSeg"><button data-calm="off" class="${S.calmMode?'':'on'}">Off</button><button data-calm="on" class="${S.calmMode?'on':''}">On</button></div>
+          </div>
+        </div>
+        <button class="btn wide" id="btnUpdateSheet" style="margin-top:14px"><i class="ph-bold ph-arrow-circle-up"></i> Check for Updates</button>
+        <button class="btn wide" id="btnBackupSheet" style="margin-top:8px"><i class="ph-bold ph-download-simple"></i> Create Backup</button>
+        <button class="btn wide" id="btnRestartSheet" style="margin-top:8px"><i class="ph-bold ph-arrows-clockwise"></i> Restart</button>
+        <button class="btn wide danger" id="btnLogoutSheet" style="margin-top:8px"><i class="ph-bold ph-sign-out"></i> Log Out</button>
+        <button class="btn wide" id="shClose" style="margin-top:18px">Done</button>`;
+    }
+  };
+  const gen=sheets[section];if(!gen)return;
+  openSheet(gen());
+  $('#shClose').onclick=closeSheet;
+  if(section==='inverter'){$('#btnScanSheet').onclick=()=>{api('/api/inverter/scan').then(()=>banner('Scan','Scan initiated','info'));};
+    const seg=$('#invScanSeg');if(seg)seg.onclick=e=>{const b=e.target.closest('button');if(!b)return;vib(8);
+      $$('#invScanSeg button').forEach(x=>x.classList.toggle('on',x===b));api('/api/inverter/scan-mode',{method:'POST',body:JSON.stringify({mode:b.dataset.scan})});};}
+  if(section==='tuya'){$('#btnSyncTuyaSheet').onclick=()=>{api('/api/tuya-sync',{method:'POST'}).then(r=>{if(r?.success)banner('Sync','Devices synced','success');else banner('Error',r?.message||'Failed','error');});};
+    const seg=$('#tuyaModeSeg');if(seg)seg.onclick=e=>{const b=e.target.closest('button');if(!b)return;vib(8);
+      $$('#tuyaModeSeg button').forEach(x=>x.classList.toggle('on',x===b));
+      const h=$('#tuyaModeHint');if(h)h.textContent=MODE_HINTS[b.dataset.mode]||'';
+      api('/api/tuya-mode',{method:'POST',body:JSON.stringify({mode:b.dataset.mode})}).then(r=>{if(r?.success)banner('Mode','Control: '+b.dataset.mode,'success');});};}
+  if(section==='vpn'){$('#btnNbUpSheet').onclick=()=>{api('/api/netbird/connect',{method:'POST'}).then(r=>{if(r?.success)banner('VPN','Connected','success');});};
+    $('#btnNbDownSheet').onclick=()=>{api('/api/netbird/disconnect',{method:'POST'}).then(r=>{if(r?.success)banner('VPN','Disconnected','success');});};}
+  if(section==='tariff'){$('#tDay').onchange=e=>{S.tariff.day=parseFloat(e.target.value)||0;api('/api/tariff',{method:'POST',body:JSON.stringify(S.tariff)});};
+    $('#tNight').onchange=e=>{S.tariff.night=parseFloat(e.target.value)||0;api('/api/tariff',{method:'POST',body:JSON.stringify(S.tariff)});};
+    const cur=$('#currencySeg');if(cur)cur.onclick=e=>{const b=e.target.closest('button');if(!b)return;vib(8);S.currency=b.dataset.cur;localStorage.setItem('strum_currency',b.dataset.cur);
+      $$('#currencySeg button').forEach(x=>x.classList.toggle('on',x===b));updateTiles();};}
+  if(section==='notifications'){const bTN=$('#btnTestNtfySheet');if(bTN)bTN.onclick=()=>{api('/api/ntfy/test',{method:'POST'}).then(r=>{if(r)banner('ntfy','Sent','success');});};
+    const bTT=$('#btnTestTgSheet');if(bTT)bTT.onclick=()=>{api('/api/tg/test',{method:'POST'}).then(r=>{if(r)banner('Telegram','Sent','success');});};
+    const ns=$('#ntfySeg');if(ns)ns.onclick=e=>{const b=e.target.closest('button');if(!b)return;vib(8);$$('#ntfySeg button').forEach(x=>x.classList.toggle('on',x===b));
+      api('/api/ntfy',{method:'POST',body:JSON.stringify({enabled:b.dataset.ntfy==='on'})});};
+    const ts=$('#tgSeg');if(ts)ts.onclick=e=>{const b=e.target.closest('button');if(!b)return;vib(8);$$('#tgSeg button').forEach(x=>x.classList.toggle('on',x===b));
+      api('/api/tg',{method:'POST',body:JSON.stringify({enabled:b.dataset.tg==='on'})});};}
+  if(section==='system'){const bU=$('#btnUpdateSheet');if(bU)bU.onclick=()=>banner('Update','Checking…','info');
+    const bB=$('#btnBackupSheet');if(bB)bB.onclick=()=>{api('/api/backup',{method:'POST'}).then(()=>banner('Backup','Downloaded','success'));};
+    const bR=$('#btnRestartSheet');if(bR)bR.onclick=()=>{api('/api/restart',{method:'POST'}).then(()=>banner('Restarting','…','info'));};
+    const bL=$('#btnLogoutSheet');if(bL)bL.onclick=()=>{api('/api/logout',{method:'POST'}).then(()=>location.reload());};
+    const cs=$('#calmSeg');if(cs)cs.onclick=e=>{const b=e.target.closest('button');if(!b)return;vib(8);S.calmMode=b.dataset.calm==='on';localStorage.setItem('strum_calm',S.calmMode);
+      $$('#calmSeg button').forEach(x=>x.classList.toggle('on',x===b));applyCalmMode();banner('Calm Mode',S.calmMode?'Animations reduced':'Animations enabled','success');};}
+}
+
 document.addEventListener('click',e=>{
   const q=e.target.closest('[data-q]');
   if(q){const d=S.devices.find(x=>x.id===q.dataset.q);if(d)setDevice(d.id,!d.switch);vib(15);return;}
@@ -904,6 +1048,12 @@ document.addEventListener('click',e=>{
     const targets={tuya:'page-settings',netbird:'page-settings',telegram:'page-settings',ntfy:'page-settings',solarman:'page-settings'};
     if(targets[id])switchTab('settings');
     return;}
+  const sr=e.target.closest('[data-settings]');
+  if(sr){vib(8);openSettingsSheet(sr.dataset.settings);return;}
+  const cm=e.target.closest('#calmSeg button');
+  if(cm){const on=cm.dataset.calm==='on';vib(8);S.calmMode=on;localStorage.setItem('strum_calm',on);
+    $$('#calmSeg button').forEach(b=>b.classList.toggle('on',b===cm));
+    applyCalmMode();banner('Calm Mode',on?'Animations reduced':'Animations enabled','success');return;}
   const tm=e.target.closest('#tuyaModeSeg button');
   if(tm){const m=tm.dataset.mode;vib(10);
     $$('#tuyaModeSeg button').forEach(b=>b.classList.toggle('on',b===tm));
