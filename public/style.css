@@ -5,9 +5,6 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 input,select{font-family:inherit}
 ::selection{background:rgba(10,132,255,.4)}
 
-/* ============ STAGE (desktop ambient) ============ */
-.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:64px;padding:24px}
-
 /* ============ SPLASH SCREEN ============ */
 .splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:#000;transition:opacity .6s ease, visibility .6s}
@@ -25,103 +22,7 @@ input,select{font-family:inherit}
 @keyframes splashPulse{0%,100%{transform:scale(1);box-shadow:0 16px 40px rgba(48,209,88,.4), inset 0 1px 0 rgba(255,255,255,.4)}
   50%{transform:scale(1.04);box-shadow:0 20px 50px rgba(48,209,88,.55), inset 0 1px 0 rgba(255,255,255,.4)}}
 @keyframes splashDot{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
-.ambient{position:absolute;inset:0;pointer-events:none;
-  background:
-    radial-gradient(52% 44% at 50% 40%, rgba(10,132,255,.10), transparent 70%),
-    radial-gradient(36% 30% at 82% 86%, rgba(191,90,242,.07), transparent 70%),
-    radial-gradient(30% 26% at 12% 18%, rgba(100,210,255,.05), transparent 70%),
-    #050507;}
-.ambient::before{content:'';position:absolute;inset:0;
-  background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px);
-  background-size:26px 26px;
-  -webkit-mask-image:radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
-  mask-image:radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);}
-.glow{position:absolute;left:50%;top:46%;width:620px;height:620px;transform:translate(-50%,-50%);
-  border-radius:50%;filter:blur(90px);pointer-events:none;
-  background:radial-gradient(circle, rgba(48,209,88,.17), rgba(10,132,255,.06) 45%, transparent 68%);
-  animation:breathe 7s ease-in-out infinite;transition:background 1.2s}
-body.outage .glow{background:radial-gradient(circle, rgba(255,69,58,.20), rgba(255,159,10,.07) 45%, transparent 68%)}
-@keyframes breathe{0%,100%{opacity:.75;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
-
-.stage-copy{position:relative;z-index:2;max-width:340px}
-.brand{display:flex;align-items:center;gap:14px;margin-bottom:22px}
-.brand-ic{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(150deg,#30D158,#0A84FF);font-size:28px;color:#fff;
-  box-shadow:0 10px 30px rgba(48,209,88,.35), inset 0 1px 0 rgba(255,255,255,.4)}
-.brand h2{font:700 30px/1 var(--fd);letter-spacing:-.6px}
-.brand span{display:block;font-size:12.5px;color:var(--label2);margin-top:4px;font-weight:500}
-.stage-copy p{font-size:14px;line-height:1.65;color:var(--label2);margin-bottom:18px}
-.stage-copy p b{color:var(--label);font-weight:600}
-.slist{display:flex;flex-direction:column;gap:10px}
-.slist div{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--label2);font-weight:500}
-.slist i{font-size:16px;color:var(--green)}
-.stage-copy .slist i:nth-child(1){color:var(--cyan)}
-.stage-copy div:nth-child(2) i{color:var(--cyan)}
-.stage-copy div:nth-child(3) i{color:var(--orange)}
-.stage-copy div:nth-child(4) i{color:var(--purple)}
-.stage-note{margin-top:26px;font:500 11px var(--fm);color:var(--label3);letter-spacing:.04em}
-
-.fchip-float{position:absolute;z-index:3;display:flex;align-items:center;gap:8px;
-  padding:10px 16px;border-radius:980px;font-size:12.5px;font-weight:600;color:var(--label);
-  background:rgba(30,30,36,.6);border:.5px solid rgba(255,255,255,.1);
-  -webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);
-  box-shadow:0 14px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
-  animation:floaty 6s ease-in-out infinite}
-.fchip-float i{font-size:15px}
-.ff1{left:calc(50% - 470px);top:22%;animation-delay:0s}
-.ff2{left:calc(50% + 290px);top:34%;animation-delay:1.6s}
-.ff3{left:calc(50% - 480px);bottom:20%;animation-delay:3s}
-@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-
-/* ============ PHONE ============ */
-.device{position:relative;z-index:4;width:min(393px, 94vw, calc((100vh - 48px) * .4613));aspect-ratio:393/852}
-.device-frame{position:absolute;inset:0;padding:11px;border-radius:60px;
-  background:linear-gradient(150deg,#43464c,#17181b 30%,#26282d 70%,#0d0e10);
-  box-shadow:0 40px 90px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06), inset 0 0 3px 1px rgba(255,255,255,.09)}
-.fbtn{position:absolute;width:3.5px;border-radius:3px;background:linear-gradient(90deg,#52555b,#232529)}
-.fbtn.l1{left:-3px;top:158px;height:22px}.fbtn.l2{left:-3px;top:200px;height:48px}.fbtn.l3{left:-3px;top:258px;height:48px}
-.fbtn.r1{right:-3px;top:198px;height:80px}
-.screen{position:relative;width:100%;height:100%;border-radius:49px;overflow:hidden;background:
-  radial-gradient(130% 70% at 50% -12%, #12141d 0%, #050508 52%, #000 100%)}
-.screen::after{content:'';position:absolute;inset:0;border-radius:49px;pointer-events:none;z-index:60;
-  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.07)}
-
-/* notch (iPhone 12 Pro) */
-.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:126px;height:34px;
-  background:#000;border-radius:0 0 22px 22px;z-index:55;overflow:hidden}
-.notch::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);
-  width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#1a1a2e 40%,#0d0d1a 60%,#000 100%);
-  box-shadow:0 0 0 1.5px rgba(60,60,70,.6)}
-.notch-cam{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:12px;height:12px;
-  border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a2a3e,#0d0d1a 60%,#050508);
-  box-shadow:0 0 0 1px rgba(80,80,90,.5), inset 0 1px 2px rgba(255,255,255,.08)}
-
-/* home indicator */
-.home-bar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;
-  border-radius:3px;background:rgba(255,255,255,.22);z-index:55;pointer-events:none}
-
-/* sim tray */
-.sim-tray{position:absolute;left:-4px;top:230px;width:32px;height:3.5px;border-radius:2px;
-  background:linear-gradient(90deg,#52555b,#2a2c30);z-index:5}
-.sim-tray::after{content:'';position:absolute;right:3px;top:50%;transform:translateY(-50%);
-  width:4px;height:4px;border-radius:50%;background:#3a3c42}
-
-/* antenna lines */
-.antenna{position:absolute;border-radius:1.5px;background:rgba(70,70,78,.5);z-index:5}
-.antenna.af1{left:22px;top:-1px;width:18px;height:3px}
-.antenna.af2{right:22px;top:-1px;width:18px;height:3px}
-.antenna.af3{left:22px;bottom:-1px;width:18px;height:3px}
-.antenna.af4{right:22px;bottom:-1px;width:18px;height:3px}
-
-/* status bar */
-.statusbar{position:absolute;top:0;left:0;right:0;height:48px;z-index:40;
-  display:flex;align-items:flex-start;justify-content:space-between;padding:15px 30px 0;
-  font-size:15px;font-weight:600;letter-spacing:.01em;pointer-events:none}
-.sb-r{display:flex;align-items:center;gap:6px;font-size:13px}
-.sb-r i{font-size:16px}
-.sb-batt{font:600 11px var(--fm)}
-
-/* dynamic island */
+/* ============ DYNAMIC ISLAND ============ */
 .island{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:50;
   width:124px;height:36px;border-radius:22px;background:#000;cursor:pointer;
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08), 0 4px 16px rgba(0,0,0,.6);
@@ -567,23 +468,13 @@ body.outage .glow{background:radial-gradient(circle, rgba(255,69,58,.20), rgba(2
 .notif-actions button.danger:active{background:rgba(255,69,58,.1)}
 
 /* ============ responsive ============ */
-@media (max-width:1180px){.stage-copy,.fchip-float{display:none}}
-@media (max-width:720px){
-  .stage{padding:0}
-  .device{position:fixed;inset:0;width:auto;height:auto;aspect-ratio:auto}
-  .device-frame{padding:0;border-radius:0;background:none;box-shadow:none}
-  .fbtn{display:none}
-  .screen{border-radius:0}
-  .screen::after{border-radius:0;box-shadow:none}
-  .glow{display:none}
-}
 @media (display-mode:standalone){
   .island{display:none!important}
-  .app{bottom:80px}
+  .app{bottom:calc(66px + var(--safe-b))}
   .scroll{padding-top:calc(var(--safe-t) + 8px);
           padding-bottom:calc(var(--safe-b) + 16px)}
   .navglass{padding-top:calc(var(--safe-t) + 12px)}
-  .tabbar{bottom:calc(14px + var(--safe-b));
+  .tabbar{bottom:var(--safe-b);
           left:calc(14px + var(--safe-l));
           right:calc(14px + var(--safe-r))}
 }
