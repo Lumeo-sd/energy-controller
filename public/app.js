@@ -75,9 +75,13 @@ function updateFlow(){
   $('#pBatD').style.display=dis?'':'none';
   $('#fnGridIc').classList.toggle('off',!g);
   const fg=$('#fnGrid');fg.textContent=g?fmt(S.gridV,1)+' V':'—';fg.classList.toggle('bad',!g);
+  $('#fnGridIc').classList.toggle('has-val',g);
   $('#fnInv').textContent=fmt(S.load)+' W';
+  $('#fnInv').closest('.fn-ic').classList.add('has-val');
   $('#fnHome').textContent=fmt(S.load)+' W';
+  $('#fnHome').closest('.fn-ic').classList.add('has-val');
   $('#fnBat').textContent=fmt(S.soc)+'%';
+  $('#fnBat').closest('.fn-ic').classList.add('has-val');
   $('#fImport').textContent=g?fmt(S.load+(chg?Math.abs(S.batW):0))+' W':'0 W';
   $('#fBat').textContent=(S.batW>0?'+':S.batW<0?'−':'')+(Math.abs(S.batW)/1000).toFixed(2)+' kWh';
   $('#fFreq').textContent=g?S.gridHz.toFixed(1)+' Hz':'—';
