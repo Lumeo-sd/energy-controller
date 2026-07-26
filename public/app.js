@@ -8,9 +8,10 @@ const timeStr=d=>(d||new Date()).toLocaleTimeString('en-US',{hour:'2-digit',minu
 
 window._csrf='';
 const CAP_WH=5120,EFF=0.92;
-const S={grid:true,gridV:0,gridHz:50,soc:0,storedWh:0,batW:0,load:0,
+const S={grid:true,gridV:0,gridHz:50,soc:0,storedWh:0,batW:0,batDir:'',load:0,
   pvPower:0,invTemp:0,batTemp:0,importToday:0,costToday:0,
-  tariff:{day:4.32,night:2.16},devices:[],scenes:[],events:[],config:null};
+  tariff:{day:4.32,night:2.16},devices:[],scenes:[],events:[],config:null,
+  notifications:[],unreadCount:0,currency:'$'};
 
 const PRI={critical:{label:'Critical',color:'#FF453A',icon:'ph-shield-check'},
   essential:{label:'Essential',color:'#FFD60A',icon:'ph-star'},
@@ -136,9 +137,135 @@ function updateIsland(){
 function updateTiles(){
   $('#mLoad').textContent=fmt(S.load)+' W';
   $('#mImport').textContent=S.importToday.toFixed(1)+' kWh';
-  $('#mCost').textContent='$ '+S.costToday.toFixed(1);
+  $('#mCost').textContent=S.currency+' '+S.costToday.toFixed(1);
   $('#mTemp').textContent=fmt(S.invTemp)+'°';
-  const t=$('#tToday');if(t)t.textContent='$ '+S.costToday.toFixed(1);
+  const t=$('#tToday');if(t)t.textContent=S.currency+' '+S.costToday.toFixed(1);
+  // Weather tile placeholder
+  const mw=$('#mWeather');if(mw)mw.textContent='—';
+  // Next outage placeholder
+  const mo=$('#mOutage');if(mo)mo.textContent='—';
+}
+
+// ─── Recommendations ───────────────────────────────────────
+function renderRecommendations(){
+  const el=$('#recsList');if(!el)return;
+  const recs=[];
+  if(!S.grid){
+    recs.push({icon:'ph-lightning-slash',color:'#FF453A',text:'Grid is down — save energy, critical loads only'});
+  }
+  if(S.grid&&S.soc<30){
+    recs.push({icon:'ph-battery-charging',color:'#FFD60A',text:'SOC below 30% — charge battery before possible outage'});
+  }
+  if(!S.grid&&S.soc>80){
+    recs.push({icon:'ph-plugs',color:'#30D158',text:'Battery nearly full — consider turning on high-power devices'});
+  }
+  if(S.importToday>5){
+    recs.push({icon:'ph-arrow-down-to-line',color:'#FF9F0A',text:'High grid import today ('+S.importToday.toFixed(1)+' kWh) — check tariff optimization'});
+  }
+  const criticalOn=S.devices.filter(d=>getDevicePriority(d)==='critical'&&d.switch).length;
+  const optionalOn=S.devices.filter(d=>getDevicePriority(d)==='optional'&&d.switch).length;
+  if(!S.grid&&criticalOn===0){
+    recs.push({icon:'ph-warning',color:'#FF453A',text:'No critical loads active during outage'});
+  }
+  if(optionalOn>3){
+    recs.push({icon:'ph-dots-three',color:'#8E8E93',text:optionalOn+' optional devices running — unload to extend autonomy'});
+  }
+  if(recs.length===0){
+    recs.push({icon:'ph-check-circle',color:'#30D158',text:'Everything looks good — no action needed'});
+  }
+  el.innerHTML=recs.slice(0,3).map(r=>
+    `<div class="rec-item"><span class="rec-ic" style="--c:${r.color}"><i class="ph-fill ${r.icon}"></i></span><span class="rec-text">${r.text}</span></div>`
+  ).join('');
+}
+
+// ─── SOC Forecast mini chart ───────────────────────────────
+let forecastChart=null;
+async function initForecastChart(){
+  const ctx=$('#forecastMini');if(!ctx)return;
+  const d=await api('/api/history?period=6h');
+  if(!d||!d.points||d.points.length<2)return;
+  const pts=d.points;
+  const labels=pts.map(p=>timeStr(new Date(p.ts)));
+  const socData=pts.map(p=>p.soc||0);
+  // Simple linear extrapolation for next 2 hours (8 points at ~15min intervals)
+  const lastSoc=socData[socData.length-1]||S.soc;
+  const firstSoc=socData[0]||S.soc;
+  const rate=(lastSoc-firstSoc)/Math.max(1,socData.length-1);
+  for(let i=1;i<=8;i++){
+    socData.push(clamp(lastSoc+rate*i,0,100));
+    const future=new Date(Date.now()+i*15*60000);
+    labels.push(timeStr(future));
+  }
+  // Update forecast meta
+  const fn=$('#fcNow');if(fn)fn.textContent=fmt(S.soc)+'%';
+  const f4=$('#fc4h');if(f4)f4.textContent=fmt(Math.round(socData[Math.min(socData.length-1,socData.length-9)]))+'%';
+  const f8=$('#fc8h');if(f8)f8.textContent=fmt(Math.round(lastSoc+rate*8))+'%';
+  if(forecastChart){forecastChart.data.labels=labels;forecastChart.data.datasets[0].data=socData;forecastChart.update();return;}
+  forecastChart=new Chart(ctx.getContext('2d'),{type:'line',
+    data:{labels,datasets:[{data:socData,borderColor:'#30D158',borderWidth:2,tension:.35,pointRadius:0,fill:true,
+      backgroundColor:function(c){const{ctx:cc,chartArea}=c.chart;if(!chartArea)return'rgba(48,209,88,.1)';
+        const g=cc.createLinearGradient(0,chartArea.top,0,chartArea.bottom);g.addColorStop(0,'rgba(48,209,88,.25)');g.addColorStop(1,'rgba(48,209,88,0)');return g;},
+      segment:{borderDash:ctx2=>ctx2.p0DataIndex>=pts.length-2?[5,5]:undefined}}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{display:false},y:{min:0,max:100,display:false}}}});
+}
+
+// ─── Source chart (Grid vs Battery) ────────────────────────
+let sourceChart=null;
+async function initSourceChart(){
+  const ctx=$('#sourceChart');if(!ctx)return;
+  const d=await api('/api/history?period=week');
+  if(!d||!d.points||d.points.length<2)return;
+  const pts=d.points;
+  // Aggregate by day
+  const days={};
+  pts.forEach(p=>{
+    const day=new Date(p.ts).toLocaleDateString('en-US',{day:'2-digit',month:'short'});
+    if(!days[day])days[day]={grid:0,bat:0};
+    days[day].grid+=(p.gridImport||0);
+    days[day].bat+=(p.batteryPower>0?Math.abs(p.batteryPower)*0.25:0)/1000; // approx kWh
+  });
+  const labels=Object.keys(days).slice(-7);
+  const gridData=labels.map(l=>Math.round(days[l].grid*10)/10);
+  const batData=labels.map(l=>Math.round(days[l].bat*10)/10);
+  if(sourceChart){sourceChart.data.labels=labels;sourceChart.data.datasets[0].data=gridData;sourceChart.data.datasets[1].data=batData;sourceChart.update();return;}
+  sourceChart=new Chart(ctx.getContext('2d'),{type:'bar',
+    data:{labels,datasets:[
+      {label:'Grid',data:gridData,backgroundColor:'rgba(10,132,255,.65)',borderRadius:4,maxBarThickness:18,borderSkipped:false},
+      {label:'Battery',data:batData,backgroundColor:'rgba(48,209,88,.65)',borderRadius:4,maxBarThickness:18,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},
+      plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:6,boxHeight:6,usePointStyle:true,pointStyle:'circle',color:'rgba(235,235,245,.5)',font:{size:9,weight:'600'}}},
+        tooltip:{backgroundColor:'rgba(28,28,32,.96)',borderColor:'rgba(255,255,255,.12)',borderWidth:.5,cornerRadius:12}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9,weight:'600'}}},
+        y:{stacked:true,ticks:{font:{size:9},callback:v=>v+' kWh'},grid:{color:'rgba(255,255,255,.05)'}}}}});
+}
+
+// ─── Device Breakdown ──────────────────────────────────────
+async function renderDeviceBreakdown(){
+  const el=$('#deviceBreakdown');if(!el)return;
+  const d=await api('/api/socket-history?period=day');
+  if(!d||!d.points||!d.points.length){el.innerHTML='<div class="rec-empty">No device data yet</div>';return;}
+  // Aggregate per device
+  const devEnergy={};
+  const names=d.deviceNames||{};
+  d.points.forEach(p=>{
+    if(!p.devices)return;
+    for(const[devId,watts] of Object.entries(p.devices)){
+      if(!devEnergy[devId])devEnergy[devId]=0;
+      devEnergy[devId]+=Math.abs(watts||0)*0.25/1000; // approx kWh
+    }
+  });
+  const sorted=Object.entries(devEnergy).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxVal=sorted.length?sorted[0][1]:1;
+  const colors=['#0A84FF','#30D158','#FF9F0A','#BF5AF2','#FF453A','#64D2FF'];
+  el.innerHTML=sorted.map(([devId,kwh],i)=>{
+    const name=names[devId]||devId.slice(-6);
+    const pct=Math.max(4,kwh/maxVal*100);
+    return`<div class="bd-row"><span class="bd-name">${name}</span>
+      <div class="bd-bar"><div class="bd-bar-i" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
+      <span class="bd-val">${kwh.toFixed(1)} kWh</span></div>`;
+  }).join('')||'<div class="rec-empty">No device data yet</div>';
 }
 
 // ─── Grid Chip ─────────────────────────────────────────────
@@ -150,7 +277,7 @@ function updateChip(){
   if(inv){inv.textContent=S.grid?'Online':'On Battery';inv.className=S.grid?'badge-ok':'badge-ok';inv.style.cssText=S.grid?'':'background:rgba(255,159,10,.15);color:var(--orange)';}
 }
 
-function updateAll(){updateFlow();updateBattery();updateSurvival();updateIsland();updateTiles();updateChip();}
+function updateAll(){updateFlow();updateBattery();updateSurvival();updateIsland();updateTiles();updateChip();renderRecommendations();}
 
 // ─── Clock ─────────────────────────────────────────────────
 function updateClock(){$('#sbTime').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).replace(/^0/,'');}
@@ -227,16 +354,20 @@ function openDevice(id){
   vib(8);
   const d=S.devices.find(x=>x.id===id);if(!d)return;
   const p=livePower(d),pri=getDevicePriority(d);
+  const dailyKwh=d.dailyEnergy!=null?(d.dailyEnergy).toFixed(2):'—';
   openSheet(`<div class="grab"></div>
     <div class="sh-head"><div class="dic big" style="--c:${PRI[pri].color}"><i class="ph-fill ph-plugs"></i></div>
       <div><b class="sh-title">${d.name||d.id}</b><span class="sh-sub">${d.switch?'on':'off'} · ${d.online?'online':'offline'}</span></div>
       <label class="sw"><input type="checkbox" data-sw="${d.id}" ${d.switch?'checked':''}><span class="knob"></span></label></div>
+    <div class="spark"><canvas id="devSparkline"></canvas></div>
     <div class="sh-stats">
       <div><span>Now</span><b>${fmt(p)} W</b></div>
       <div><span>Voltage</span><b>${d.voltage?fmt(d.voltage,1)+' V':'—'}</b></div>
       <div><span>Current</span><b>${d.current?fmt(d.current,2)+' A':'—'}</b></div>
     </div>
+    <div class="sh-row"><span>Daily Energy</span><b>${dailyKwh} kWh</b></div>
     <div class="sh-row"><span>Protocol</span><b class="prot ${d.online?'loc':'cld'}"><i class="ph-bold ph-${d.online?'wifi-high':'cloud'}"></i> ${d.online?'Tuya Local':'Tuya Cloud'}</b></div>
+    <div class="sh-row"><span>Device ID</span><b class="mono" style="font-size:11px">${d.id}</b></div>
     <div class="sh-lbl">Survival Priority</div>
     <div class="seg" id="priSeg">${['critical','essential','optional'].map(k=>`<button data-pri="${k}" class="${pri===k?'on':''}">${PRI[k].label}</button>`).join('')}</div>
     <button class="btn wide" id="shClose" style="margin-top:18px">Done</button>`);
@@ -248,6 +379,24 @@ function openDevice(id){
     renderDevices();renderQuick();
     banner('Priority Updated',`${d.name} → ${PRI[b.dataset.pri].label}`,'success');
   };
+  // Draw sparkline
+  loadDeviceSparkline(d.id);
+}
+
+async function loadDeviceSparkline(devId){
+  const ctx=$('#devSparkline');if(!ctx)return;
+  const d=await api('/api/socket-history?period=6h');
+  if(!d||!d.points||!d.points.length)return;
+  const data=d.points.map(p=>Math.abs(p.devices?.[devId]||0));
+  if(!data.some(v=>v>0))return;
+  const labels=d.points.map(p=>timeStr(new Date(p.ts)));
+  new Chart(ctx.getContext('2d'),{type:'line',
+    data:{labels,datasets:[{data,borderColor:'#0A84FF',borderWidth:1.5,tension:.35,pointRadius:0,fill:true,
+      backgroundColor:c=>{const{ctx:cc,chartArea}=c.chart;if(!chartArea)return'rgba(10,132,255,.1)';
+        const g=cc.createLinearGradient(0,chartArea.top,0,chartArea.bottom);g.addColorStop(0,'rgba(10,132,255,.3)');g.addColorStop(1,'rgba(10,132,255,0)');return g;}}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:300},
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{display:false},y:{display:false}}}});
 }
 
 // ─── Rules ─────────────────────────────────────────────────
@@ -329,7 +478,8 @@ function openAddRule(){
 }
 
 // ─── Charts ────────────────────────────────────────────────
-let mainChart=null,costChart=null,anaInit=false;
+let mainChart=null,costChart=null,compareChart=null,anaInit=false;
+let currentAnaSeg='charts';
 async function initAnalytics(){
   if(anaInit){mainChart&&mainChart.resize();costChart&&costChart.resize();return;}
   anaInit=true;
@@ -354,8 +504,8 @@ async function initAnalytics(){
     costChart=new Chart(costCtx.getContext('2d'),{type:'bar',
       data:{labels:days,datasets:[{data:Array(7).fill(0),backgroundColor:'rgba(10,132,255,.65)',hoverBackgroundColor:'#0A84FF',borderRadius:7,maxBarThickness:26,borderSkipped:false}]},
       options:{responsive:true,maintainAspectRatio:false,animation:{duration:450},
-        plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,32,.96)',borderColor:'rgba(255,255,255,.12)',borderWidth:.5,cornerRadius:12,callbacks:{label:c=>'$'+c.raw.toFixed(2)}}},
-        scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'600'}}},y:{ticks:{font:{size:9.5},callback:v=>'$'+v},grid:{color:'rgba(255,255,255,.05)'}}}}});
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(28,28,32,.96)',borderColor:'rgba(255,255,255,.12)',borderWidth:.5,cornerRadius:12,callbacks:{label:c=>S.currency+' '+c.raw.toFixed(2)}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'600'}}},y:{ticks:{font:{size:9.5},callback:v=>S.currency+' '+v},grid:{color:'rgba(255,255,255,.05)'}}}}});
   }
 }
 
@@ -378,12 +528,190 @@ async function drawMain(period){
   $('#stAvg').textContent=fmt(avg)+' W';
   $('#stPeak').textContent=fmt(peak)+' W';
   $('#stKwh').textContent=kwh.toFixed(1)+' kWh';
-  $('#stCost').textContent='$'+(kwh*rate).toFixed(1);
+  $('#stCost').textContent=S.currency+(kwh*rate).toFixed(1);
+}
+
+// ─── Analytics sub-views ───────────────────────────────────
+function switchAnaSeg(seg){
+  currentAnaSeg=seg;
+  $$('.ana-view').forEach(v=>v.classList.toggle('active',v.id==='ana-'+seg));
+  $$('[data-aseg]').forEach(b=>b.classList.toggle('on',b.dataset.aseg===seg));
+  if(seg==='compare')initCompareChart();
+  if(seg==='data')loadExportData();
+}
+
+async function initCompareChart(){
+  const ctx=$('#compareChart');if(!ctx)return;
+  const today=await api('/api/history?period=day');
+  if(!today||!today.points||today.points.length<2)return;
+  // Compute yesterday's data by fetching a longer range and slicing
+  const allPts=today.points;
+  const todayStart=new Date();todayStart.setHours(0,0,0,0);
+  const yesterdayPts=allPts.filter(p=>p.ts<todayStart.getTime());
+  const todayPts=allPts.filter(p=>p.ts>=todayStart.getTime());
+  const todayKwh=todayPts.reduce((a,p)=>a+(p.load||0),0)*((allPts[1]?.ts-allPts[0]?.ts||900000)/36e5)/1000;
+  const yesterdayKwh=yesterdayPts.reduce((a,p)=>a+(p.load||0),0)*((allPts[1]?.ts-allPts[0]?.ts||900000)/36e5)/1000;
+  const delta=todayKwh-yesterdayKwh;
+  const pct=yesterdayKwh>0?((delta/yesterdayKwh)*100).toFixed(0):'0';
+  const dt=$('#compToday');if(dt)dt.textContent=todayKwh.toFixed(1)+' kWh';
+  const dy=$('#compYesterday');if(dy)dy.textContent=yesterdayKwh.toFixed(1)+' kWh';
+  const dv=$('#compDeltaVal');if(dv)dv.textContent=(delta>0?'+':'')+delta.toFixed(1)+' kWh';
+  const dd=$('#compDelta');if(dd){dd.textContent=(delta>0?'↑':'↓')+' '+Math.abs(pct)+'%';dd.className=delta>0?'mini-badge':'mini-badge g';}
+  const tr=$('#compTrend');if(tr)tr.textContent=delta>0?'↑ Higher':'↓ Lower';
+  // Build labels from 24h time
+  const labels=[...Array(24)].map((_,i)=>i+':00');
+  const ytData=labels.map((_,i)=>{const pt=yesterdayPts[Math.floor(i/24*yesterdayPts.length)];return pt?(pt.load||0):0;});
+  const tdData=labels.map((_,i)=>{const pt=todayPts[Math.floor(i/24*Math.max(1,todayPts.length))];return pt?(pt.load||0):0;});
+  if(compareChart){compareChart.data.labels=labels;compareChart.data.datasets[0].data=ytData;compareChart.data.datasets[1].data=tdData;compareChart.update();return;}
+  compareChart=new Chart(ctx.getContext('2d'),{type:'line',
+    data:{labels,datasets:[
+      {label:'Yesterday',data:ytData,borderColor:'rgba(235,235,245,.25)',borderWidth:1.5,tension:.35,pointRadius:0,fill:false,borderDash:[4,4]},
+      {label:'Today',data:tdData,borderColor:'#0A84FF',borderWidth:2,tension:.35,pointRadius:0,fill:true,
+        backgroundColor:c=>{const{ctx:cc,chartArea}=c.chart;if(!chartArea)return'rgba(10,132,255,.1)';
+          const g=cc.createLinearGradient(0,chartArea.top,0,chartArea.bottom);g.addColorStop(0,'rgba(10,132,255,.32)');g.addColorStop(1,'rgba(10,132,255,0)');return g;}}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:450},interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:true,position:'top',align:'end',labels:{boxWidth:7,boxHeight:7,usePointStyle:true,pointStyle:'circle',color:'rgba(235,235,245,.6)',font:{size:10,weight:'600'}}},
+        tooltip:{backgroundColor:'rgba(28,28,32,.96)',borderColor:'rgba(255,255,255,.12)',borderWidth:.5,cornerRadius:12,padding:10}},
+      scales:{x:{ticks:{maxTicksLimit:8,font:{size:9.5}},grid:{display:false}},
+        y:{ticks:{font:{size:9.5},callback:v=>v>=1000?(v/1000)+'k':v},grid:{color:'rgba(255,255,255,.05)'}}}}});
+}
+
+function initCostProjection(){
+  const day=S.costToday||0;
+  const daysInMonth=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+  const dayOfMonth=new Date().getDate();
+  const avgPerDay=dayOfMonth>0?day/dayOfMonth:0;
+  const monthProj=avgPerDay*daysInMonth;
+  const pt=$('#projToday');if(pt)pt.textContent=S.currency+' '+day.toFixed(1);
+  const pm=$('#projMonth');if(pm)pm.textContent=S.currency+' '+monthProj.toFixed(1);
+  const pa=$('#projAvg');if(pa)pa.textContent=S.currency+' '+avgPerDay.toFixed(1)+'/day';
+}
+
+async function loadExportData(){
+  const pt=$('#promToken');
+  if(pt){const cfg=S.config||{};pt.textContent=cfg.metricsToken||'(set in config)';}
+}
+
+async function exportCSV(period){
+  const d=await api('/api/history?period='+period);
+  if(!d||!d.points)return;
+  let csv='Time,Load (W),SOC (%),Grid Voltage (V),Battery Power (W)\n';
+  d.points.forEach(p=>{
+    csv+=new Date(p.ts).toISOString()+','+(p.load||0)+','+(p.soc||0)+','+(p.gridV||0)+','+(p.batW||0)+'\n';
+  });
+  downloadFile(csv,'strum-'+period+'.csv','text/csv');
+}
+
+async function exportDevicesCSV(){
+  const d=await api('/api/socket-history?period=day');
+  if(!d||!d.points)return;
+  let csv='Time';
+  const names=d.deviceNames||{};
+  const devIds=[...new Set(d.points.flatMap(p=>Object.keys(p.devices||{})))];
+  devIds.forEach(id=>csv+=','+(names[id]||id));
+  csv+='\n';
+  d.points.forEach(p=>{
+    csv+=new Date(p.ts).toISOString();
+    devIds.forEach(id=>csv+=','+(p.devices?.[id]||0));
+    csv+='\n';
+  });
+  downloadFile(csv,'strum-devices.csv','text/csv');
+}
+
+async function exportJSON(){
+  const [status,devices]=await Promise.all([api('/api/status'),api('/api/tuya-devices')]);
+  const data={exported:new Date().toISOString(),status:status||{},devices:devices||[]};
+  downloadFile(JSON.stringify(data,null,2),'strum-full.json','application/json');
+}
+
+function downloadFile(content,filename,type){
+  const blob=new Blob([content],{type});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+  banner('Export',filename+' downloaded','success');
 }
 
 // ─── Events from notifications ─────────────────────────────
+let _notifPollTimer=null;
 async function pollNotifications(){
-  const d=await api('/api/logs');
+  try{
+    const d=await api('/api/notifications');
+    if(!d||!d.notifications)return;
+    S.notifications=d.notifications;
+    S.unreadCount=d.unread||0;
+    const badge=$('#notifBadge');
+    if(badge){
+      badge.textContent=S.unreadCount;
+      badge.classList.toggle('show',S.unreadCount>0);
+    }
+  }catch(e){}
+}
+
+function renderNotifSheet(){
+  const list=S.notifications||[];
+  if(!list.length){
+    openSheet(`<div class="grab"></div><b class="sh-title" style="display:block;margin:4px 0 14px">Notifications</b>
+      <div class="notif-empty"><i class="ph-fill ph-bell-simple" style="font-size:28px;color:var(--label3);display:block;margin-bottom:8px"></i>No notifications</div>`);
+    return;
+  }
+  const now=Date.now();
+  const today=[],earlier=[];
+  list.forEach(n=>{
+    const age=now-(n.ts||0);
+    if(age<864e5)today.push(n);else earlier.push(n);
+  });
+  const itemHTML=n=>{
+    const colors={info:'#0A84FF',success:'#30D158',error:'#FF453A',warn:'#FF9F0A',warning:'#FF9F0A'};
+    const icons={info:'ph-info',success:'ph-check-circle',error:'ph-warning-circle',warn:'ph-warning',warning:'ph-warning'};
+    const c=colors[n.type]||colors.info;
+    const ic=icons[n.type]||icons.info;
+    const t=n.ts?new Date(n.ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'';
+    return`<div class="notif-item" data-nid="${n.id||''}">
+      <span class="notif-ic" style="--c:${c}"><i class="ph-fill ${ic}"></i></span>
+      <div class="notif-body"><b>${n.title||'Notification'}</b><span>${n.message||''}</span></div>
+      <span class="notif-time">${t}</span>
+      <button class="notif-dismiss" data-dismiss="${n.id||''}"><i class="ph-bold ph-x"></i></button>
+    </div>`;
+  };
+  let html=`<div class="grab"></div><b class="sh-title" style="display:block;margin:4px 0 14px">Notifications</b>`;
+  if(today.length){
+    html+=`<div class="notif-group">Today</div><div class="notif-list">${today.map(itemHTML).join('')}</div>`;
+  }
+  if(earlier.length){
+    html+=`<div class="notif-group">Earlier</div><div class="notif-list">${earlier.map(itemHTML).join('')}</div>`;
+  }
+  html+=`<div class="notif-actions">
+    <button id="notifMarkAll"><i class="ph-bold ph-check"></i> Mark All Read</button>
+    <button id="notifClearAll" class="danger"><i class="ph-bold ph-trash"></i> Clear All</button>
+  </div>`;
+  openSheet(html);
+  // dismiss handlers
+  $$('[data-dismiss]').forEach(btn=>{
+    btn.onclick=async e=>{
+      e.stopPropagation();
+      const id=btn.dataset.dismiss;
+      await api('/api/notifications/dismiss',{method:'POST',body:JSON.stringify({id})});
+      S.notifications=(S.notifications||[]).filter(n=>String(n.id)!==String(id));
+      S.unreadCount=(S.notifications||[]).filter(n=>!n.read).length;
+      const badge=$('#notifBadge');if(badge){badge.textContent=S.unreadCount;badge.classList.toggle('show',S.unreadCount>0);}
+      const item=btn.closest('.notif-item');if(item)item.remove();
+    };
+  });
+  const markAll=$('#notifMarkAll');
+  if(markAll)markAll.onclick=async()=>{
+    await api('/api/notifications/mark-read',{method:'POST',body:JSON.stringify({})});
+    (S.notifications||[]).forEach(n=>n.read=true);
+    S.unreadCount=0;
+    const badge=$('#notifBadge');if(badge){badge.textContent='0';badge.classList.remove('show');}
+    banner('Notifications','All marked as read','success');
+  };
+  const clearAll=$('#notifClearAll');
+  if(clearAll)clearAll.onclick=async()=>{
+    await api('/api/notifications/dismiss-all',{method:'POST'});
+    S.notifications=[];S.unreadCount=0;
+    const badge=$('#notifBadge');if(badge){badge.textContent='0';badge.classList.remove('show');}
+    closeSheet();
+    banner('Notifications','All cleared','success');
+  };
 }
 
 // ─── Settings ──────────────────────────────────────────────
@@ -431,6 +759,19 @@ async function loadSettings(){
   const ntopic=$('#ntfyTopic');if(ntopic)ntopic.textContent=ncfg.ntfyTopic||'—';
   const nls=$('#ntfyLowSoc');if(nls)nls.value=ncfg.lowSocAlert||20;
   const tcid=$('#tgChatId');if(tcid)tcid.textContent=ncfg.telegramChatId||'—';
+
+  // Integrations grid status
+  const intTuya=$('#intTuya');if(intTuya){const ok=!!S.config.tuya?.username;intTuya.textContent=ok?'Connected':'Not set';intTuya.className='int-st'+(ok?'':' off');}
+  const intNb=$('#intNb');if(intNb){const ok=nb&&nb.success;intNb.textContent=ok?'Connected':'Disconnected';intNb.className='int-st'+(ok?'':' off');}
+  const intTg=$('#intTg');if(intTg){const ok=tgOn&&ncfg.telegramChatId;intTg.textContent=ok?'Connected':'Not set';intTg.className='int-st'+(ok?'':' off');}
+  const intNtfy=$('#intNtfy');if(intNtfy){const ok=ntfyOn&&ncfg.ntfyTopic;intNtfy.textContent=ok?'Connected':'Not set';intNtfy.className='int-st'+(ok?'':' off');}
+  const intProm=$('#intProm');if(intProm){const ok=!!S.config.metricsToken;intProm.textContent=ok?'Configured':'Not set';intProm.className='int-st'+(ok?'':' off');}
+  const intInv=$('#intInv');if(intInv){const ok=!!S.config.inverter?.ip;intInv.textContent=ok?'Online':'Offline';intInv.className='int-st'+(ok?'':' off');}
+
+  // Currency
+  const saved=localStorage.getItem('strum_currency')||'$';
+  S.currency=saved;
+  $$('#currencySeg button').forEach(b=>b.classList.toggle('on',b.dataset.cur===saved));
 }
 
 const MODE_HINTS={local:'LAN only — no cloud fallback',auto:'Local-first with cloud fallback',cloud:'Cloud only — no local control'};
@@ -444,13 +785,18 @@ function switchTab(id){
   vib(8);
   $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===id));
   $$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id));
-  if(id==='analytics')setTimeout(()=>{initAnalytics();drawMain('day');},80);
+  if(id==='overview')setTimeout(()=>{initForecastChart();initSourceChart();renderDeviceBreakdown();},80);
+  if(id==='analytics')setTimeout(()=>{initAnalytics();drawMain('day');initCostProjection();},80);
   if(id==='settings')loadSettings();
   if(id==='rules')renderRules();
 }
 
 // ─── Init ──────────────────────────────────────────────────
 async function init(){
+  // Dismiss splash screen
+  const splash=$('#splash');
+  if(splash){setTimeout(()=>splash.classList.add('hide'),1200);setTimeout(()=>splash.remove(),1800);}
+
   $('#dateNote').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long'});
   updateClock();
 
@@ -477,6 +823,8 @@ async function init(){
   if(r.scenes)S.scenes=r.scenes;
 
   renderDevices();renderQuick();renderRules();
+  // Initial chart loading for overview
+  setTimeout(()=>{initForecastChart();initSourceChart();renderDeviceBreakdown();},200);
   updateAll();
 
   // Polling
@@ -511,6 +859,10 @@ async function init(){
 
   setInterval(updateClock,10000);
 
+  // Notification polling
+  pollNotifications();
+  setInterval(pollNotifications,30000);
+
   // Update note
   setInterval(()=>{$('#updNote').textContent='UPDATED '+timeStr();},5000);
 
@@ -533,6 +885,25 @@ document.addEventListener('click',e=>{
   if(f){devFilter=f.dataset.filter;$$('[data-filter]').forEach(x=>x.classList.toggle('on',x===f));renderDevices();vib(8);return;}
   const cp=e.target.closest('[data-period]');
   if(cp){$$('[data-period]').forEach(x=>x.classList.toggle('on',x===cp));drawMain(cp.dataset.period);vib(8);return;}
+  const as=e.target.closest('[data-aseg]');
+  if(as){switchAnaSeg(as.dataset.aseg);vib(8);return;}
+  const ec=e.target.closest('#expCsvDay');
+  if(ec){exportCSV('day');return;}
+  const ew=e.target.closest('#expCsvWeek');
+  if(ew){exportCSV('week');return;}
+  const ej=e.target.closest('#expJson');
+  if(ej){exportJSON();return;}
+  const ed=e.target.closest('#expDevices');
+  if(ed){exportDevicesCSV();return;}
+  const cur=e.target.closest('#currencySeg button');
+  if(cur){const c=cur.dataset.cur;vib(8);S.currency=c;localStorage.setItem('strum_currency',c);
+    $$('#currencySeg button').forEach(b=>b.classList.toggle('on',b===cur));
+    updateTiles();initCostProjection();banner('Currency','Set to '+c,'success');return;}
+  const ic=e.target.closest('.int-card');
+  if(ic){const id=ic.dataset.int;vib(8);
+    const targets={tuya:'page-settings',netbird:'page-settings',telegram:'page-settings',ntfy:'page-settings',solarman:'page-settings'};
+    if(targets[id])switchTab('settings');
+    return;}
   const tm=e.target.closest('#tuyaModeSeg button');
   if(tm){const m=tm.dataset.mode;vib(10);
     $$('#tuyaModeSeg button').forEach(b=>b.classList.toggle('on',b===tm));
@@ -608,6 +979,7 @@ $('#island').addEventListener('click',()=>{
 $('#btnUnload')?.addEventListener('click',unloadOptional);
 $('#btnUnloadAll')?.addEventListener('click',unloadOptional);
 $('#btnAddRule')?.addEventListener('click',openAddRule);
+$('#notifBtn')?.addEventListener('click',()=>{vib(8);renderNotifSheet();});
 $('#btnScan')?.addEventListener('click',async e=>{
   const t=e.currentTarget.querySelector('.act-lb');
   if(t)t.innerHTML='<span class="spin"></span>Searching…';

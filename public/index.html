@@ -14,6 +14,14 @@
 <link href="/style.css" rel="stylesheet">
 </head>
 <body>
+<!-- PWA Splash Screen -->
+<div class="splash" id="splash">
+  <div class="splash-ic"><i class="ph-fill ph-lightning"></i></div>
+  <h2>Strum</h2>
+  <span>energy monitor</span>
+  <div class="splash-dots"><i></i><i></i><i></i></div>
+</div>
+
 <div class="stage">
   <div class="ambient"></div>
   <div class="glow"></div>
@@ -35,7 +43,10 @@
   <div class="device">
     <div class="device-frame">
       <span class="fbtn l1"></span><span class="fbtn l2"></span><span class="fbtn l3"></span><span class="fbtn r1"></span>
+      <span class="sim-tray"></span>
+      <span class="antenna af1"></span><span class="antenna af2"></span><span class="antenna af3"></span><span class="antenna af4"></span>
       <div class="screen">
+        <div class="notch"><div class="notch-cam"></div></div>
 
         <div class="statusbar">
           <span id="sbTime">9:41</span>
@@ -45,13 +56,17 @@
         <div class="island" id="island">
           <div class="isl-c">
             <span class="isl-dot" id="islDot"></span>
+            <span class="isl-brand"><i class="ph-fill ph-lightning"></i></span>
             <span class="isl-w" id="islW">— W</span>
             <span class="isl-soc" id="islSoc">—%</span>
           </div>
           <div class="isl-e">
-            <div><i class="ph-fill ph-plug-charging ie-g"></i><b id="iv1">—</b><span>Grid</span></div>
-            <div><i class="ph-fill ph-battery-charging ie-b"></i><b id="iv2">—%</b><span>Battery</span></div>
-            <div><i class="ph-fill ph-gauge ie-h"></i><b id="iv3">— W</b><span>Load</span></div>
+            <div class="isl-e-h"><i class="ph-fill ph-lightning"></i><span>STRUM · LIVE</span></div>
+            <div class="isl-e-grid">
+              <div><i class="ph-fill ph-plug-charging ie-g"></i><b id="iv1">—</b><span>Grid</span></div>
+              <div><i class="ph-fill ph-battery-charging ie-b"></i><b id="iv2">—%</b><span>Battery</span></div>
+              <div><i class="ph-fill ph-gauge ie-h"></i><b id="iv3">— W</b><span>Load</span></div>
+            </div>
           </div>
         </div>
 
@@ -60,7 +75,12 @@
           <!-- ================= OVERVIEW ================= -->
           <section class="page active" id="page-overview">
             <div class="scroll">
-              <div class="navglass"><span class="nv-t">Overview</span><span class="nv-chip" id="gridChip"><i class="ph-fill ph-plug-charging"></i> Grid</span></div>
+              <div class="navglass"><span class="nv-t">Overview</span>
+                <div class="nv-r">
+                  <button class="nv-notif" id="notifBtn"><i class="ph-fill ph-bell-simple"></i><span class="notif-badge" id="notifBadge">0</span></button>
+                  <span class="nv-chip" id="gridChip"><i class="ph-fill ph-plug-charging"></i> Grid</span>
+                </div>
+              </div>
               <div class="ltitle"><h1>Overview</h1><span id="dateNote">—</span></div>
 
               <div class="card rv">
@@ -149,14 +169,41 @@
 
               <div class="tiles">
                 <div class="tile rv"><i class="ph-fill ph-gauge" style="color:var(--orange)"></i><span>Load</span><b id="mLoad">—</b></div>
-                <div class="tile rv"><i class="ph-fill ph-arrow-down-to-line" style="color:var(--cyan)"></i><span>Imported Today</span><b id="mImport">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-arrow-down-to-line" style="color:var(--cyan)"></i><span>Imported</span><b id="mImport">—</b></div>
                 <div class="tile rv"><i class="ph-fill ph-coins" style="color:var(--yellow)"></i><span>Cost</span><b id="mCost">—</b></div>
                 <div class="tile rv"><i class="ph-fill ph-thermometer-simple" style="color:var(--purple)"></i><span>Inverter</span><b id="mTemp">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-sun" style="color:var(--cyan)"></i><span>Weather</span><b id="mWeather">—</b></div>
+                <div class="tile rv"><i class="ph-fill ph-clock" style="color:var(--orange)"></i><span>Next Outage</span><b id="mOutage">—</b></div>
+              </div>
+
+              <div class="card rv" id="recsCard">
+                <div class="card-head"><span class="card-title">Recommendations</span><i class="ph-fill ph-lightbulb" style="font-size:16px;color:var(--yellow)"></i></div>
+                <div id="recsList"></div>
+              </div>
+
+              <div class="card rv" id="forecastCard">
+                <div class="card-head"><span class="card-title">SOC Forecast</span><span class="mini-badge">8h</span></div>
+                <div class="chart-h sm"><canvas id="forecastMini"></canvas></div>
+                <div class="forecast-meta">
+                  <div><span>Now</span><b id="fcNow">—</b></div>
+                  <div><span>In 4h</span><b id="fc4h">—</b></div>
+                  <div><span>In 8h</span><b id="fc8h">—</b></div>
+                </div>
               </div>
 
               <div class="card rv">
                 <div class="card-head"><span class="card-title">Quick Access</span><a class="link" data-goto="devices">All <i class="ph ph-caret-right"></i></a></div>
                 <div class="quick-row" id="quickRow"></div>
+              </div>
+
+              <div class="card rv">
+                <div class="card-head"><span class="card-title">Energy Source</span><span class="mini-badge">7 days</span></div>
+                <div class="chart-h sm"><canvas id="sourceChart"></canvas></div>
+              </div>
+
+              <div class="card rv">
+                <div class="card-head"><span class="card-title">Device Breakdown</span><span class="mini-badge" id="bdBadge">today</span></div>
+                <div id="deviceBreakdown"></div>
               </div>
 
               <div class="card rv">
@@ -194,25 +241,74 @@
             <div class="scroll">
               <div class="navglass"><span class="nv-t">Analytics</span><span class="nv-chip gray">energy · cost</span></div>
               <div class="ltitle"><h1>Analytics</h1><span>Consumption, battery & cost</span></div>
-              <div class="chips rv" id="anaChips">
-                <button class="fchip" data-period="1h">1 hr</button>
-                <button class="fchip" data-period="6h">6 hrs</button>
-                <button class="fchip on" data-period="day">Day</button>
-                <button class="fchip" data-period="week">Week</button>
+              <div class="seg rv" id="anaSeg" style="margin-bottom:14px">
+                <button data-aseg="charts" class="on">Charts</button>
+                <button data-aseg="compare">Compare</button>
+                <button data-aseg="data">Data</button>
               </div>
-              <div class="card rv">
-                <div class="card-head"><span class="card-title">Load & SOC</span><span class="live-dot"><i></i>live</span></div>
-                <div class="chart-h"><canvas id="mainChart"></canvas></div>
+
+              <!-- Charts sub-view -->
+              <div class="ana-view active" id="ana-charts">
+                <div class="chips rv" id="anaChips">
+                  <button class="fchip" data-period="1h">1 hr</button>
+                  <button class="fchip" data-period="6h">6 hrs</button>
+                  <button class="fchip on" data-period="day">Day</button>
+                  <button class="fchip" data-period="week">Week</button>
+                </div>
+                <div class="card rv">
+                  <div class="card-head"><span class="card-title">Load & SOC</span><span class="live-dot"><i></i>live</span></div>
+                  <div class="chart-h"><canvas id="mainChart"></canvas></div>
+                </div>
+                <div class="tiles4">
+                  <div class="tile2 rv"><span>Average</span><b id="stAvg">—</b></div>
+                  <div class="tile2 rv"><span>Peak</span><b id="stPeak">—</b></div>
+                  <div class="tile2 rv"><span>Consumed</span><b id="stKwh">—</b></div>
+                  <div class="tile2 rv"><span>Cost</span><b id="stCost">—</b></div>
+                </div>
+                <div class="card rv">
+                  <div class="card-head"><span class="card-title">Cost · 7 Days</span><span class="mini-badge g" id="costWeekBadge">$ 0</span></div>
+                  <div class="chart-h sm"><canvas id="costChart"></canvas></div>
+                </div>
+                <div class="card rv">
+                  <div class="card-head"><span class="card-title">Cost Projection</span><span class="mini-badge">this month</span></div>
+                  <div class="proj-row">
+                    <div><span>Today</span><b id="projToday">—</b></div>
+                    <div><span>This Month</span><b id="projMonth">—</b></div>
+                    <div><span>Daily Avg</span><b id="projAvg">—</b></div>
+                  </div>
+                </div>
               </div>
-              <div class="tiles4">
-                <div class="tile2 rv"><span>Average</span><b id="stAvg">—</b></div>
-                <div class="tile2 rv"><span>Peak</span><b id="stPeak">—</b></div>
-                <div class="tile2 rv"><span>Consumed</span><b id="stKwh">—</b></div>
-                <div class="tile2 rv"><span>Cost</span><b id="stCost">—</b></div>
+
+              <!-- Compare sub-view -->
+              <div class="ana-view" id="ana-compare">
+                <div class="card rv">
+                  <div class="card-head"><span class="card-title">Today vs Yesterday</span><span class="mini-badge" id="compDelta">—</span></div>
+                  <div class="chart-h"><canvas id="compareChart"></canvas></div>
+                </div>
+                <div class="tiles4">
+                  <div class="tile2 rv"><span>Today</span><b id="compToday">—</b></div>
+                  <div class="tile2 rv"><span>Yesterday</span><b id="compYesterday">—</b></div>
+                  <div class="tile2 rv"><span>Δ</span><b id="compDeltaVal">—</b></div>
+                  <div class="tile2 rv"><span>Trend</span><b id="compTrend">—</b></div>
+                </div>
               </div>
-              <div class="card rv">
-                <div class="card-head"><span class="card-title">Cost · 7 Days</span><span class="mini-badge g" id="costWeekBadge">$ 0</span></div>
-                <div class="chart-h sm"><canvas id="costChart"></canvas></div>
+
+              <!-- Data sub-view -->
+              <div class="ana-view" id="ana-data">
+                <div class="card rv">
+                  <div class="card-head"><span class="card-title">Export Data</span></div>
+                  <div class="export-grid">
+                    <button class="export-btn" id="expCsvDay"><i class="ph-fill ph-file-csv"></i><b>CSV (24h)</b><span>Load, SOC, grid data</span></button>
+                    <button class="export-btn" id="expCsvWeek"><i class="ph-fill ph-file-csv"></i><b>CSV (7 days)</b><span>Weekly summary</span></button>
+                    <button class="export-btn" id="expJson"><i class="ph-fill ph-file-code"></i><b>JSON (Full)</b><span>Complete backup</span></button>
+                    <button class="export-btn" id="expDevices"><i class="ph-fill ph-plugs"></i><b>Devices CSV</b><span>Per-device usage</span></button>
+                  </div>
+                </div>
+                <div class="card rv">
+                  <div class="card-head"><span class="card-title">Prometheus Metrics</span><span class="mini-badge gray">endpoint</span></div>
+                  <div class="sh-row"><span>Endpoint</span><b class="mono" style="font-size:11px">/api/metrics</b></div>
+                  <div class="sh-row"><span>Token</span><b class="mono" id="promToken" style="font-size:11px">—</b></div>
+                </div>
               </div>
             </div>
           </section>
@@ -237,6 +333,18 @@
               <div class="card prof press rv">
                 <div class="dic big" style="--c:linear-gradient(145deg,#0A84FF,#BF5AF2)"><i class="ph-fill ph-lightning"></i></div>
                 <div class="dinfo"><div class="dname">Home</div><div class="dsub">Strum · <span id="settingsDeviceCount">0</span> devices</div></div>
+              </div>
+
+              <div class="slabel rv">Integrations</div>
+              <div class="int-grid rv">
+                <button class="int-card" data-int="tuya"><div class="int-ic" style="--c:#FF9F0A"><i class="ph-fill ph-plugs"></i></div><b>Tuya Cloud</b><span class="int-st" id="intTuya">—</span></button>
+                <button class="int-card" data-int="netbird"><div class="int-ic" style="--c:#30D158"><i class="ph-fill ph-shield-check"></i></div><b>NetBird VPN</b><span class="int-st" id="intNb">—</span></button>
+                <button class="int-card" data-int="dtek"><div class="int-ic" style="--c:#FFD60A"><i class="ph-fill ph-lightning"></i></div><b>DTEK Schedule</b><span class="int-st off">Not connected</span></button>
+                <button class="int-card" data-int="weather"><div class="int-ic" style="--c:#64D2FF"><i class="ph-fill ph-sun"></i></div><b>Weather</b><span class="int-st off">Not configured</span></button>
+                <button class="int-card" data-int="telegram"><div class="int-ic" style="--c:#0A84FF"><i class="ph-fill ph-telegram-logo"></i></div><b>Telegram</b><span class="int-st" id="intTg">—</span></button>
+                <button class="int-card" data-int="ntfy"><div class="int-ic" style="--c:#FF9F0A"><i class="ph-fill ph-bell-ringing"></i></div><b>ntfy</b><span class="int-st" id="intNtfy">—</span></button>
+                <button class="int-card" data-int="prometheus"><div class="int-ic" style="--c:#BF5AF2"><i class="ph-fill ph-chart-bar"></i></div><b>Prometheus</b><span class="int-st" id="intProm">—</span></button>
+                <button class="int-card" data-int="solarman"><div class="int-ic" style="--c:#30D158"><i class="ph-fill ph-lightning"></i></div><b>Inverter</b><span class="int-st" id="intInv">—</span></button>
               </div>
 
               <div class="slabel rv">Inverter</div>
@@ -281,8 +389,16 @@
 
               <div class="slabel rv">Tariff</div>
               <div class="sgroup rv">
-                <div class="srow"><span class="sic" style="--c:#FF9F0A"><i class="ph-fill ph-sun"></i></span><span class="slb">Day</span><input class="sinput" id="tDay" type="number" step="0.01"><span class="sunit">$/kWh</span></div>
-                <div class="srow"><span class="sic" style="--c:#5E5CE6"><i class="ph-fill ph-moon"></i></span><span class="slb">Night</span><input class="sinput" id="tNight" type="number" step="0.01"><span class="sunit">$/kWh</span></div>
+                <div class="srow"><span class="sic" style="--c:#FFD60A"><i class="ph-fill ph-currency-circle-dollar"></i></span><span class="slb">Currency</span>
+                  <div class="seg" id="currencySeg">
+                    <button data-cur="₴" class="on">₴ UAH</button>
+                    <button data-cur="$">$ USD</button>
+                    <button data-cur="€">€ EUR</button>
+                    <button data-cur="zł">zł PLN</button>
+                  </div>
+                </div>
+                <div class="srow"><span class="sic" style="--c:#FF9F0A"><i class="ph-fill ph-sun"></i></span><span class="slb">Day</span><input class="sinput" id="tDay" type="number" step="0.01"><span class="sunit" id="curUnit1">/kWh</span></div>
+                <div class="srow"><span class="sic" style="--c:#5E5CE6"><i class="ph-fill ph-moon"></i></span><span class="slb">Night</span><input class="sinput" id="tNight" type="number" step="0.01"><span class="sunit" id="curUnit2">/kWh</span></div>
                 <div class="srow"><span class="sic" style="--c:#30D158"><i class="ph-fill ph-receipt"></i></span><span class="slb">Today</span><span class="sval" id="tToday">—</span></div>
               </div>
 
@@ -332,6 +448,8 @@
           <button class="tab" data-tab="rules"><i class="ph-fill ph-flow-arrow"></i><span>Rules</span></button>
           <button class="tab" data-tab="settings"><i class="ph-fill ph-gear-six"></i><span>More</span></button>
         </nav>
+
+        <div class="home-bar"></div>
 
         <div class="banners" id="banners"></div>
         <div class="sheet-bk" id="sheetBk"></div>
