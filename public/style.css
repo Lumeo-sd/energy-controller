@@ -163,8 +163,9 @@ body.outage .glow{background:radial-gradient(circle, rgba(255,69,58,.20), rgba(2
 .fn-ic.off{color:var(--red);border-color:var(--red);box-shadow:0 0 16px rgba(255,69,58,.4)}
 .fn-pulse{position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--c);opacity:.5;animation:ringPulse 2.4s ease-out infinite}
 @keyframes ringPulse{0%{transform:scale(.85);opacity:.6}100%{transform:scale(1.55);opacity:0}}
-.fn-l{font-size:10px;font-weight:700;color:var(--label2);text-transform:uppercase;letter-spacing:.06em}
-.fn-v{font:700 12px var(--fd);font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+.fn-l{font-size:9px;font-weight:700;color:var(--label3);text-transform:uppercase;letter-spacing:.07em}
+.fn-v{font:800 15px var(--fd);font-variant-numeric:tabular-nums;letter-spacing:-.3px;
+  text-shadow:0 0 8px rgba(0,0,0,.6);line-height:1}
 .fn-v.bad{color:var(--red)}
 .flow-stats{display:flex;border-top:.5px solid var(--sep);margin:0 -16px -15px;padding:10px 6px 2px}
 .flow-stats>div{flex:1;text-align:center;position:relative}
