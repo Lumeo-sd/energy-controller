@@ -470,7 +470,7 @@ input,select{font-family:inherit}
 /* ============ responsive ============ */
 @media (display-mode:standalone){
   .island{display:none!important}
-  .app{bottom:66px}
+  .app{bottom:calc(66px + var(--safe-b))}
   .scroll{padding-top:calc(var(--safe-t) + 8px);
           padding-bottom:calc(var(--safe-b) + 16px)}
   .navglass{padding-top:calc(var(--safe-t) + 12px)}
@@ -478,8 +478,9 @@ input,select{font-family:inherit}
           bottom:0;
           left:0;
           right:0;
-          border-radius:0;
-          padding-bottom:env(safe-area-inset-bottom,0px)}
+          height:calc(66px + var(--safe-b));
+          padding-bottom:var(--safe-b);
+          border-radius:0}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
