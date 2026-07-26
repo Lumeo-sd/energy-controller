@@ -155,7 +155,7 @@ body.outage .glow{background:radial-gradient(circle, rgba(255,69,58,.20), rgba(2
 .fline{fill:none;stroke-width:3;stroke-linecap:round;opacity:.16;transition:opacity .5s}
 .fline.act{opacity:.65;filter:drop-shadow(0 0 5px rgba(255,255,255,.18))}
 .fnode{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none}
-.fn-ic{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+.fn-ic{position:relative;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:19px;color:var(--c);background:rgba(20,20,26,.85);border:1.5px solid var(--c);
   box-shadow:0 0 16px color-mix(in srgb, var(--c) 35%, transparent), inset 0 1px 0 rgba(255,255,255,.12);
   transition:.5s}
@@ -164,8 +164,10 @@ body.outage .glow{background:radial-gradient(circle, rgba(255,69,58,.20), rgba(2
 .fn-pulse{position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--c);opacity:.5;animation:ringPulse 2.4s ease-out infinite}
 @keyframes ringPulse{0%{transform:scale(.85);opacity:.6}100%{transform:scale(1.55);opacity:0}}
 .fn-l{font-size:9px;font-weight:700;color:var(--label3);text-transform:uppercase;letter-spacing:.07em}
-.fn-v{font:800 15px var(--fd);font-variant-numeric:tabular-nums;letter-spacing:-.3px;
-  text-shadow:0 0 8px rgba(0,0,0,.6);line-height:1}
+.fn-v{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font:800 10px var(--fd);font-variant-numeric:tabular-nums;letter-spacing:-.1px;line-height:1;
+  color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9);padding:1px 5px;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.55) 100%);border-radius:0 0 21px 21px}
 .fn-v.bad{color:var(--red)}
 .flow-stats{display:flex;border-top:.5px solid var(--sep);margin:0 -16px -15px;padding:10px 6px 2px}
 .flow-stats>div{flex:1;text-align:center;position:relative}
