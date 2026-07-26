@@ -16,6 +16,8 @@
   --spring:cubic-bezier(.32,.72,0,1);
   --safe-t:env(safe-area-inset-top,0px);
   --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
 }
 
 /* ====== Accent color themes ====== */
