@@ -131,7 +131,7 @@ function updateIsland(){
   $('#iv1').textContent=S.grid?fmt(S.gridV,1)+' V':'OFF';
   $('#iv2').textContent=fmt(S.soc)+'%';
   $('#iv3').textContent=fmt(S.load)+' W';
-  $('#sbBatt').textContent=fmt(S.soc)+'%';
+  const t=$('#sbBatt');if(t)t.textContent=fmt(S.soc)+'%';
 }
 
 // ─── Tiles ─────────────────────────────────────────────────
@@ -281,7 +281,7 @@ function updateChip(){
 function updateAll(){updateFlow();updateBattery();updateSurvival();updateIsland();updateTiles();updateChip();renderRecommendations();}
 
 // ─── Clock ─────────────────────────────────────────────────
-function updateClock(){$('#sbTime').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).replace(/^0/,'');}
+function updateClock(){const el=$('#sbTime');if(el)el.textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).replace(/^0/,'');}
 
 // ─── Devices ───────────────────────────────────────────────
 let devFilter='all',devQuery='';
