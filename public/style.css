@@ -1,5 +1,5 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
+html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
 body{background:#050507;color:var(--label);font-family:var(--fb);overflow:hidden;-webkit-font-smoothing:antialiased}
 button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,select{font-family:inherit}
