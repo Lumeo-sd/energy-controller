@@ -1,0 +1,478 @@
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const { execSync } = require('child_process');
+
+// Locate netbird binary
+const NETBIRD = (() => {
+  const candidates = ['/usr/bin/netbird', '/usr/local/bin/netbird', path.join(require('os').homedir(), '.local/bin/netbird')];
+  for (const c of candidates) { try { fs.accessSync(c); return c; } catch {} }
+  try { const out = execSync('command -v netbird 2>/dev/null', { shell: true, timeout: 2000 }).toString().trim(); if (out) return out; } catch {}
+  return null;
+})();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const DATA_DIR = path.join(__dirname, 'data');
+const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
+const DEVICES_FILE = path.join(DATA_DIR, 'devices.json');
+const SCENES_FILE = path.join(DATA_DIR, 'scenes.json');
+const NOTIFS_FILE = path.join(DATA_DIR, 'notifications.json');
+const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+
+function readJSON(file, def) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return def; }
+}
+function writeJSON(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+}
+
+let config = readJSON(CONFIG_FILE, {
+  password: crypto.createHash('sha256').update('admin').digest('hex'),
+  mustChangePassword: false,
+  capacityWh: 5000,
+  inverter: { ip: '', serial: '', port: 8899, mac: '' },
+  tuya: { accessId: '', accessKey: '', countryCode: 48, username: '', password: '', appSchema: 'tuyaSmart' },
+  notifications: { ntfyEnabled: false, ntfyTopic: '', telegramEnabled: false, telegramToken: '', telegramChatId: '',
+    criticalEnabled: true, gridOutageReport: true, lowSocAlert: 20 },
+  healthAlerts: { enabled: true, diskThreshold: 20, cpuTempThreshold: 80, cpuLoadThreshold: 5, memThreshold: 15 },
+  tariff: { currency: 'UAH', type: 'daynight', flatRate: 0, dayRate: 4.32, nightRate: 2.16, dayStart: '07:00', nightStart: '23:00' },
+  netbird: { enabled: false, setupKey: '', managementUrl: '' }
+});
+
+let devices = readJSON(DEVICES_FILE, []);
+let scenes = readJSON(SCENES_FILE, []);
+let notifs = readJSON(NOTIFS_FILE, []);
+let history = readJSON(HISTORY_FILE, []);
+
+let csrfToken = crypto.randomBytes(32).toString('hex');
+let lastNotifId = notifs.length ? Math.max(...notifs.map(n => n.id)) : 0;
+let outageSince = 0;
+let histIndex = history.length;
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname)));
+
+function saveConfig() { writeJSON(CONFIG_FILE, config); }
+function saveDevices() { writeJSON(DEVICES_FILE, devices); }
+function saveScenes() { writeJSON(SCENES_FILE, scenes); }
+function saveNotifs() { writeJSON(NOTIFS_FILE, notifs); }
+function saveHistory() { writeJSON(HISTORY_FILE, history); }
+
+function parseCookies(header) {
+  const c = {};
+  if (!header) return c;
+  header.split(';').forEach(p => {
+    const i = p.indexOf('=');
+    if (i > 0) c[p.slice(0, i).trim()] = p.slice(i + 1).trim();
+  });
+  return c;
+}
+
+function auth(req, res, next) {
+  const token = req.headers['x-csrf-token'] || parseCookies(req.headers.cookie)['ecm_token'];
+  if (token && token === csrfToken) return next();
+  if (req.path === '/api/status' || req.path.startsWith('/api/')) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+  next();
+}
+app.use(auth);
+
+app.get('/healthz', (req, res) => res.send('ok'));
+
+app.get('/api/status', (req, res) => {
+  const soc = history.length ? history[history.length - 1].soc : 80;
+  const load = devices.reduce((a, d) => a + (d.switch ? (d.power || 0) : 0), 0);
+  res.json({
+    csrfToken, gridPower: outageSince === 0, gridVoltage: outageSince === 0 ? 229.5 : 0,
+    batterySOC: soc, batteryPower: 0, loadPower: load,
+    batteryTemp: 24.5, envTemp: 22.0, pvPower: 0, pvPower2: 0,
+    dayPV: 0, dayGridImport: 2.1, dayGridExport: 0, dayLoadEnergy: 3.2,
+    dayBatCharge: 0.8, dayBatDischarge: 1.5,
+    totalGridImport: 312.6, totalLoadEnergy: 289.2,
+    costToday: { day: 3.45, night: 1.23 },
+    tariff: config.tariff,
+    tuyaDevices: devices, scenes,
+    dailyRecords: [
+      { date: '01.07', import: 3.2, load: 4.1 },
+      { date: '02.07', import: 2.8, load: 3.9 },
+      { date: '03.07', import: 3.5, load: 4.3 },
+      { date: '04.07', import: 2.1, load: 3.5 },
+      { date: '05.07', import: 4.0, load: 4.8 },
+      { date: '06.07', import: 1.9, load: 3.2 },
+      { date: '07.07', import: 2.6, load: 3.7 }
+    ],
+    debug: { gridPower: outageSince === 0 ? load : 0, batteryVoltage: 51.2, gridFreq: 50.0, overallState: outageSince === 0 ? 2 : 1 }
+  });
+});
+
+app.post('/login', (req, res) => {
+  const { username, password } = req.body || {};
+  if (username === 'admin' && crypto.createHash('sha256').update(password || '').digest('hex') === config.password) {
+    csrfToken = crypto.randomBytes(32).toString('hex');
+    res.setHeader('Set-Cookie', 'ecm_token=' + csrfToken + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000');
+    return res.json({ success: true, csrfToken, mustChangePassword: config.mustChangePassword });
+  }
+  res.json({ success: false, message: 'Invalid username or password' });
+});
+
+app.post('/api/logout', (req, res) => {
+  csrfToken = crypto.randomBytes(32).toString('hex');
+  res.setHeader('Set-Cookie', 'ecm_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
+  res.json({ success: true });
+});
+
+app.post('/api/change-password', (req, res) => {
+  const { currentPassword, newPassword } = req.body || {};
+  if (crypto.createHash('sha256').update(currentPassword || '').digest('hex') !== config.password) {
+    return res.json({ success: false, message: 'Invalid current password' });
+  }
+  config.password = crypto.createHash('sha256').update(newPassword || '').digest('hex');
+  config.mustChangePassword = false;
+  saveConfig();
+  csrfToken = crypto.randomBytes(32).toString('hex');
+  res.setHeader('Set-Cookie', 'ecm_token=' + csrfToken + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000');
+  res.json({ success: true });
+});
+
+app.get('/api/tuya-devices', (req, res) => res.json(devices));
+
+app.post('/api/tuya-control', (req, res) => {
+  const { deviceId, value } = req.body || {};
+  const d = devices.find(x => x.id === deviceId);
+  if (!d) return res.json({ success: false, message: 'Device not found' });
+  d.switch = !!value;
+  if (!d.switch) d.power = 0;
+  else d.power = d._rated || d.power || 10;
+  saveDevices();
+  res.json({ success: true, message: 'OK' });
+});
+
+app.post('/api/sync-tuya', (req, res) => res.json({ success: true, count: devices.length }));
+
+app.get('/api/tuya-mode', (req, res) => res.json({ success: true, mode: 'auto' }));
+
+app.post('/api/tuya-mode', (req, res) => res.json({ success: true, mode: req.body.mode || 'auto' }));
+
+app.patch('/api/tuya-devices/:id/group', (req, res) => {
+  const d = devices.find(x => x.id === req.params.id);
+  if (!d) return res.json({ success: false, message: 'Not found' });
+  d.group = String(req.body.group || '');
+  saveDevices();
+  res.json({ success: true, group: d.group });
+});
+
+app.get('/api/scenes', (req, res) => res.json(scenes));
+
+app.post('/api/scenes', (req, res) => {
+  const scene = { ...req.body, enabled: true };
+  scenes.push(scene);
+  saveScenes();
+  res.json({ success: true });
+});
+
+app.delete('/api/scenes/:name', (req, res) => {
+  scenes = scenes.filter(s => s.name !== decodeURIComponent(req.params.name));
+  saveScenes();
+  res.json({ success: true });
+});
+
+app.patch('/api/scenes/:name', (req, res) => {
+  const s = scenes.find(x => x.name === decodeURIComponent(req.params.name));
+  if (!s) return res.json({ success: false, message: 'Not found' });
+  s.enabled = !!req.body.enabled;
+  saveScenes();
+  res.json({ success: true, enabled: s.enabled });
+});
+
+app.post('/api/scenes/:name/run', (req, res) => res.json({ success: true, results: [] }));
+
+app.get('/api/scene-traces', (req, res) => res.json({ success: true, traces: {} }));
+
+app.get('/api/notifications', (req, res) => {
+  res.json({
+    success: true,
+    notifications: notifs.filter(n => !n.dismissed),
+    unread: notifs.filter(n => !n.dismissed && !n.read).length
+  });
+});
+
+app.post('/api/notifications/dismiss', (req, res) => {
+  const { id, title } = req.body || {};
+  if (id !== undefined) {
+    const n = notifs.find(x => x.id === id);
+    if (n) n.dismissed = true;
+  } else if (title) {
+    notifs.forEach(n => { if (n.title === title) n.dismissed = true; });
+  }
+  saveNotifs();
+  res.json({ success: true });
+});
+
+app.post('/api/notifications/dismiss-all', (req, res) => {
+  notifs.forEach(n => n.dismissed = true);
+  saveNotifs();
+  res.json({ success: true });
+});
+
+app.post('/api/notifications/mark-read', (req, res) => {
+  const { id, title } = req.body || {};
+  if (id !== undefined) {
+    const n = notifs.find(x => x.id === id);
+    if (n) n.read = true;
+  } else if (title) {
+    notifs.forEach(n => { if (n.title === title) n.read = true; });
+  } else {
+    notifs.forEach(n => n.read = true);
+  }
+  saveNotifs();
+  res.json({ success: true });
+});
+
+app.post('/api/notifications/add', (req, res) => {
+  const n = {
+    id: ++lastNotifId, title: req.body.title || 'Event', message: req.body.message || '',
+    type: req.body.type || 'info', time: Date.now(), read: false, dismissed: false
+  };
+  notifs.unshift(n);
+  saveNotifs();
+  res.json({ success: true });
+});
+
+app.get('/api/history', (req, res) => {
+  const period = req.query.period || 'day';
+  const cut = { '1h': 3600000, '3h': 10800000, '6h': 21600000, '12h': 43200000, 'day': 86400000, 'week': 604800000 }[period] || 86400000;
+  let pts = history.filter(p => p.ts >= Date.now() - cut);
+  const stride = Math.max(1, Math.floor(pts.length / 320));
+  if (stride > 1 && pts.length > stride) pts = pts.filter((_, i) => i % stride === 0);
+  res.json({ success: true, period, points: pts });
+});
+
+app.get('/api/socket-history', (req, res) => {
+  const period = req.query.period || 'day';
+  const cut = { '1h': 3600000, '3h': 10800000, '6h': 21600000, '12h': 43200000, 'day': 86400000, 'week': 604800000 }[period] || 86400000;
+  const deviceNames = {};
+  devices.forEach(d => deviceNames[d.id] = d.name);
+  const pts = history.filter(p => p.ts >= Date.now() - cut).map(p => {
+    const dev = {};
+    devices.forEach(d => { dev[d.id] = d.switch ? (d.power || 0) : 0; });
+    return { ts: p.ts, devices: dev };
+  });
+  res.json({ success: true, period, points: pts, deviceNames });
+});
+
+app.get('/api/plugin-config', (req, res) => {
+  const c = JSON.parse(JSON.stringify(config));
+  delete c.password;
+  if (c.netbird && c.netbird.setupKey) c.netbird.setupKey = '••••••••';
+  res.json({ success: true, config: c });
+});
+
+app.post('/api/plugin-config', (req, res) => {
+  const c = req.body.config || {};
+  Object.keys(c).forEach(k => {
+    if (k === 'password' || k === 'mustChangePassword') return;
+    if (typeof c[k] === 'object' && c[k] !== null && !Array.isArray(c[k])) {
+      config[k] = config[k] || {};
+      Object.keys(c[k]).forEach(sub => {
+        if (sub === 'setupKey' && (c[k][sub] === '••••••••' || c[k][sub] === '')) return;
+        let val = c[k][sub];
+        if (sub === 'managementUrl' && typeof val === 'string') val = normalizeMgmtUrl(val);
+        config[k][sub] = val;
+      });
+    } else {
+      config[k] = c[k];
+    }
+  });
+  saveConfig();
+  res.json({ success: true, message: 'Saved' });
+});
+
+app.get('/api/netbird/status', (req, res) => {
+  const nb = config.netbird || {};
+  if (!NETBIRD) return res.json({ success: true, enabled: false, status: 'Netbird not installed' });
+  try {
+    const out = execSync(NETBIRD + ' status 2>&1', { timeout: 5000, shell: true }).toString().trim();
+    const connected = out.includes('Status: Connected') || out.includes('Connected');
+    const loginFailed = out.includes('LoginFailed');
+    const ipMatch = out.match(/IP:\s*(\S+)/);
+    let status;
+    if (connected) status = 'Connected';
+    else if (loginFailed) status = 'LoginFailed — run: sudo rm -rf /var/lib/netbird && sudo systemctl restart netbird';
+    else status = 'Daemon running, not connected';
+    res.json({ success: true, enabled: nb.enabled, connected, peerIp: ipMatch ? ipMatch[1] : null, status });
+  } catch {
+    res.json({ success: true, enabled: false, connected: false, peerIp: null, status: 'Daemon not running' });
+  }
+});
+
+function netbirdCmd(cmd, timeoutMs) {
+  if (!NETBIRD) throw new Error('Netbird not installed on the system');
+  return execSync(NETBIRD + ' ' + cmd, { timeout: timeoutMs || 15000, shell: true }).toString().trim();
+}
+
+function normalizeMgmtUrl(url) {
+  if (!url) return '';
+  const u = url.replace(/\/+$/, '').replace(/:443$/, '');
+  if (u === 'https://app.netbird.io') return 'https://api.netbird.io';
+  return u;
+}
+
+function netbirdSvcCmd(cmd) {
+  try { return execSync(NETBIRD + ' service ' + cmd + ' 2>&1', { timeout: 10000, shell: true }).toString().trim(); } catch { return ''; }
+}
+
+app.post('/api/netbird/up', (req, res) => {
+  const nb = config.netbird || {};
+  if (!nb.setupKey || nb.setupKey === '••••••••') {
+    return res.json({ success: false, message: 'Setup Key not configured. Save settings first.' });
+  }
+  const mgmtUrl = normalizeMgmtUrl(nb.managementUrl);
+  try {
+    try { execSync(NETBIRD + ' deregister 2>&1', { timeout: 5000, shell: true }); } catch {}
+    const args = 'up --setup-key "' + nb.setupKey + '"';
+    const cmd = mgmtUrl ? args + ' --management-url "' + mgmtUrl + '"' : args;
+    const out = netbirdCmd(cmd, 15000);
+    config.netbird = config.netbird || {};
+    config.netbird.enabled = true;
+    saveConfig();
+    res.json({ success: true, message: 'Netbird connected', output: out.split('\n').pop() });
+  } catch (e) {
+    const errno = e.code || '';
+    const raw = (e.message || '').toString();
+    let msg;
+    if (/RST_STREAM|DeadlineExceeded/.test(raw) || /invalid.*setup.?key/i.test(raw)) {
+      msg = 'Setup key rejected by server. Generate a new setup key from Netbird dashboard, enter it in Settings, and try again.';
+    } else if (/PermissionDenied.*SSO/.test(raw) || /originally enrolled/.test(raw)) {
+      msg = 'Peer was registered via SSO. Reset state: sudo rm -rf /var/lib/netbird && sudo systemctl restart netbird';
+    } else if (errno === 'ETIMEDOUT') {
+      let daemonStatus = '';
+      try { daemonStatus = execSync(NETBIRD + ' status 2>&1', { timeout: 3000, shell: true }).toString().trim(); } catch {}
+      if (daemonStatus.includes('LoginFailed')) {
+        msg = 'Daemon stuck after SSO login. Reset: sudo rm -rf /var/lib/netbird && sudo systemctl restart netbird';
+      } else if (daemonStatus.includes('NeedsLogin') || daemonStatus.includes('Disconnected')) {
+        netbirdSvcCmd('stop'); netbirdSvcCmd('start');
+        try {
+          const args = 'up --setup-key "' + nb.setupKey + '"';
+          const retryCmd = mgmtUrl ? args + ' --management-url "' + mgmtUrl + '"' : args;
+          const out = netbirdCmd(retryCmd, 15000);
+          config.netbird.enabled = true; saveConfig();
+          return res.json({ success: true, message: 'Netbird connected (after daemon restart)', output: out.split('\n').pop() });
+        } catch (e2) {
+          msg = 'Daemon restarted but connection still failed. Generate a new setup key from Netbird dashboard.';
+        }
+      } else {
+        msg = daemonStatus || 'Timeout: Netbird daemon not responding or wrong Management URL';
+      }
+    } else if (/daemon/.test(raw)) {
+      msg = 'Netbird daemon not running';
+    } else if (/not found|ENOENT/.test(raw)) {
+      msg = 'Netbird not installed on the system';
+    } else {
+      msg = raw || 'Netbird connection error';
+    }
+    res.json({ success: false, message: msg });
+  }
+});
+
+app.post('/api/netbird/down', (req, res) => {
+  try {
+    netbirdCmd('down 2>/dev/null');
+    config.netbird = config.netbird || {};
+    config.netbird.enabled = false;
+    saveConfig();
+    res.json({ success: true, message: 'Netbird disconnected' });
+  } catch {
+    config.netbird.enabled = false;
+    saveConfig();
+    res.json({ success: true, message: 'Netbird disabled' });
+  }
+});
+
+app.post('/api/netbird/reset', (req, res) => {
+  const out = [];
+  try { out.push('deregister: ' + execSync(NETBIRD + ' deregister 2>&1', { timeout: 5000, shell: true }).toString().trim()); } catch (e) { out.push('deregister: ' + (e.message || '').split('\n')[0]); }
+  netbirdSvcCmd('stop'); netbirdSvcCmd('start');
+  let status = '';
+  try { status = execSync(NETBIRD + ' status 2>&1', { timeout: 3000, shell: true }).toString().trim().split('\n')[0]; } catch {}
+  out.push('status: ' + (status || 'daemon not running'));
+  res.json({ success: true, message: 'Netbird daemon reset', output: out.join(' · ') });
+});
+
+// Aliases for compatibility
+app.post('/api/netbird/connect', (req, res) => { req.url = '/api/netbird/up'; app._router.handle(req, res); });
+app.post('/api/netbird/disconnect', (req, res) => { req.url = '/api/netbird/down'; app._router.handle(req, res); });
+
+app.get('/api/system-info', (req, res) => {
+  res.json({
+    hostname: require('os').hostname(), platform: process.platform, nodeVersion: process.version,
+    uptime: Math.floor(process.uptime()), cpuModel: 'Unknown', cpuCores: require('os').cpus().length,
+    cpuLoad: [0.3, 0.2, 0.1], cpuTemp: '45.2', cpuFreq: '1200',
+    totalMem: require('os').totalmem(), freeMem: require('os').freemem(), usedMem: require('os').totalmem() - require('os').freemem(),
+    diskInfo: { total: 10e9, used: 3e9, available: 7e9 }
+  });
+});
+
+app.get('/api/app-version', (req, res) => {
+  res.json({ success: true, version: 'v1.4.2', gitHash: 'a1b2c3d', gitBranch: 'main', isGit: true });
+});
+
+app.post('/api/inverter/scan', (req, res) => res.json({ success: true, ip: config.inverter.ip || 'Not found', updated: false }));
+
+app.post('/api/test-notification', (req, res) => res.json({ success: true, results: ['ntfy: configured', 'telegram: configured'] }));
+
+app.get('/api/user-prefs', (req, res) => res.json({ success: true, username: 'admin', role: 'admin', prefs: {} }));
+
+app.post('/api/user-prefs', (req, res) => res.json({ success: true }));
+
+app.post('/api/backup', (req, res) => {
+  const bk = { version: '1.0', createdAt: new Date().toISOString(), gitHash: 'a1b2c3d',
+    data: { config, scenes, devices, history: history.slice(-1000) } };
+  res.json({ success: true, backup: bk });
+});
+
+app.post('/api/backup/restore', (req, res) => {
+  const { data } = req.body || {};
+  if (data) {
+    if (data.config) { Object.assign(config, data.config); saveConfig(); }
+    if (data.scenes) { scenes = data.scenes; saveScenes(); }
+    if (data.devices) { devices = data.devices; saveDevices(); }
+    if (data.history) { history = data.history; saveHistory(); }
+  }
+  res.json({ success: true, message: 'Restored' });
+});
+
+app.post('/api/restart', (req, res) => {
+  res.json({ success: true, message: 'Restarting…' });
+  setTimeout(() => process.exit(0), 500);
+});
+
+// Seed demo data if empty
+if (!devices.length) {
+  devices = [
+    { id: 'bf1a02c3e1', name: 'Refrigerator', group: 'Critical', switch: true, power: 85, _rated: 85, online: true, voltage: 230, current: 0.37 },
+    { id: 'bf1a02c3e2', name: 'Router + NAS', group: 'Critical', switch: true, power: 14, _rated: 14, online: true, voltage: 230, current: 0.06 },
+    { id: 'bf1a02c3e3', name: 'Kitchen Lights', group: 'Secondary', switch: true, power: 38, _rated: 38, online: true, voltage: 230, current: 0.17 },
+    { id: 'bf1a02c3e4', name: 'Laptop', group: 'Secondary', switch: true, power: 52, _rated: 52, online: true, voltage: 230, current: 0.23 },
+    { id: 'bf1a02c3e5', name: 'TV', group: 'Secondary', switch: false, power: 0, _rated: 110, online: true, voltage: 230, current: 0 },
+    { id: 'bf1a02c3e6', name: 'Washing Machine', group: 'Secondary', switch: false, power: 0, _rated: 480, online: false, voltage: 0, current: 0 },
+    { id: 'bf1a02c3e7', name: 'Charge Station', group: '', switch: true, power: 27, _rated: 27, online: true, voltage: 229, current: 0.12 }
+  ];
+  saveDevices();
+}
+
+if (!notifs.length) {
+  notifs = [
+    { id: ++lastNotifId, title: 'System Ready', message: 'Strum started successfully.', type: 'info', time: Date.now() - 3600000, read: false, dismissed: false }
+  ];
+  saveNotifs();
+}
+
+app.listen(PORT, () => {
+  console.log(`⚡ Strum running at http://localhost:${PORT}`);
+  console.log(`   Login: admin / admin`);
+});

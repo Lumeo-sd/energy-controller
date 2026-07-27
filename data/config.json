@@ -1,0 +1,50 @@
+{
+  "password": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",
+  "mustChangePassword": false,
+  "capacityWh": 5000,
+  "inverter": {
+    "ip": "",
+    "serial": "",
+    "port": 8899,
+    "mac": ""
+  },
+  "tuya": {
+    "accessId": "",
+    "accessKey": "",
+    "countryCode": 48,
+    "username": "",
+    "password": "",
+    "appSchema": "tuyaSmart"
+  },
+  "notifications": {
+    "ntfyEnabled": true,
+    "ntfyTopic": "strum-app_monitoring",
+    "telegramEnabled": false,
+    "telegramToken": "",
+    "telegramChatId": "",
+    "criticalEnabled": true,
+    "gridOutageReport": true,
+    "lowSocAlert": 20
+  },
+  "healthAlerts": {
+    "enabled": true,
+    "diskThreshold": 20,
+    "cpuTempThreshold": 80,
+    "cpuLoadThreshold": 5,
+    "memThreshold": 15
+  },
+  "tariff": {
+    "currency": "UAH",
+    "type": "flat",
+    "flatRate": 4.6,
+    "dayRate": 4.32,
+    "nightRate": 2.16,
+    "dayStart": "07:00",
+    "nightStart": "23:00"
+  },
+  "netbird": {
+    "enabled": false,
+    "setupKey": "C86D9F13-BB96-40BE-B321-3A74A6A77402",
+    "managementUrl": "https://api.netbird.io"
+  }
+}

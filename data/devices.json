@@ -1,0 +1,79 @@
+[
+  {
+    "id": "bf1a02c3e1",
+    "name": "Холодильник",
+    "group": "Критичні",
+    "switch": true,
+    "power": 85,
+    "_rated": 85,
+    "online": true,
+    "voltage": 230,
+    "current": 0.37
+  },
+  {
+    "id": "bf1a02c3e2",
+    "name": "Роутер + NAS",
+    "group": "Критичні",
+    "switch": true,
+    "power": 14,
+    "_rated": 14,
+    "online": true,
+    "voltage": 230,
+    "current": 0.06
+  },
+  {
+    "id": "bf1a02c3e3",
+    "name": "Освітлення кухні",
+    "group": "Другорядні",
+    "switch": true,
+    "power": 38,
+    "_rated": 38,
+    "online": true,
+    "voltage": 230,
+    "current": 0.17
+  },
+  {
+    "id": "bf1a02c3e4",
+    "name": "Ноутбук",
+    "group": "Другорядні",
+    "switch": true,
+    "power": 52,
+    "_rated": 52,
+    "online": true,
+    "voltage": 230,
+    "current": 0.23
+  },
+  {
+    "id": "bf1a02c3e5",
+    "name": "Телевізор",
+    "group": "Другорядні",
+    "switch": false,
+    "power": 0,
+    "_rated": 110,
+    "online": true,
+    "voltage": 230,
+    "current": 0
+  },
+  {
+    "id": "bf1a02c3e6",
+    "name": "Пральна машина",
+    "group": "Другорядні",
+    "switch": false,
+    "power": 0,
+    "_rated": 480,
+    "online": false,
+    "voltage": 0,
+    "current": 0
+  },
+  {
+    "id": "bf1a02c3e7",
+    "name": "Зарядна станція",
+    "group": "",
+    "switch": true,
+    "power": 27,
+    "_rated": 27,
+    "online": true,
+    "voltage": 229,
+    "current": 0.12
+  }
+]

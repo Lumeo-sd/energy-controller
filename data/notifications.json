@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "title": "Система готова",
+    "message": "Energy Controller запущено успішно.",
+    "type": "info",
+    "time": 1785130338576,
+    "read": true,
+    "dismissed": true
+  }
+]

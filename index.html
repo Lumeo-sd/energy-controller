@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" data-accent="blue">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Strum">
+<link rel="manifest" href="/manifest.json">
+<title>Strum — Backup Power Monitor</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/manrope/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/jetbrains-mono/index.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#000;--card:rgba(28,28,30,.66);--card-solid:#1c1c1e;--card-hover:rgba(44,44,46,.85);--border:rgba(255,255,255,.09);--sep:rgba(84,84,88,.5);--text:#f5f5f7;--muted:#98989f;--dim:#636366;--accent:#0A84FF;--accent-rgb:10,132,255;--green:#30D158;--amber:#FF9F0A;--red:#FF453A;--indigo:#5E5CE6;--cyan:#64D2FF;--r-xl:32px;--r-lg:24px;--r-md:16px;--spring:cubic-bezier(.34,1.56,.64,1);--ease:cubic-bezier(.25,.8,.25,1);--font:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Manrope Variable','Manrope',system-ui,sans-serif;--mono:'JetBrains Mono Variable','JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
+html[data-accent="indigo"]{--accent:#5E5CE6;--accent-rgb:94,92,230}html[data-accent="amber"]{--accent:#FF9F0A;--accent-rgb:255,159,10}html[data-accent="green"]{--accent:#30D158;--accent-rgb:48,209,88}html[data-accent="pink"]{--accent:#FF375F;--accent-rgb:255,55,95}html[data-accent="cyan"]{--accent:#64D2FF;--accent-rgb:100,210,255}
+@media (prefers-color-scheme: light){:root{--bg:#eef0f5;--card:rgba(255,255,255,.78);--card-solid:#ffffff;--card-hover:rgba(245,245,250,.95);--border:rgba(0,0,0,.08);--sep:rgba(60,60,67,.24);--text:#16161a;--muted:#6e6e73;--dim:#aeaeb2}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}[hidden]{display:none!important}html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font);color:var(--text);background:var(--bg);min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum"}
+::selection{background:rgba(var(--accent-rgb),.35)}button{font-family:inherit;color:inherit}input,select,textarea{font-family:inherit}
+.bgfx{position:fixed;inset:0;z-index:-1;overflow:hidden;background:radial-gradient(1100px 700px at 88% -12%,rgba(var(--accent-rgb),.20),transparent 62%),radial-gradient(900px 640px at -12% 108%,rgba(255,159,10,.13),transparent 58%),radial-gradient(700px 500px at 50% 120%,rgba(94,92,230,.10),transparent 60%),var(--bg)}
+.bgfx i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;animation:drift 26s ease-in-out infinite alternate}
+.bgfx .o1{width:44vmax;height:44vmax;left:-14vmax;top:-16vmax;background:radial-gradient(circle,rgba(var(--accent-rgb),.20),transparent 65%)}
+.bgfx .o2{width:36vmax;height:36vmax;right:-12vmax;bottom:-14vmax;background:radial-gradient(circle,rgba(255,159,10,.14),transparent 65%);animation-delay:-13s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(5vmax,3vmax) scale(1.12)}}
+.login-wrap{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(24px + var(--sat)) 20px calc(24px + var(--sab));transition:opacity .45s,transform .45s}
+.login-wrap.gone{opacity:0;transform:scale(.96);pointer-events:none;position:absolute;inset:0}
+.login-card{width:min(400px,100%);padding:36px 28px 26px;text-align:center;animation:pop .6s var(--spring)}
+@keyframes pop{from{opacity:0;transform:translateY(26px) scale(.94)}to{opacity:1;transform:none}}
+.app-icon{width:84px;height:84px;margin:0 auto 18px;border-radius:24px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,var(--indigo),var(--accent));font-size:40px;color:#fff;box-shadow:0 14px 34px rgba(var(--accent-rgb),.45),inset 0 1px 0 rgba(255,255,255,.35);animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:0 14px 34px rgba(var(--accent-rgb),.45),inset 0 1px 0 rgba(255,255,255,.35)}50%{box-shadow:0 14px 48px rgba(var(--accent-rgb),.7),inset 0 1px 0 rgba(255,255,255,.35)}}
+.login-card h1{font-size:28px;font-weight:800;letter-spacing:-.02em}.login-sub{color:var(--muted);font-size:14px;margin:6px 0 24px}
+.field{display:flex;align-items:center;gap:10px;background:rgba(118,118,128,.14);border:1px solid var(--border);border-radius:16px;padding:0 14px;margin-bottom:12px;transition:border-color .2s,box-shadow .2s}
+.field:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+.field i{color:var(--muted);font-size:16px}.field input{flex:1;background:none;border:0;outline:0;color:var(--text);font-size:16px;padding:14px 0;min-width:0}
+.login-err{color:var(--red);font-size:13px;min-height:18px;margin:2px 0 10px;font-weight:600}
+.login-card.shake{animation:shake .4s}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.login-hint{margin-top:16px;font-size:12px;color:var(--dim)}.mono{font-family:var(--mono)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;border-radius:980px;font-weight:700;font-size:15px;padding:13px 22px;min-height:48px;background:rgba(118,118,128,.18);color:var(--text);transition:transform .12s var(--ease),filter .15s,background .2s;user-select:none}
+.btn:active{transform:scale(.95);filter:brightness(.85)}.btn-primary{background:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(var(--accent-rgb),.4)}
+.btn-soft{background:rgba(var(--accent-rgb),.16);color:var(--accent)}.btn-danger{background:rgba(255,69,58,.16);color:var(--red)}
+.btn-danger-solid{background:var(--red);color:#fff;box-shadow:0 8px 22px rgba(255,69,58,.35)}
+.btn-ghost{background:transparent;color:var(--accent);font-weight:600}.btn-sm{min-height:36px;padding:7px 14px;font-size:13px}
+.btn-xs{min-height:30px;padding:4px 11px;font-size:12px;border-radius:10px}.w100{width:100%}
+.ibtn{width:38px;height:38px;border-radius:12px;border:0;background:rgba(118,118,128,.14);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:.15s}
+.ibtn:active{transform:scale(.9)}.ibtn:hover{color:var(--accent);background:rgba(var(--accent-rgb),.14)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:980px;font-size:12px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.chip-green{background:rgba(48,209,88,.16);color:var(--green)}
+.chip-red{background:rgba(255,69,58,.16);color:var(--red)}
+.chip-amber{background:rgba(255,159,10,.16);color:var(--amber)}
+.chip-dim{background:rgba(118,118,128,.16);color:var(--muted)}
+.chip-acc{background:rgba(var(--accent-rgb),.16);color:var(--accent)}
+.kw{color:var(--accent);font-weight:800;font-size:11px;letter-spacing:.06em}
+.card{background:var(--card);-webkit-backdrop-filter:blur(30px) saturate(170%);backdrop-filter:blur(30px) saturate(170%);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:0 24px 60px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05)}
+@media (prefers-color-scheme: light){.card{box-shadow:0 16px 40px rgba(30,40,80,.10),inset 0 1px 0 rgba(255,255,255,.6)}}
+.card-sm{background:var(--card);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border:1px solid var(--border);border-radius:var(--r-lg);transition:border-color .25s,transform .15s,box-shadow .3s}
+#main{max-width:980px;margin:0 auto;padding:calc(18px + var(--sat)) calc(18px + var(--sar)) calc(130px + var(--sab)) calc(18px + var(--sal))}
+.view{display:none}.view.active{display:block;animation:viewIn .4s var(--ease)}
+@keyframes viewIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.page-title{font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1.05}
+.page-sub{color:var(--muted);font-size:13px;margin-top:5px;display:flex;align-items:center;gap:8px;text-transform:capitalize}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulseDot 2s infinite}
+.live-dot.demo{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.35}}
+.rv{opacity:0;transform:translateY(18px)}.rv.in{opacity:1;transform:none;transition:opacity .6s var(--ease) var(--d,0s),transform .6s var(--ease) var(--d,0s)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.outage{display:flex;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px;border-radius:26px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(255,69,58,.20),rgba(255,159,10,.12));border:1px solid rgba(255,69,58,.4);box-shadow:0 18px 44px rgba(255,69,58,.18);animation:pop .5s var(--spring)}
+.outage-ic{width:52px;height:52px;border-radius:18px;background:rgba(255,69,58,.22);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:24px;animation:pulseIc 1.6s infinite}
+@keyframes pulseIc{0%,100%{box-shadow:0 0 0 0 rgba(255,69,58,.4)}50%{box-shadow:0 0 0 12px rgba(255,69,58,0)}}
+.outage-info{flex:1;min-width:180px}.outage-info b{font-size:17px;font-weight:800;display:block}.outage-info span{font-size:12.5px;color:var(--muted)}
+.outage-rt{text-align:right}.outage-rt em{display:block;font-style:normal;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.outage-rt b{font-size:26px;font-weight:800;color:var(--amber);letter-spacing:-.02em}
+.hero{padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-90px;top:-90px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(var(--accent-rgb),.16),transparent 70%);pointer-events:none}
+.hero-grid{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.soc-wrap{position:relative;width:196px;height:196px;flex-shrink:0;margin:0 auto}
+.soc-ring{width:100%;height:100%;transform:rotate(-90deg)}.ring-bg{fill:none;stroke:rgba(118,118,128,.22);stroke-width:13}
+#socArc{fill:none;stroke:var(--green);stroke-width:13;stroke-linecap:round;stroke-dasharray:477.5;stroke-dashoffset:477.5;transition:stroke-dashoffset 1.1s var(--spring),stroke .6s;filter:drop-shadow(0 0 8px rgba(48,209,88,.5))}
+.soc-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.soc-center b{font-size:52px;font-weight:800;letter-spacing:-.04em;line-height:1}.soc-center span{font-size:16px;color:var(--muted);font-weight:700;margin-top:-6px}
+.soc-center em{font-style:normal;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;margin-top:6px;font-weight:600}
+.hero-stats{flex:1;min-width:250px;display:flex;flex-direction:column;gap:14px}
+.hstat .lbl{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hstat .big{display:block;font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-top:2px}
+.hstat .sub{font-size:12px;color:var(--muted)}
+.hstat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.hstat.sm{background:rgba(118,118,128,.10);border:1px solid var(--border);border-radius:18px;padding:12px 12px 10px}
+.hstat.sm b{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em;margin-top:3px}
+.hstat.sm .lbl{font-size:10px}
+.c-green{color:var(--green)}.c-amber{color:var(--amber)}.c-red{color:var(--red)}.c-acc{color:var(--accent)}
+.spark-wrap{margin-top:6px}.spark-wrap .lbl{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#spark{width:100%;height:34px;display:block;margin-top:4px}
+.flow-wrap{margin-top:18px;border-top:1px solid var(--sep);padding-top:14px}#flow{width:100%;height:auto;display:block}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.tile{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:20px;padding:14px 14px 12px;transition:transform .15s,border-color .25s;position:relative;overflow:hidden}
+.tile:hover{transform:translateY(-2px);border-color:rgba(var(--accent-rgb),.4)}.tile .ic{font-size:17px;color:var(--accent);display:block;margin-bottom:8px}
+.tile .lb{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.tile .vl{font-size:21px;font-weight:800;letter-spacing:-.02em;margin-top:2px}.tile .sb{font-size:11px;color:var(--dim)}
+.chart-card{padding:18px;margin-bottom:14px}.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.chart-head h3{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.seg{display:inline-flex;background:rgba(118,118,128,.18);border-radius:12px;padding:3px;gap:2px;overflow-x:auto;max-width:100%}
+.seg button{border:0;background:transparent;color:var(--muted);font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:.2s}
+.seg button.on{background:var(--card-solid);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.cur-vals{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);margin-bottom:8px}.cur-vals b{color:var(--text);font-weight:800}
+.cur-vals .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.chart-wrap{position:relative;height:230px}
+@media(max-width:640px){.chart-wrap{height:190px}}.chart-empty{height:120px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px}
+.dev-head-card{padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.dev-total b{font-size:26px;font-weight:800;letter-spacing:-.02em}.dev-total span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+.dev-sec{margin:18px 0 10px;display:flex;align-items:center;gap:10px}.dev-sec i{font-size:15px}.dev-sec b{font-size:14px;font-weight:800}.dev-sec span{font-size:12px;color:var(--muted)}.dev-sec::after{content:'';flex:1;height:1px;background:var(--sep)}
+.dev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.dev{padding:15px;position:relative}.dev.on{border-color:rgba(var(--accent-rgb),.45);box-shadow:0 0 0 1px rgba(var(--accent-rgb),.2),0 12px 30px rgba(var(--accent-rgb),.12)}.dev.offl{opacity:.55}
+.dev-top{display:flex;align-items:center;gap:10px}.dev-dot{width:10px;height:10px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:.3s}
+.dev.on .dev-dot{background:var(--accent);box-shadow:0 0 10px rgba(var(--accent-rgb),.8);animation:pulseDot 2.4s infinite}
+.dev-name{flex:1;font-weight:700;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dev-w{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--muted)}.dev.on .dev-w{color:var(--accent)}
+.dev-meta{display:flex;gap:6px;margin:10px 0 12px;flex-wrap:wrap}.dev-ctl{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.survive{padding:18px;margin-bottom:14px;border-color:rgba(255,159,10,.45);background:linear-gradient(135deg,rgba(255,159,10,.14),rgba(var(--accent-rgb),.08))}
+.survive h3{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px}.survive p{font-size:13px;color:var(--muted);margin:6px 0 12px}.survive p b{color:var(--amber)}
+.sw{position:relative;display:inline-block;width:51px;height:31px;flex-shrink:0}.sw input{opacity:0;width:0;height:0}
+.sw i{position:absolute;inset:0;background:rgba(120,120,128,.32);border-radius:31px;cursor:pointer;transition:.3s var(--ease)}
+.sw i::before{content:'';position:absolute;width:27px;height:27px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.3s var(--spring);box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.sw input:checked+i{background:var(--green)}.sw input:checked+i::before{transform:translateX(20px)}
+.scene{padding:16px;margin-bottom:12px}.scene.act{border-color:rgba(var(--accent-rgb),.4)}
+.scene-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}.sdot{width:9px;height:9px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.scene.act .sdot{background:var(--accent);box-shadow:0 0 9px rgba(var(--accent-rgb),.85);animation:pulseDot 2.4s infinite}
+.scene-top b{flex:1;font-size:15px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scene-rule{font-size:13px;color:var(--muted);line-height:1.6;background:rgba(118,118,128,.08);border:1px solid var(--border);border-radius:14px;padding:10px 12px}.scene-rule b{color:var(--text)}
+.traces{margin-top:8px;display:flex;flex-direction:column;gap:3px}.trace{display:flex;gap:8px;align-items:baseline;font-family:var(--mono);font-size:11px;color:var(--muted);padding:3px 8px;border-radius:7px;background:rgba(118,118,128,.07)}
+.trace.err{color:var(--red);background:rgba(255,69,58,.08)}.trace .t{min-width:52px;color:var(--dim)}
+.scene-btns{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+.preset{padding:18px;margin-bottom:14px;border-color:rgba(255,159,10,.4);background:linear-gradient(135deg,rgba(255,159,10,.12),rgba(255,69,58,.07))}
+.preset h3{font-size:16px;font-weight:800;display:flex;gap:8px;align-items:center}.preset p{font-size:13px;color:var(--muted);margin:6px 0 12px;line-height:1.55}
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}.empty i{font-size:40px;display:block;margin-bottom:12px;color:var(--dim)}
+.notif{margin-bottom:8px;overflow:hidden;transition:opacity .3s}.notif.fade{opacity:0}
+.n-row{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;cursor:pointer}
+.n-ic{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;font-weight:800}
+.n-ic.info{background:rgba(var(--accent-rgb),.16);color:var(--accent)}.n-ic.warn{background:rgba(255,204,0,.16);color:#ffcc00}
+.n-ic.error{background:rgba(255,69,58,.16);color:var(--red)}.n-body{flex:1;min-width:0}
+.n-title{font-size:14px;font-weight:700}.notif.unread .n-title{font-weight:800}.notif.unread{border-color:rgba(var(--accent-rgb),.35)}
+.n-msg{font-size:12.5px;color:var(--muted);margin-top:2px;white-space:pre-wrap;word-break:break-word}.n-time{font-size:11px;color:var(--dim);margin-top:3px}
+.n-x{flex-shrink:0}.n-subs{display:none;border-top:1px solid var(--sep);padding:6px 14px 10px 60px}.notif.exp .n-subs{display:block;animation:viewIn .3s}
+.n-sub{display:flex;gap:10px;padding:6px 0;font-size:12.5px;align-items:baseline}.n-sub .t{font-family:var(--mono);font-size:11px;color:var(--dim);min-width:96px}
+.n-count{background:rgba(var(--accent-rgb),.2);color:var(--accent);font-size:11px;font-weight:800;border-radius:980px;padding:3px 9px;flex-shrink:0}
+#tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + var(--sab));z-index:100;display:flex;gap:2px;padding:7px;border-radius:32px;background:rgba(30,30,34,.72);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid var(--border);box-shadow:0 22px 60px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12)}
+@media (prefers-color-scheme: light){#tabbar{background:rgba(255,255,255,.8);box-shadow:0 18px 44px rgba(30,40,80,.22)}}
+.tab{position:relative;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 14px 6px;min-width:62px;border-radius:24px;color:var(--muted);transition:color .2s}
+.tab i{font-size:21px;transition:transform .3s var(--spring)}.tab span{font-size:10px;font-weight:700}
+.tab::before{content:'';position:absolute;inset:2px;border-radius:22px;background:rgba(var(--accent-rgb),.16);opacity:0;transform:scale(.7);transition:.3s var(--spring)}
+.tab.active{color:var(--accent)}.tab.active::before{opacity:1;transform:scale(1)}.tab.active i{transform:translateY(-1px) scale(1.08)}
+.tab .bdg{position:absolute;top:2px;right:8px;min-width:17px;height:17px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 8px rgba(255,69,58,.6)}
+.island{position:fixed;top:calc(10px + var(--sat));left:50%;transform:translateX(-50%) translateY(-24px) scale(.8);z-index:400;display:flex;align-items:center;gap:11px;max-width:min(430px,92vw);background:#101012;color:#f5f5f7;border:1px solid rgba(255,255,255,.12);border-radius:26px;padding:11px 18px 11px 14px;box-shadow:0 20px 50px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:.45s var(--spring)}
+.island.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}.island>i{font-size:19px;flex-shrink:0}
+.island[data-type="ok"]>i{color:var(--green)}.island[data-type="err"]>i{color:var(--red)}.island[data-type="warn"]>i{color:var(--amber)}.island[data-type="info"]>i{color:var(--cyan)}
+.island b{display:block;font-size:13.5px;font-weight:800}.island span{display:block;font-size:12px;color:#a1a1a6;margin-top:1px}
+.sheet-bd{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
+.sheet-bd.show{opacity:1;pointer-events:auto}
+.sheet{width:min(480px,100%);background:var(--card-solid);border:1px solid var(--border);border-radius:30px 30px 0 0;padding:10px 22px calc(26px + var(--sab));max-height:86vh;overflow-y:auto;transform:translateY(100%);transition:transform .42s var(--spring)}
+.sheet-bd.show .sheet{transform:none}
+@media(min-width:770px){.sheet-bd{align-items:center;padding:24px}.sheet{border-radius:30px;transform:translateY(26px) scale(.96);padding-bottom:26px}.sheet-bd.show .sheet{transform:none}}
+.grabber{width:38px;height:5px;border-radius:3px;background:var(--dim);margin:6px auto 16px;opacity:.6}
+@media(min-width:770px){.grabber{display:none}}.sheet h3{font-size:19px;font-weight:800;letter-spacing:-.01em;margin-bottom:14px}
+.sh-label{display:block;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:14px 0 7px}
+.sh-input{width:100%;background:rgba(118,118,128,.14);border:1px solid var(--border);border-radius:14px;color:var(--text);font-size:15px;padding:12px 14px;outline:0;transition:.2s;min-height:46px}
+.sh-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.2)}
+select.sh-input{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat}
+.sh-row{display:flex;gap:8px;flex-wrap:wrap}.sh-row .sh-input{flex:1;min-width:0}
+.sh-opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(118,118,128,.10);border:1px solid var(--border);border-radius:16px;padding:13px 15px;margin-bottom:8px;cursor:pointer;font-size:15px;font-weight:700;transition:.15s;color:var(--text)}
+.sh-opt:active{transform:scale(.98)}.sh-opt i{font-size:18px;color:var(--accent)}
+.sh-opt em{display:block;font-style:normal;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}.sh-opt.sel{border-color:var(--accent);background:rgba(var(--accent-rgb),.12)}
+.sh-p{color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:16px}.sh-btns{display:flex;gap:10px}.sh-btns .btn{flex:1}
+.sw-row{display:flex;align-items:center;gap:12px;font-size:14.5px;font-weight:600;margin:14px 0}
+.sgroup{margin-bottom:20px;overflow:hidden}.sgroup>.gtitle{padding:0 6px 8px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.gcard{border-radius:24px;overflow:hidden}.srow{display:flex;align-items:center;gap:12px;padding:11px 16px;min-height:50px;position:relative}
+.srow+.srow::before{content:'';position:absolute;left:60px;right:0;top:0;height:.5px;background:var(--sep)}
+.sic{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
+.srow .sl{flex:1;min-width:0}.srow .sl b{display:block;font-size:15px;font-weight:600}.srow .sl em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:1px}
+.sinput{background:transparent;border:0;outline:0;color:var(--text);font-size:15px;text-align:right;max-width:56%;min-width:0;padding:6px 0}
+.sinput:focus{color:var(--accent)}.sselect{background:rgba(118,118,128,.14);border:0;border-radius:9px;color:var(--text);font-size:14px;padding:7px 10px;outline:0}
+.srow.link{cursor:pointer;transition:background .15s}.srow.link:active{background:rgba(118,118,128,.12)}.srow .chev{color:var(--dim);font-size:13px}
+.sfoot{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:.5px solid var(--sep)}.sstat{font-size:12.5px;color:var(--muted);flex:1;min-width:0}
+.swatches{display:flex;gap:12px;padding:14px 16px;flex-wrap:wrap}.swatch{width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:.2s var(--spring);position:relative}
+.swatch:active{transform:scale(.88)}.swatch.on{border-color:var(--text);transform:scale(1.12);box-shadow:0 0 0 2px var(--card-solid),0 0 14px rgba(var(--accent-rgb),.5)}
+.sysrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 16px;font-size:13.5px}.sysrow+.sysrow{border-top:.5px solid var(--sep)}
+.sysrow .k{color:var(--muted)}.sysrow .v{font-weight:700;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.bar{height:5px;border-radius:3px;background:rgba(118,118,128,.22);overflow:hidden;flex:1}.bar i{display:block;height:100%;border-radius:3px;transition:width .7s var(--ease)}
+.spin{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.25);border-top-color:currentColor;border-radius:50%;animation:rot .7s linear infinite;vertical-align:-3px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.restart-ov{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;gap:8px}
+.restart-ov.show{display:flex}.restart-ov .big-spin{width:52px;height:52px;border:3.5px solid rgba(255,255,255,.15);border-top-color:var(--accent);border-radius:50%;animation:rot .8s linear infinite;margin-bottom:14px}
+.restart-ov h3{font-size:18px;font-weight:800}.restart-ov p{color:#a1a1a6;font-size:13.5px}
+.skel{background:linear-gradient(90deg,rgba(118,118,128,.14) 25%,rgba(118,118,128,.28) 50%,rgba(118,118,128,.14) 75%);background-size:200% 100%;animation:shim 1.4s infinite;border-radius:10px}
+@keyframes shim{from{background-position:200% 0}to{background-position:-200% 0}}
+@media(max-width:560px){.page-title{font-size:29px}.hstat .big{font-size:32px}.soc-wrap{width:172px;height:172px}.soc-center b{font-size:44px}.tab{min-width:52px;padding:8px 10px 6px}.hstat-row{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="bgfx" aria-hidden="true"><i class="o1"></i><i class="o2"></i></div>
+<div id="login" class="login-wrap">
+  <div class="login-card card" id="loginCard">
+    <div class="app-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+    <h1>Strum</h1>
+    <p class="login-sub">Backup Power · Smart Plugs · Autonomy</p>
+    <form id="loginForm" autocomplete="on">
+      <label class="field"><i class="bi bi-person-fill"></i><input id="loginUser" autocomplete="username" placeholder="Username" value="admin"></label>
+      <label class="field"><i class="bi bi-lock-fill"></i><input id="loginPass" type="password" autocomplete="current-password" placeholder="Password"></label>
+      <div id="loginErr" class="login-err"></div>
+      <button class="btn btn-primary w100" type="submit" id="loginBtn"><i class="bi bi-arrow-right-circle-fill"></i> Sign In</button>
+    </form>
+    
+    <p class="login-hint">Raspberry Pi Zero W · Solarman V5 · Tuya Cloud/Local · PWA</p>
+  </div>
+</div>
+<div id="app" hidden>
+<main id="main">
+  <section class="view active" id="view-status">
+    <header class="page-head">
+      <div><h1 class="page-title">Dashboard</h1><p class="page-sub"><span class="live-dot" id="liveDot"></span><span id="headClock">—</span></p></div>
+      <span id="gridBadge" class="chip chip-green"><i class="bi bi-plug-fill"></i> Grid OK</span>
+    </header>
+    <div id="outageBanner" class="outage" hidden>
+      <div class="outage-ic"><i class="bi bi-lightning-charge-fill"></i></div>
+      <div class="outage-info"><b>Grid Outage</b><span id="obTime">Duration —</span></div>
+      <div class="outage-rt"><em>Runtime</em><b id="obRuntime">—</b></div>
+      <button class="btn btn-danger-solid btn-sm" onclick="survivalMode()"><i class="bi bi-shield-slash-fill"></i> Survival Mode</button>
+    </div>
+    <div class="hero card rv">
+      <div class="hero-grid">
+        <div class="soc-wrap">
+          <svg class="soc-ring" viewBox="0 0 180 180">
+            <circle class="ring-bg" cx="90" cy="90" r="76"></circle>
+            <circle id="socArc" cx="90" cy="90" r="76"></circle>
+          </svg>
+          <div class="soc-center"><b id="socVal">--</b><span>%</span><em id="socState"><i class="bi bi-battery-half"></i> charging</em></div>
+        </div>
+        <div class="hero-stats">
+          <div class="hstat"><span class="lbl">Estimated Runtime</span><b class="big c-amber" id="runtimeVal">—</b><span class="sub" id="runtimeSub">at current load · battery capacity —</span></div>
+          <div class="hstat-row">
+            <div class="hstat sm"><span class="lbl">Load</span><b id="loadVal">—</b></div>
+            <div class="hstat sm"><span class="lbl">Battery</span><b id="batVal">—</b></div>
+            <div class="hstat sm"><span class="lbl">Batt Voltage</span><b id="voltVal">—</b></div>
+          </div>
+          <div class="spark-wrap"><span class="lbl">Load · live</span><svg id="spark" viewBox="0 0 300 34" preserveAspectRatio="none"><path id="sparkPath" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" d=""></path><path id="sparkFill" fill="rgba(var(--accent-rgb),.12)" stroke="none" d=""></path></svg></div>
+        </div>
+      </div>
+      <div class="flow-wrap"><svg id="flow" viewBox="0 0 500 232"></svg></div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="card chart-card rv">
+      <div class="chart-head">
+        <h3><i class="bi bi-graph-up-arrow" style="color:var(--accent)"></i> Home Energy</h3>
+        <div class="seg" id="segPow">
+          <button data-p="1h">1h</button><button data-p="3h">3h</button><button data-p="6h">6h</button>
+          <button data-p="12h">12h</button><button data-p="day" class="on">Day</button><button data-p="week">Week</button>
+        </div>
+      </div>
+      <div class="cur-vals" id="powCur"></div>
+      <div class="chart-wrap"><canvas id="powChart"></canvas></div>
+    </div>
+    <div class="card chart-card rv">
+      <div class="chart-head"><h3><i class="bi bi-plug-fill" style="color:var(--cyan)"></i> Smart Plugs</h3></div>
+      <div class="cur-vals" id="sockCur"></div>
+      <div class="chart-wrap"><canvas id="sockChart"></canvas></div>
+    </div>
+    <div class="card chart-card rv" id="dailyCard">
+      <div class="chart-head"><h3><i class="bi bi-calendar3" style="color:var(--amber)"></i> Last 7 Days</h3></div>
+      <div class="chart-wrap" style="height:190px"><canvas id="dailyChart"></canvas></div>
+    </div>
+  </section>
+  <section class="view" id="view-devices">
+    <header class="page-head">
+      <div><h1 class="page-title">Devices</h1><p class="page-sub" id="devSub">—</p></div>
+      <button class="btn btn-soft btn-sm" id="devSync" onclick="syncTuya()"><i class="bi bi-arrow-repeat"></i> Sync</button>
+    </header>
+    <div class="card dev-head-card rv">
+      <div class="dev-total"><span>Total Plugs</span><b id="devTotal">0 W</b></div>
+      <div style="flex:1"></div>
+      <div class="seg" id="modeSeg">
+        <button data-m="auto" class="on">Auto</button><button data-m="cloud">Cloud</button><button data-m="local">Local</button>
+      </div>
+    </div>
+    <div class="card-sm survive rv" id="devSurvive" hidden>
+      <h3><i class="bi bi-fire" style="color:var(--amber)"></i> Survival Mode</h3>
+      <p>Secondary devices are drawing <b id="svW">0 W</b> (<span id="svCount">0</span> pcs). Turning them off would add ≈ <b id="svGain">—</b> runtime.</p>
+      <button class="btn btn-danger-solid btn-sm" id="svBtn" onclick="survivalMode()"><i class="bi bi-power"></i> Turn Off All Secondary</button>
+    </div>
+    <div id="devList"></div>
+  </section>
+  <section class="view" id="view-automations">
+    <header class="page-head">
+      <div><h1 class="page-title">Automations</h1><p class="page-sub" id="sceneSub">—</p></div>
+      <button class="btn btn-primary btn-sm" onclick="openBuilder()"><i class="bi bi-plus-lg"></i> New</button>
+    </header>
+    <div class="card-sm preset rv" id="presetCard">
+      <h3><i class="bi bi-shield-fill-check" style="color:var(--amber)"></i> Survival Mode</h3>
+      <p>Ready-made scene: <b>IF</b> battery SOC &lt; 20% <b>THEN</b> turn off all secondary devices and send a notification. Created with one tap.</p>
+      <div id="presetBtns"></div>
+    </div>
+    <div id="sceneList"></div>
+  </section>
+  <section class="view" id="view-notifications">
+    <header class="page-head">
+      <div><h1 class="page-title">Notifications</h1><p class="page-sub" id="notifUnread">—</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-soft btn-sm" onclick="readAll()"><i class="bi bi-check2-all"></i> Read All</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAll()"><i class="bi bi-trash3"></i> Clear All</button>
+      </div>
+    </header>
+    <div id="notifList"></div>
+  </section>
+  <section class="view" id="view-settings">
+    <header class="page-head"><div><h1 class="page-title">Settings</h1><p class="page-sub">System Configuration</p></div></header>
+    <div class="sgroup rv"><div class="gtitle">Battery & Calculations</div>
+      <div class="card gcard">
+        <div class="srow"><span class="sic" style="background:var(--green)"><i class="bi bi-battery-charging"></i></span><div class="sl"><b>Battery Capacity</b><em>Wh · for runtime calculation</em></div><input id="capWh" type="number" class="sinput mono" min="100" step="100"></div>
+        <div class="srow"><span class="sic" style="background:var(--red)"><i class="bi bi-exclamation-triangle-fill"></i></span><div class="sl"><b>Low Charge Alert</b><em>% · push notification on threshold</em></div><input id="socLow" type="number" class="sinput mono" min="5" max="60"></div>
+        <div class="sfoot"><span class="sstat" id="powerStat"></span><button class="btn btn-soft btn-sm" onclick="savePowerCfg()">Save</button></div>
+      </div>
+    </div>
+    <div class="sgroup rv"><div class="gtitle">Inverter · Solarman V5</div>
+      <div class="card gcard">
+        <div class="srow"><span class="sic" style="background:var(--accent)"><i class="bi bi-hdd-network-fill"></i></span><div class="sl"><b>IP Address</b></div><input id="invIp" class="sinput mono" placeholder="192.168.1.100"></div>
+        <div class="srow"><span class="sic" style="background:var(--indigo)"><i class="bi bi-upc-scan"></i></span><div class="sl"><b>Serial Number</b></div><input id="invSerial" class="sinput mono"></div>
+        <div class="srow"><span class="sic" style="background:var(--cyan)"><i class="bi bi-ethernet"></i></span><div class="sl"><b>Modbus Port</b></div><input id="invPort" type="number" class="sinput mono"></div>
+        <div class="srow"><span class="sic" style="background:var(--amber)"><i class="bi bi-broadcast-pin"></i></span><div class="sl"><b>MAC Address</b><em>for auto-discovery on network</em></div><input id="invMac" class="sinput mono" placeholder="AA:BB:CC:DD:EE:FF"></div>
+        <div class="sfoot"><span class="sstat" id="scanStat"></span><button class="btn btn-ghost btn-sm" id="btnScan" onclick="scanInverter()"><i class="bi bi-radar"></i> Scan</button><button class="btn btn-soft btn-sm" onclick="saveInverter()">Save</button></div>
+      </div>
+    </div>
+    <div class="sgroup rv"><div class="gtitle">Tuya Cloud</div>
+      <div class="card gcard">
+        <div class="srow"><span class="sic" style="background:#FF5A5F"><i class="bi bi-key-fill"></i></span><div class="sl"><b>Access ID</b></div><input id="tAccessId" class="sinput mono"></div>
+        <div class="srow"><span class="sic" style="background:#FF5A5F"><i class="bi bi-shield-lock-fill"></i></span><div class="sl"><b>Access Key</b></div><input id="tAccessKey" class="sinput mono" type="password"></div>
+        <div class="srow"><span class="sic" style="background:var(--green)"><i class="bi bi-globe2"></i></span><div class="sl"><b>Country Code</b></div><input id="tCountry" type="number" class="sinput mono"></div>
+        <div class="srow"><span class="sic" style="background:var(--accent)"><i class="bi bi-envelope-fill"></i></span><div class="sl"><b>Email / Username</b></div><input id="tUser" class="sinput"></div>
+        <div class="srow"><span class="sic" style="background:var(--indigo)"><i class="bi bi-lock-fill"></i></span><div class="sl"><b>Password</b></div><input id="tPass" class="sinput mono" type="password"></div>
+        <div class="srow"><span class="sic" style="background:var(--dim)"><i class="bi bi-app-indicator"></i></span><div class="sl"><b>App Schema</b></div><select id="tSchema" class="sselect"><option value="tuyaSmart">Tuya Smart</option><option value="smartlife">Smart Life</option></select></div>
+        <div class="sfoot"><span class="sstat" id="tuyaStat"></span><button class="btn btn-ghost btn-sm" onclick="syncTuya(true)"><i class="bi bi-arrow-repeat"></i> Sync</button><button class="btn btn-soft btn-sm" onclick="saveTuya()">Save</button></div>
+      </div>
+    </div>
+    <div class="sgroup rv"><div class="gtitle">Notifications</div>
+      <div class="card gcard">
+        <div class="srow"><span class="sic" style="background:var(--accent)"><i class="bi bi-broadcast"></i></span><div class="sl"><b>ntfy.sh</b></div><label class="sw"><input id="nNtfy" type="checkbox"><i></i></label></div>
+        <div class="srow"><span class="sic" style="background:var(--dim)"><i class="bi bi-hash"></i></span><div class="sl"><b>ntfy Topic</b></div><input id="ntfyTopic" class="sinput mono" placeholder="my-secret-topic"></div>
+        <div class="srow"><span class="sic" style="background:#229ED9"><i class="bi bi-telegram"></i></span><div class="sl"><b>Telegram</b></div><label class="sw"><input id="nTg" type="checkbox"><i></i></label></div>
+        <div class="srow"><span class="sic" style="background:#229ED9"><i class="bi bi-key-fill"></i></span><div class="sl"><b>Bot Token</b></div><input id="tgToken" class="sinput mono" type="password"></div>
+        <div class="srow"><span class="sic" style="background:#229ED9"><i class="bi bi-chat-dots-fill"></i></span><div class="sl"><b>Chat ID</b></div><input id="tgChat" class="sinput mono"></div>
+        <div class="srow"><span class="sic" style="background:var(--red)"><i class="bi bi-bell-fill"></i></span><div class="sl"><b>Critical Alerts</b><em>outages, low battery</em></div><label class="sw"><input id="nCritical" type="checkbox"><i></i></label></div>
+        <div class="srow"><span class="sic" style="background:var(--amber)"><i class="bi bi-lightning-charge-fill"></i></span><div class="sl"><b>Grid Outage Report</b><em>duration, SOC, consumption</em></div><label class="sw"><input id="nOutage" type="checkbox"><i></i></label></div>
+        <div class="sfoot"><span class="sstat" id="notifStat"></span><button class="btn btn-ghost btn-sm" onclick="testNotif()"><i class="bi bi-send"></i> Test</button><button class="btn btn-soft btn-sm" onclick="saveNotifs()">Save</button></div>
+      </div>
+    </div>
+    <div class="sgroup rv"><div class="gtitle">Tariff</div>
+      <div class="card gcard">
+        <div class="srow"><span class="sic" style="background:var(--green)"><i class="bi bi-currency-exchange"></i></span><div class="sl"><b>Currency</b></div><input id="tfCurrency" class="sinput" maxlength="8"></div>
+        <div class="srow"><span class="sic" style="background:var(--indigo)"><i class="bi bi-sliders"></i></span><div class="sl"><b>Tariff Type</b></div><select id="tfType" class="sselect" onchange="tfTypeChange()"><option value="daynight">Day / Night</option><option value="flat">Flat</option></select></div>
+        <div class="srow" id="rowFlat" hidden><span class="sic" style="background:var(--dim)"><i class="bi bi-coin"></i></span><div class="sl"><b>Flat Rate</b><em>per kWh</em></div><input id="tfFlat" type="number" step="0.01" class="sinput mono"></div>
+        <div class="srow" id="rowDay"><span class="sic" style="background:var(--amber)"><i class="bi bi-sun-fill"></i></span><div class="sl"><b>Day Rate</b><em id="tfDayStartLbl">from 07:00</em></div><input id="tfDay" type="number" step="0.01" class="sinput mono"></div>
+        <div class="srow" id="rowNight"><span class="sic" style="background:var(--indigo)"><i class="bi bi-moon-stars-fill"></i></span><div class="sl"><b>Night Rate</b><em id="tfNightStartLbl">from 23:00</em></div><input id="tfNight" type="number" step="0.01" class="sinput mono"></div>
+        <div class="srow"><span class="sic" style="background:var(--cyan)"><i class="bi bi-clock-fill"></i></span><div class="sl"><b>Day/Night Switch</b></div><input id="tfDayStart" type="time" class="sinput mono"><input id="tfNightStart" type="time" class="sinput mono"></div>
+        <div class="sfoot"><span class="sstat" id="tariffStat"></span><button class="btn btn-soft btn-sm" onclick="saveTariff()">Save</button></div>
+      </div>
+    </div>
+    <div class="sgroup rv"><div class="gtitle">Netbird VPN</div>
+      <div class="card gcard">
+        <div class="srow">
+          <span class="sic" style="background:var(--indigo)"><i class="bi bi-shield-fill-check"></i></span>
+          <div class="sl"><b>Netbird VPN</b><em>private device network</em></div>
+          <label class="sw"><input id="nbEnabled" type="checkbox" onchange="toggleNetbird()"><i></i></label>
+        </div>
+        <div class="srow">
+          <span class="sic" style="background:var(--accent)"><i class="bi bi-key-fill"></i></span>
+          <div class="sl"><b>Setup Key</b><em>registration key</em></div>
+          <input id="nbSetupKey" class="sinput mono" type="password" placeholder="enter setup key" onfocus="if(this.value==='••••••••')this.value=''">
+        </div>
+        <div class="srow">
+          <span class="sic" style="background:var(--cyan)"><i class="bi bi-globe2"></i></span>
+          <div class="sl"><b>Management URL</b><em>Netbird server address</em></div>
+          <input id="nbMgmtUrl" class="sinput mono" placeholder="https://api.netbird.io">
+        </div>
+        <div class="sfoot">
+          <span class="sstat" id="netbirdStat"></span>
+          <button class="btn btn-ghost btn-sm" id="btnNBCheck" onclick="checkNetbird()"><i class="bi bi-arrow-repeat"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="resetNetbird()" title="Reset daemon state"><i class="bi bi-arrow-counterclockwise"></i></button>
+          <button class="btn btn-soft btn-sm" onclick="saveNetbird()">Save</button>
+        </div>
+      </div>
+    </div>
+    <div class="sgroup rv"><div class="gtitle">Appearance</div><div class="card gcard"><div class="swatches" id="accentRow"></div></div></div>
+    
+    <div class="sgroup rv"><div class="gtitle">System</div>
+      <div class="card gcard">
+        <div id="sysInfo"><div class="sysrow"><span class="skel" style="height:14px;width:70%"></span></div></div>
+        <div class="sysrow"><span class="k">Version</span><span class="v mono" id="verLine">—</span></div>
+      </div>
+    </div>
+    <div class="sgroup rv"><div class="gtitle">Actions</div>
+      <div class="card gcard">
+        <div class="srow link" onclick="openPassSheet()"><span class="sic" style="background:var(--indigo)"><i class="bi bi-shield-lock-fill"></i></span><div class="sl"><b>Change Password</b></div><i class="bi bi-chevron-right chev"></i></div>
+        <div class="srow link" onclick="doBackup()"><span class="sic" style="background:var(--green)"><i class="bi bi-cloud-arrow-down-fill"></i></span><div class="sl"><b>Backup</b><em>config, scenes, history</em></div><i class="bi bi-chevron-right chev"></i></div>
+        <div class="srow link" onclick="document.getElementById('restoreFile').click()"><span class="sic" style="background:var(--amber)"><i class="bi bi-cloud-arrow-up-fill"></i></span><div class="sl"><b>Restore from Backup</b></div><i class="bi bi-chevron-right chev"></i><input type="file" id="restoreFile" accept=".json" hidden onchange="doRestore(this)"></div>
+        <div class="srow link" onclick="askRestart()"><span class="sic" style="background:var(--red)"><i class="bi bi-arrow-clockwise"></i></span><div class="sl"><b>Restart App</b></div><i class="bi bi-chevron-right chev"></i></div>
+        <div class="srow link" onclick="doLogout()"><span class="sic" style="background:var(--dim)"><i class="bi bi-box-arrow-right"></i></span><div class="sl"><b>Sign Out</b></div><i class="bi bi-chevron-right chev"></i></div>
+      </div>
+    </div>
+  </section>
+</main>
+<nav id="tabbar">
+  <button class="tab active" data-v="status" onclick="go('status')"><i class="bi bi-lightning-charge-fill"></i><span>Dashboard</span></button>
+  <button class="tab" data-v="devices" onclick="go('devices')"><i class="bi bi-plug-fill"></i><span>Devices</span></button>
+  <button class="tab" data-v="automations" onclick="go('automations')"><i class="bi bi-diagram-3-fill"></i><span>Scenes</span></button>
+  <button class="tab" data-v="notifications" onclick="go('notifications')"><i class="bi bi-bell-fill"></i><span>Events</span><span class="bdg" id="tabNotifBadge" hidden>0</span></button>
+  <button class="tab" data-v="settings" onclick="go('settings')"><i class="bi bi-gearshape-fill"></i><span>More</span></button>
+</nav>
+</div>
+<div id="island" class="island" data-type="ok"><i id="islandIcon" class="bi bi-checkmark-circle-fill"></i><div style="min-width:0"><b id="islandTitle"></b><span id="islandBody"></span></div></div>
+<div id="sheetBd" class="sheet-bd" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"><div class="grabber"></div><div id="sheetBody"></div></div></div>
+<div id="restartOv" class="restart-ov"><div class="big-spin"></div><h3>Restarting…</h3><p>Waiting for the server to come back</p></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const escA=s=>esc(s).replace(/'/g,'&#39;');
+const num=x=>{const v=parseFloat(x);return Number.isFinite(v)?v:null;};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function haptic(ms){try{navigator.vibrate&&navigator.vibrate(ms||8)}catch(e){}}
+function fmtW(v){const n=num(v);return n===null?'—':Math.round(n)+' W';}
+function fmtKwh(v){const n=num(v);return n===null?'—':n.toFixed(1)+' kWh';}
+function fmtRuntime(mins){if(!isFinite(mins)||mins<=0)return '0 min';if(mins>=60*36)return 'over 36h';const h=Math.floor(mins/60),m=Math.round(mins%60);return h?h+'h '+String(m).padStart(2,'0')+'m':m+'m';}
+function fmtDur(ms){const m=Math.round(ms/60000);if(m<60)return m+'m';const h=Math.floor(m/60);return h+'h '+(m%60)+'m';}
+function fmtT(ts){return new Date(ts).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
+function tween(el,to,fmt){if(!el)return;const from=(el._v===undefined)?to:el._v;el._v=to;if(from===to){el.textContent=fmt(to);return;}
+  const t0=performance.now(),dur=550;(function f(t){const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=fmt(from+(to-from)*e);if(k<1)requestAnimationFrame(f);})(t0);}
+function beep(){try{const ac=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);
+  o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.setValueAtTime(1174,ac.currentTime+.09);g.gain.setValueAtTime(.06,ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.3);o.start();o.stop(ac.currentTime+.32);}catch(e){}}
+const S={logged:false,status:null,devices:[],scenes:[],notifs:[],unread:0,lastNotifId:0,curView:'status',outageSince:+localStorage.getItem('ecmOutageSince')||0,capacityWh:+localStorage.getItem('ecmCapWh')||5000,spark:[],cfgLoaded:false};
+window._csrf=localStorage.getItem('ecmToken')||'';
+console.log('init _csrf:', window._csrf ? 'from localStorage' : 'empty');
+async function api(path,opts={}){
+  const h={'Content-Type':'application/json',...(opts.headers||{})};
+  if(window._csrf)h['X-CSRF-Token']=window._csrf;
+  let r;try{r=await fetch(path,{credentials:'same-origin',...opts,headers:h});}catch(e){console.log('fetch fail',path,e);throw new Error('network');}
+  const ct=r.headers.get('content-type')||'';
+  const d=ct.includes('json')?await r.json().catch(()=>null):null;
+  if(r.status===401){console.log('401 from',path,'csrf header:',!!window._csrf);return d||null;}
+  if(d&&d.csrfToken){window._csrf=d.csrfToken;localStorage.setItem('ecmToken',d.csrfToken);}
+  return d;
+}
+async function getStatus(){const d=await api('/api/status');return d;}
+
+
+let islandT=null;
+function island(title,body,type,ms){const el=$('#island');el.dataset.type=type||'ok';$('#islandIcon').className='bi '+(type==='err'?'bi-x-circle-fill':type==='warn'?'bi-exclamation-triangle-fill':type==='info'?'bi-info-circle-fill':'bi-checkmark-circle-fill');$('#islandTitle').textContent=title;$('#islandBody').textContent=body||'';el.classList.add('show');haptic(type==='err'?28:8);clearTimeout(islandT);islandT=setTimeout(()=>el.classList.remove('show'),ms||3800);}
+function openSheet(html){$('#sheetBody').innerHTML=html;$('#sheetBd').classList.add('show');haptic(6);}
+function closeSheet(){$('#sheetBd').classList.remove('show');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+function confirmSheet(title,body,onYes){openSheet('<h3>'+esc(title)+'</h3><p class="sh-p">'+esc(body)+'</p><div class="sh-btns"><button class="btn" onclick="closeSheet()">Cancel</button><button class="btn btn-danger-solid" id="cfYes">Confirm</button></div>');$('#cfYes').onclick=()=>{closeSheet();onYes();};}
+function showLogin(){console.log('showLogin called, S.logged was:',S.logged);S.logged=false;$('#app').hidden=true;const l=$('#login');l.hidden=false;window._csrf='';localStorage.removeItem('ecmToken');closeSheet();requestAnimationFrame(()=>l.classList.remove('gone'));}
+function enterApp(){$('#login').classList.add('gone');setTimeout(()=>{$('#login').hidden=true;},460);$('#app').hidden=false;if(!S.logged){S.logged=true;initApp();}}
+$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('#loginBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span> Checking…';try{const r=await api('/login',{method:'POST',body:JSON.stringify({username:$('#loginUser').value.trim(),password:$('#loginPass').value})});console.log('login resp:',r);if(r&&r.success){console.log('login OK, csrf:',r.csrfToken?r.csrfToken.slice(0,12)+'…':'(none)');window._csrf=r.csrfToken||'';enterApp();island('Welcome','Session opened successfully','ok');if(r.mustChangePassword)openPassSheet(true);}else{$('#loginErr').textContent=(r&&r.message)||'Invalid username or password';const c=$('#loginCard');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');}}catch(err){console.log('login error:',err);$('#loginErr').textContent='Server unreachable. Check network.';}btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-right-circle-fill"></i> Sign In';});
+
+function go(v){S.curView=v;haptic(6);$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));window.scrollTo({top:0,behavior:'smooth'});onEnter(v);}
+function onEnter(v){if(v==='status'){loadPowerChart();loadSocketChart();loadDailyChart();}if(v==='devices')renderDevices();if(v==='automations')renderScenes();if(v==='notifications'){renderNotifs();markAllRead();}if(v==='settings')enterSettings();}
+function prioOf(g){const s=(g||'').toLowerCase();if(s.includes('critical'))return 'critical';if(s.includes('second'))return 'secondary';return 'other';}
+function secDevices(){return S.devices.filter(d=>prioOf(d.group)==='secondary'&&d.switch===true);}
+function runtimeAt(load){const soc=num(S.status&&S.status.batterySOC)||0;const l=Math.max(load,6);return (soc/100*S.capacityWh)/l*60;}
+async function survivalMode(){const sec=secDevices();if(!sec.length){island('Already Off','No secondary active devices','info');return;}const savedW=sec.reduce((a,d)=>a+(d.power||0),0);const cur=num(S.status&&S.status.loadPower)||savedW;const gain=runtimeAt(cur-savedW)-runtimeAt(cur);openSheet('<h3><i class="bi bi-fire" style="color:var(--amber)"></i> Survival Mode</h3><p class="sh-p">Will turn off <b>'+sec.length+'</b> secondary devices (−'+savedW+' W). Estimated runtime will increase by approx. <b>'+fmtRuntime(Math.max(0,gain))+'</b>.<br><br>'+sec.map(d=>'• '+esc(d.name)+' · '+fmtW(d.power)).join('<br>')+'</p><div class="sh-btns"><button class="btn" onclick="closeSheet()">Cancel</button><button class="btn btn-danger-solid" id="svGo"><i class="bi bi-power"></i> Turn Off</button></div>');$('#svGo').onclick=async()=>{closeSheet();let ok=0;for(const d of sec){try{const r=await api('/api/tuya-control',{method:'POST',body:JSON.stringify({deviceId:d.id,value:false})});if(!r||r.success===false)throw 0;d.switch=false;d.power=0;ok++;}catch(e){island('Error',esc(d.name)+': failed to turn off','err');}}if(ok){island('Survival Mode Activated','Turned off '+ok+' devices · −'+savedW+' W · +'+fmtRuntime(Math.max(0,gain)),'warn',5200);haptic(30);}renderDevices();poll();};}
+async function poll(){if(!S.logged)return;try{const d=await getStatus();if(!d||d.success===false){if(!d||d.message!=='Unauthorized')return;S.logged=false;showLogin();return;}S.status=d;S.devices=d.tuyaDevices||S.devices;S.scenes=d.scenes||S.scenes;trackOutage(d);renderStatus(d);if(S.curView==='devices')renderDevices();if(S.curView==='automations'&&!$('#sceneList').children.length)renderScenes();}catch(e){console.log('poll error:',e);}}
+function trackOutage(d){const off=d.gridPower===false;if(off&&!S.outageSince){S.outageSince=Date.now();localStorage.setItem('ecmOutageSince',S.outageSince);island('Grid Outage','Switching to battery power','err',5200);beep();}if(!off&&S.outageSince){const dur=Date.now()-S.outageSince;S.outageSince=0;localStorage.removeItem('ecmOutageSince');island('Grid Restored','Outage lasted '+fmtDur(dur),'ok',5200);}}
+function renderStatus(d){const soc=num(d.batterySOC)||0,load=num(d.loadPower)||0,bp=num(d.batteryPower)||0;const arc=$('#socArc');arc.style.strokeDashoffset=477.5*(1-soc/100);const col=soc>50?'var(--green)':soc>20?'var(--amber)':'var(--red)';arc.style.stroke=col;arc.style.filter='drop-shadow(0 0 9px '+(soc>50?'rgba(48,209,88,.55)':soc>20?'rgba(255,159,10,.55)':'rgba(255,69,58,.65)')+')';tween($('#socVal'),soc,v=>v.toFixed(soc<10?1:0));const st=$('#socState');if(bp<-5){st.innerHTML='<i class="bi bi-lightning-charge-fill c-green"></i> charging '+Math.abs(Math.round(bp))+' W';st.className='';}else if(bp>5){st.innerHTML='<i class="bi bi-battery-half c-amber"></i> discharging '+Math.round(bp)+' W';}else{st.innerHTML='<i class="bi bi-battery-full c-green"></i> idle';}const rt=runtimeAt(load);const rv=$('#runtimeVal');tween(rv,rt,v=>fmtRuntime(v));rv.className='big '+(rt<120?'c-red':rt<360?'c-amber':'c-green');$('#runtimeSub').textContent='at current load · battery '+S.capacityWh+' Wh';tween($('#loadVal'),load,v=>Math.round(v)+' W');const bv=$('#batVal');tween(bv,bp,v=>(v>0?'+':v<0?'−':'')+Math.abs(Math.round(v))+' W');bv.style.color=bp>5?'var(--amber)':bp<-5?'var(--green)':'';const volt=num(d.debug&&d.debug.batteryVoltage);$('#voltVal').textContent=volt!==null?volt.toFixed(1)+' V':'—';const gb=$('#gridBadge');if(d.gridPower===false){gb.className='chip chip-red';gb.innerHTML='<i class="bi bi-lightning-charge-fill"></i> Grid: Outage';}else{gb.className='chip chip-green';gb.innerHTML='<i class="bi bi-plug-fill"></i> Grid OK'+(num(d.gridVoltage)?' · '+num(d.gridVoltage).toFixed(0)+' V':'');}const bn=$('#outageBanner');if(d.gridPower===false){bn.hidden=false;$('#obTime').textContent='Duration '+fmtDur(S.outageSince?Date.now()-S.outageSince:0)+(S.outageSince?' · since '+new Date(S.outageSince).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'');$('#obRuntime').textContent=fmtRuntime(rt);}else bn.hidden=true;renderTiles(d);updateFlow(d);S.spark.push(load);if(S.spark.length>90)S.spark.shift();drawSpark();}
+function renderTiles(d){const cur=(d.tariff&&d.tariff.currency)||'';const cost=num(d.costToday&&d.costToday.day)+num(d.costToday&&d.costToday.night)||0;const items=[{i:'bi-plug-fill',c:'var(--cyan)',l:'Grid Voltage',v:num(d.gridVoltage)?num(d.gridVoltage).toFixed(1)+' V':'—',s:d.gridPower?'stable':'absent'},{i:'bi-thermometer-half',c:'var(--amber)',l:'Battery Temp',v:num(d.batteryTemp)?num(d.batteryTemp).toFixed(1)+' °C':'—',s:'normal < 45 °C'},{i:'bi-box-arrow-in-down',c:'var(--accent)',l:'Day Import',v:fmtKwh(d.dayGridImport),s:'from grid'},{i:'bi-lightning-fill',c:'var(--indigo)',l:'Day Consumption',v:fmtKwh(d.dayLoadEnergy),s:'load'},{i:'bi-battery-charging',c:'var(--green)',l:'Battery Charge',v:fmtKwh(d.dayBatCharge),s:'today'},{i:'bi-battery-half',c:'var(--amber)',l:'Battery Discharge',v:fmtKwh(d.dayBatDischarge),s:'today'},{i:'bi-cash-coin',c:'var(--green)',l:'Cost Today',v:cost?cost.toFixed(2)+' '+cur:'—',s:(d.tariff&&d.tariff.type==='daynight')?'day/night':'flat rate'},{i:'bi-thermometer',c:'var(--cyan)',l:'Ambient',v:num(d.envTemp)?num(d.envTemp).toFixed(1)+' °C':'—',s:'room'}];$('#tiles').innerHTML=items.map((t,i)=>'<div class="tile rv in" style="--d:'+(i*.04)+'s"><i class="ic bi '+t.i+'" style="color:'+t.c+'"></i><div class="lb">'+t.l+'</div><div class="vl">'+t.v+'</div><div class="sb">'+t.s+'</div></div>').join('');}
+function drawSpark(){const a=S.spark;if(a.length<2)return;const w=300,h=34,mx=Math.max(...a,10),mn=Math.min(...a,0),sp=(mx-mn)||1;const pts=a.map((v,i)=>[(i/(a.length-1))*w,h-3-((v-mn)/sp)*(h-7)]);const d='M'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L');$('#sparkPath').setAttribute('d',d);$('#sparkFill').setAttribute('d',d+' L'+w+','+h+' L0,'+h+' Z');}
+const F={};function bez(t,a){const m=1-t;return{x:m*m*m*a[0].x+3*m*m*t*a[1].x+3*m*t*t*a[2].x+t*t*t*a[3].x,y:m*m*m*a[0].y+3*m*m*t*a[1].y+3*m*t*t*a[2].y+t*t*t*a[3].y};}
+function buildFlow(){const svg=$('#flow'),ns='http://www.w3.org/2000/svg';const E=t=>document.createElementNS(ns,t);const paths={grid:[{x:96,y:52},{x:158,y:62},{x:198,y:84},{x:226,y:102}],bat:[{x:96,y:180},{x:158,y:170},{x:198,y:134},{x:226,y:118}],home:[{x:276,y:111},{x:300,y:111},{x:352,y:111},{x:406,y:111}]};function dOf(p){return 'M'+p[0].x+','+p[0].y+' C'+p[1].x+','+p[1].y+' '+p[2].x+','+p[2].y+' '+p[3].x+','+p[3].y;}function line(p,c){const g=E('path');g.setAttribute('d',dOf(p));g.setAttribute('fill','none');g.setAttribute('stroke',c);g.setAttribute('stroke-width','6');g.setAttribute('opacity','.12');g.setAttribute('stroke-linecap','round');svg.appendChild(g);const c2=E('path');c2.setAttribute('d',dOf(p));c2.setAttribute('fill','none');c2.setAttribute('stroke',c);c2.setAttribute('stroke-width','2');c2.setAttribute('opacity','.8');c2.setAttribute('stroke-linecap','round');svg.appendChild(c2);}
+line(paths.grid,'#64D2FF');line(paths.bat,'#FF9F0A');line(paths.home,'#A78BFA');function node(cx,cy,color,vId,lId,sId){const g1=E('circle');g1.setAttribute('cx',cx);g1.setAttribute('cy',cy);g1.setAttribute('r','36');g1.setAttribute('fill',color);g1.setAttribute('opacity','.09');svg.appendChild(g1);const g2=E('circle');g2.setAttribute('cx',cx);g2.setAttribute('cy',cy);g2.setAttribute('r','27');g2.setAttribute('fill','none');g2.setAttribute('stroke',color);g2.setAttribute('stroke-width','2.5');g2.setAttribute('opacity','.9');svg.appendChild(g2);const t1=E('text');t1.setAttribute('x',cx);t1.setAttribute('y',cy+4);t1.setAttribute('text-anchor','middle');t1.setAttribute('fill',color);t1.setAttribute('font-size','13');t1.setAttribute('font-weight','800');t1.setAttribute('font-family','inherit');t1.id=vId;svg.appendChild(t1);const t2=E('text');t2.setAttribute('x',cx);t2.setAttribute('y',cy+16);t2.setAttribute('text-anchor','middle');t2.setAttribute('fill',color);t2.setAttribute('font-size','7.5');t2.setAttribute('font-weight','700');t2.setAttribute('opacity','.85');t2.id=lId;svg.appendChild(t2);if(sId){const t3=E('text');t3.setAttribute('x',cx);t3.setAttribute('y',cy+50);t3.setAttribute('text-anchor','middle');t3.setAttribute('fill','var(--muted)');t3.setAttribute('font-size','9');t3.setAttribute('font-weight','700');t3.id=sId;svg.appendChild(t3);}}
+node(70,42,'#64D2FF','fGridV','fGridL','fGridS');node(70,190,'#FF9F0A','fBatV','fBatL','fBatS');node(251,111,'var(--accent)','fInvV','fInvL',null);node(434,111,'#A78BFA','fHomeV','fHomeL','fHomeS');function dot(color){const c=E('circle');c.setAttribute('r','3.6');c.setAttribute('fill',color);c.style.display='none';c.style.filter='drop-shadow(0 0 4px '+color+')';svg.appendChild(c);return c;}F.paths=paths;F.rev={grid:[...paths.grid].reverse(),bat:[...paths.bat].reverse(),home:[...paths.home].reverse()};F.dots={g1:dot('#64D2FF'),g2:dot('#64D2FF'),b1:dot('#FF9F0A'),b2:dot('#FF9F0A'),h1:dot('#A78BFA'),h2:dot('#A78BFA')};F.batCharge=false;(function anim(){const t=(Date.now()/1700)%1,t2=(t+.5)%1;function put(el,p,arr){if(el.style.display==='none')return;const pt=bez(p,arr);el.setAttribute('cx',pt.x);el.setAttribute('cy',pt.y);}put(F.dots.g1,t,F.paths.grid);put(F.dots.g2,t2,F.paths.grid);const bArr=F.batCharge?F.rev.bat:F.paths.bat;put(F.dots.b1,t,bArr);put(F.dots.b2,t2,bArr);put(F.dots.h1,t,F.paths.home);put(F.dots.h2,t2,F.paths.home);requestAnimationFrame(anim);})();}
+function updateFlow(d){const dg=d.debug||{};const gw=num(dg.gridPower);const gridOn=d.gridPower===true;const gv=$('#fGridV');gv.textContent=gridOn?(gw!==null?Math.round(gw):'ON'):'OFF';gv.setAttribute('fill',gridOn?'#64D2FF':'var(--red)');$('#fGridL').textContent='GRID';$('#fGridL').setAttribute('fill',gridOn?'#64D2FF':'var(--red)');$('#fGridS').textContent=gridOn&&num(d.gridVoltage)?num(d.gridVoltage).toFixed(0)+' V · 50 Hz':'no power';const soc=num(d.batterySOC)||0,bp=num(d.batteryPower)||0;$('#fBatV').textContent=Math.round(soc)+'%';$('#fBatL').textContent=(bp>5?'−':bp<-5?'+':'')+Math.abs(Math.round(bp))+' W';$('#fBatS').textContent='BATTERY';const inv=$('#fInvV');inv.textContent=gridOn?'ON':'UPS';inv.setAttribute('fill',gridOn?'var(--accent)':'var(--amber)');$('#fInvL').textContent='INVERTER';$('#fHomeV').textContent=Math.round(num(d.loadPower)||0);$('#fHomeL').textContent='W · HOME';$('#fHomeS').textContent='load';const imp=gw===null?gridOn:gw>0,exp=gw!==null&&gw<0;F.dots.g1.style.display=imp?'':'none';F.dots.g2.style.display=imp?'':'none';if(exp){F.dots.g1.style.display='';F.dots.g2.style.display='';}F.batCharge=bp<-5;const batAct=Math.abs(bp)>5;F.dots.b1.style.display=batAct?'':'none';F.dots.b2.style.display=batAct?'':'none';const bCol=F.batCharge?'#30D158':'#FF9F0A';F.dots.b1.setAttribute('fill',bCol);F.dots.b2.setAttribute('fill',bCol);F.dots.b1.style.filter=F.dots.b2.style.filter='drop-shadow(0 0 4px '+bCol+')';const hAct=(num(d.loadPower)||0)>5;F.dots.h1.style.display=hAct?'':'none';F.dots.h2.style.display=hAct?'':'none';}
+const gridBands={id:'gridBands',beforeDraw(c){const g=c.$grid;const ca=c.chartArea;if(!g||!g.length||!ca)return;const xs=c.scales.x,ctx=c.ctx;ctx.save();for(let i=0;i<g.length;i++){if(g[i]==null)continue;const x1=xs.getPixelForValue(i),x2=i<g.length-1?xs.getPixelForValue(i+1):ca.right;ctx.fillStyle=g[i]?'rgba(48,209,88,.06)':'rgba(255,69,58,.10)';ctx.fillRect(x1,ca.top,Math.max(1,x2-x1),ca.height);}ctx.restore();}};
+const lineLabels={id:'lineLabels',afterDraw(c){const ca=c.chartArea;if(!ca)return;const ctx=c.ctx;ctx.save();c.data.datasets.forEach((ds,di)=>{if(!ds._lbl)return;const meta=c.getDatasetMeta(di);if(meta.hidden||!meta.data.length)return;const p=meta.data[0];if(!p)return;const y=Math.min(Math.max(p.y,ca.top+9),ca.bottom-9);ctx.font='800 10px -apple-system,Manrope,sans-serif';const w=ctx.measureText(ds._lbl).width;const x=ca.left+4;ctx.fillStyle='rgba(20,20,24,.85)';ctx.beginPath();ctx.roundRect(x,y-8,w+12,16,8);ctx.fill();ctx.fillStyle=typeof ds.borderColor==='string'?ds.borderColor:'#999';ctx.fillText(ds._lbl,x+6,y+3.5);});ctx.restore();}};
+Chart.register(gridBands,lineLabels);Chart.defaults.color='#98989f';Chart.defaults.font.family="-apple-system,'Manrope Variable',Manrope,sans-serif";
+const PAL=['#0A84FF','#FF9F0A','#A78BFA','#FF375F','#30D158','#64D2FF','#FFD60A','#FF6482'];
+let powChart=null,powPeriod='day',sockChart=null,dailyChart=null;
+function perLabels(p,ts){const dt=new Date(ts);if(p==='week')return dt.toLocaleDateString('en-GB',{weekday:'short',hour:'2-digit'});if(p==='month'||p==='year')return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});return dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');}
+function baseOpts(){return{responsive:true,maintainAspectRatio:false,animation:{duration:350},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(22,22,26,.96)',titleColor:'#f5f5f7',bodyColor:'#d5d5da',borderColor:'rgba(255,255,255,.1)',borderWidth:1,cornerRadius:12,padding:10,displayColors:true,boxPadding:4}},scales:{x:{ticks:{color:'#8e8e93',font:{size:10},maxTicksLimit:7,maxRotation:0},grid:{color:'rgba(255,255,255,.045)'}},y:{ticks:{color:'#8e8e93',font:{size:10},maxTicksLimit:5,callback:v=>{const a=Math.abs(v);return a>=1000?(v<0?'−':'')+(a/1000).toFixed(1).replace('.0','')+'k':v;}},grid:{color:'rgba(255,255,255,.045)'}}}};}
+async function loadPowerChart(period){if(!window.Chart)return;powPeriod=period||powPeriod;try{const d=await api('/api/history?period='+powPeriod);if(!d||!d.success||!d.points||!d.points.length){$('#powCur').innerHTML='<span>No RRD data</span>';return;}const pts=d.points;const labels=pts.map(p=>perLabels(powPeriod,p.ts));const o=baseOpts();o.scales.x.ticks.maxTicksLimit=powPeriod==='1h'||powPeriod==='3h'?8:7;if(powChart)powChart.destroy();powChart=new Chart($('#powChart'),{type:'line',data:{labels,datasets:[{label:'Load',_lbl:'Home',data:pts.map(p=>p.load),borderColor:'#0A84FF',backgroundColor:'rgba(10,132,255,.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2,order:1},{label:'Battery',_lbl:'Batt',data:pts.map(p=>p.bat),fill:false,tension:.35,pointRadius:0,borderWidth:2,order:2,segment:{borderColor:c=>(c.p0.parsed.y>=0)?'#FF9F0A':'#30D158'},borderColor:'#FF9F0A'}]},options:o});powChart.$grid=pts.map(p=>p.grid);const lp=pts[pts.length-1];$('#powCur').innerHTML='<span><span class="dot" style="background:#0A84FF"></span>Home: <b>'+Math.round(lp.load)+' W</b></span><span><span class="dot" style="background:'+(lp.bat>=0?'#FF9F0A':'#30D158')+'"></span>Batt: <b>'+(lp.bat>=0?'+':'−')+Math.abs(Math.round(lp.bat))+' W</b></span><span><span class="dot" style="background:'+(lp.grid?'#30D158':'#FF453A')+'"></span>Grid: <b>'+(lp.grid?'ON':'OFF')+'</b></span>'+(lp.soc!=null?'<span>SOC: <b>'+lp.soc+'%</b></span>':'');}catch(e){}}
+$('#segPow').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$$('#segPow button').forEach(x=>x.classList.remove('on'));b.classList.add('on');loadPowerChart(b.dataset.p);});
+async function loadSocketChart(){if(!window.Chart)return;try{const d=await api('/api/socket-history?period=day');if(!d||!d.success||!d.points||!d.points.length)return;const ids=new Set();d.points.forEach(p=>{if(p.devices)Object.keys(p.devices).forEach(k=>ids.add(k));});if(!ids.size)return;const sums={};ids.forEach(id=>{sums[id]=d.points.reduce((a,p)=>a+((p.devices&&p.devices[id])||0),0);});const top=[...ids].sort((a,b)=>sums[b]-sums[a]).slice(0,6);const labels=d.points.map(p=>perLabels('day',p.ts));if(sockChart)sockChart.destroy();sockChart=new Chart($('#sockChart'),{type:'line',data:{labels,datasets:top.map((id,i)=>({label:(d.deviceNames&&d.deviceNames[id])||id.slice(-6),_lbl:(d.deviceNames&&d.deviceNames[id]||id.slice(-6)).slice(0,10),data:d.points.map(p=>(p.devices&&p.devices[id]!=null)?p.devices[id]:null),borderColor:PAL[i%PAL.length],backgroundColor:PAL[i%PAL.length]+'18',fill:false,tension:.35,pointRadius:0,borderWidth:1.8,spanGaps:true}))},options:baseOpts()});const lp=d.points[d.points.length-1];$('#sockCur').innerHTML=top.map((id,i)=>{const nm=(d.deviceNames&&d.deviceNames[id])||id.slice(-6);const v=(lp.devices&&lp.devices[id]!=null)?lp.devices[id]:0;return '<span><span class="dot" style="background:'+PAL[i%PAL.length]+'"></span>'+esc(nm)+': <b>'+Math.round(v)+' W</b></span>';}).join('');}catch(e){}}
+async function loadDailyChart(){if(!window.Chart)return;try{const d=S.status||await getStatus();const rec=(d.dailyRecords||[]).slice(-7);if(!rec.length){$('#dailyCard').hidden=true;return;}$('#dailyCard').hidden=false;const labels=rec.map(r=>r.date||(r.day||''));const imp=rec.map(r=>num(r.import||r.importKwh||r.gridImport||r.dayImport||0)||0);const lod=rec.map(r=>num(r.load||r.loadKwh||r.loadEnergy||r.dayLoad||0)||0);if(dailyChart)dailyChart.destroy();const o=baseOpts();o.scales.y.ticks.callback=v=>v+' kWh';dailyChart=new Chart($('#dailyChart'),{type:'bar',data:{labels,datasets:[{label:'Grid Import',data:imp,backgroundColor:'rgba(10,132,255,.7)',borderRadius:7,maxBarThickness:26},{label:'Consumption',data:lod,backgroundColor:'rgba(255,159,10,.7)',borderRadius:7,maxBarThickness:26}]},options:{...o,plugins:{legend:{display:true,labels:{usePointStyle:true,pointStyle:'circle',boxWidth:7,color:'#98989f',font:{size:11}}},tooltip:o.plugins.tooltip}}});}catch(e){}}
+async function renderDevices(){const con=$('#devList');const devs=S.devices;const total=devs.reduce((a,d)=>a+(d.power||0),0);$('#devTotal').textContent=Math.round(total)+' W';$('#devSub').textContent=devs.length+' devices · '+devs.filter(d=>d.online).length+' online';const soc=num(S.status&&S.status.batterySOC)||0;const sec=secDevices();const sv=$('#devSurvive');if(((S.status&&S.status.gridPower===false)||soc<35)&&sec.length){sv.hidden=false;const sw=sec.reduce((a,d)=>a+(d.power||0),0);const cur=num(S.status&&S.status.loadPower)||sw;$('#svW').textContent=Math.round(sw)+' W';$('#svCount').textContent=sec.length;$('#svGain').textContent='+'+fmtRuntime(Math.max(0,runtimeAt(cur-sw)-runtimeAt(cur)));}else sv.hidden=true;if(!devs.length){con.innerHTML='<div class="empty"><i class="bi bi-inbox"></i>No devices yet.<br>Click "Sync" to fetch plugs from Tuya Cloud.</div>';return;}const groups={critical:[],secondary:[],other:{}};for(const d of devs){const p=prioOf(d.group);if(p==='critical')groups.critical.push(d);else if(p==='secondary')groups.secondary.push(d);else{(groups.other[d.group||'No Group']=groups.other[d.group||'No Group']||[]).push(d);}}let html='';const card=d=>{const on=d.switch===true;return '<div class="card-sm dev'+(on?' on':'')+(d.online?'':' offl')+'" data-did="'+escA(d.id)+'"><div class="dev-top"><span class="dev-dot"></span><span class="dev-name">'+esc(d.name)+'</span><span class="dev-w">'+(on?Math.round(d.power||0)+' W':'0 W')+'</span></div><div class="dev-meta"><span class="chip '+(prioOf(d.group)==='critical'?'chip-green':prioOf(d.group)==='secondary'?'chip-amber':'chip-dim')+'">'+esc(d.group||'no group')+'</span>'+(d.online?'':'<span class="chip chip-red">offline</span>')+((d.voltage&&on)?'<span class="chip chip-dim mono">'+Math.round(d.voltage)+' V</span>':'')+'</div><div class="dev-ctl"><label class="sw"><input type="checkbox" data-dev="'+escA(d.id)+'" '+(on?'checked':'')+'><i></i></label><div style="display:flex;gap:6px"><button class="ibtn" data-gid="'+escA(d.id)+'" title="Priority / Group"><i class="bi bi-flag-fill"></i></button><button class="ibtn" data-ping="'+escA(d.ip||'')+'" title="Ping"><i class="bi bi-wifi"></i></button></div></div></div>';};if(groups.critical.length)html+='<div class="dev-sec"><i class="bi bi-shield-fill-check c-green"></i><b>Critical</b><span>never turned off by survival mode</span></div><div class="dev-grid">'+groups.critical.map(card).join('')+'</div>';if(groups.secondary.length)html+='<div class="dev-sec"><i class="bi bi-fire c-amber"></i><b>Secondary</b><span>turned off when battery is low</span></div><div class="dev-grid">'+groups.secondary.map(card).join('')+'</div>';for(const g of Object.keys(groups.other).sort())html+='<div class="dev-sec"><i class="bi bi-folder2 c-acc"></i><b>'+esc(g)+'</b><span>'+groups.other[g].length+' dev.</span></div><div class="dev-grid">'+groups.other[g].map(card).join('')+'</div>';con.innerHTML=html;}
+$('#devList').addEventListener('change',async e=>{const inp=e.target.closest('input[data-dev]');if(!inp)return;const id=inp.dataset.dev,val=inp.checked,devEl=inp.closest('.dev');devEl.classList.toggle('on',val);haptic(val?18:12);const d=S.devices.find(x=>x.id===id);if(d)d.switch=val;try{const r=await api('/api/tuya-control',{method:'POST',body:JSON.stringify({deviceId:id,value:val})});if(r&&r.success===false)throw new Error(r.message||'Error');island(val?'Turned On':'Turned Off',esc(d?d.name:id),'ok',2200);}catch(err){inp.checked=!val;devEl.classList.toggle('on',!val);if(d)d.switch=!val;island('Control Error',esc(err.message||'Device did not respond'),'err');}});
+$('#devList').addEventListener('click',async e=>{const g=e.target.closest('[data-gid]');if(g){groupSheet(g.dataset.gid);return;}const p=e.target.closest('[data-ping]');if(p&&p.dataset.ping){p.innerHTML='<span class="spin"></span>';try{const r=await api('/api/device-ping/'+p.dataset.ping);island('Ping '+p.dataset.ping,r&&r.online?'Device online ✓':'No response',r&&r.online?'ok':'warn');}catch(err){island('Ping','Unavailable','warn');}p.innerHTML='<i class="bi bi-wifi"></i>';}});
+function groupSheet(id){const d=S.devices.find(x=>x.id===id);if(!d)return;const p=prioOf(d.group);openSheet('<h3>Priority · '+esc(d.name)+'</h3><button class="sh-opt'+(p==='critical'?' sel':'')+'" onclick="setGroup(\''+escA(id)+'\',\'Critical\')"><i class="bi bi-shield-fill-check"></i><span>Critical<em>never turned off automatically</em></span></button><button class="sh-opt'+(p==='secondary'?' sel':'')+'" onclick="setGroup(\''+escA(id)+'\',\'Secondary\')"><i class="bi bi-fire"></i><span>Secondary<em>turned off in survival mode</em></span></button><button class="sh-opt'+(p==='other'&&!d.group?' sel':'')+'" onclick="setGroup(\''+escA(id)+'\',\'\')"><i class="bi bi-dash-circle"></i><span>No Group<em>standard device</em></span></button><label class="sh-label">Or custom group / room</label><div class="sh-row"><input id="customGroup" class="sh-input" placeholder="e.g. Living Room" value="'+esc(p==='other'?d.group:'')+'"><button class="btn btn-soft" onclick="setGroup(\''+escA(id)+'\',document.getElementById(\'customGroup\').value)">OK</button></div>');}
+async function setGroup(id,g){try{const r=await api('/api/tuya-devices/'+encodeURIComponent(id)+'/group',{method:'PATCH',body:JSON.stringify({group:String(g||'').trim()})});if(r&&r.success===false)throw new Error(r.message);const d=S.devices.find(x=>x.id===id);if(d)d.group=String(g||'').trim();closeSheet();renderDevices();island('Group Updated',esc(d?d.name:id)+' → '+(g||'no group'),'ok');}catch(e){island('Error',esc(e.message),'err');}}
+async function syncTuya(fromSettings){const b=$('#devSync');if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>';}if(fromSettings)$('#tuyaStat').innerHTML='<span class="spin"></span> Syncing with Tuya Cloud…';try{const r=await api('/api/sync-tuya',{method:'POST',body:'{}'});if(r&&r.success){island('Synced',r.count+' devices fetched from Tuya','ok');await poll();renderDevices();}else throw new Error((r&&r.message)||'Sync error');if(fromSettings)$('#tuyaStat').textContent='✓ '+r.count+' devices';}catch(e){island('Tuya Error',esc(e.message),'err');if(fromSettings)$('#tuyaStat').textContent='✗ '+e.message;}if(b){b.disabled=false;b.innerHTML='<i class="bi bi-arrow-repeat"></i> Sync';}}
+$('#modeSeg').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;$$('#modeSeg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');try{const r=await api('/api/tuya-mode',{method:'POST',body:JSON.stringify({mode:b.dataset.m})});if(r&&r.success===false)throw 0;island('Tuya Mode',b.textContent.trim(),'ok',2000);}catch(err){island('Tuya Mode','Endpoint not available in this build','warn');}});
+function condText(c){if(c.type==='battery')return 'SOC '+(c.operator||'<')+' <b>'+c.value+'%</b>';if(c.type==='grid')return c.value?'grid <b>ON</b>':'grid <b>OFF</b>';if(c.type==='time')return 'time <b>'+c.after+'–'+c.before+'</b>';if(c.type==='weekday'){const wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];return 'days: <b>'+((c.days||[]).map(x=>wd[x]).join(', ')||'—')+'</b>';}if(c.type==='device_online'){const d=S.devices.find(x=>x.id===c.value);return '<b>'+esc(d?d.name:'device')+'</b> '+(c.expectedStatus?'online':'offline');}return '…';}
+function actText(a){if(a.type==='notify')return '🔔 <b>notification</b>';const d=S.devices.find(x=>x.id===a.device);let t='<b>'+esc(d?d.name:a.device)+'</b> → '+(a.value?'<b class="c-green">ON</b>':'<b class="c-red">OFF</b>');if(a.duration>0)t+=' for '+a.duration+' min';return t;}
+async function renderScenes(){const con=$('#sceneList');con.innerHTML='<div class="empty"><span class="skel" style="display:inline-block;height:16px;width:60%"></span></div>';let traces={};try{const t=await api('/api/scene-traces?last=3');if(t&&t.traces)traces=t.traces;}catch(e){}const scenes=S.scenes;$('#sceneSub').textContent=scenes.length+' scenes · '+scenes.filter(s=>s.enabled!==false).length+' active';const hasSurv=scenes.some(s=>s.name==='Survival Mode');$('#presetBtns').innerHTML=hasSurv?'<span class="chip chip-green"><i class="bi bi-check-circle-fill"></i> Scene Active</span>':'<button class="btn btn-primary btn-sm" onclick="createSurvivalScene()"><i class="bi bi-magic"></i> Create with one tap</button>';if(!scenes.length){con.innerHTML='<div class="empty"><i class="bi bi-diagram-3"></i>No automations yet.<br>Create your first one — e.g. survival mode.</div>';return;}con.innerHTML=scenes.map(s=>{const en=s.enabled!==false;const lg=(s.if&&s.if.logic==='OR')?' <span class="kw">OR</span> ':' <span class="kw">AND</span> ';const ifs=((s.if&&s.if.conditions)||[]).map(condText).join(lg)||'—';const thens=((s.then&&s.then.actions)||[]).map(actText).join(', ')||'—';const tr=(traces[s.name]||[]).slice(-2).reverse().map(t=>{const err=/error/.test(t.action);const tm=new Date(t.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});const lbl=t.action==='apply'?'✓ applied':/revert/.test(t.action)?'↩ reverted':'⚠ '+esc(t.action);return '<div class="trace'+(err?' err':'')+'"><span class="t">'+tm+'</span><span>'+lbl+'</span><span style="opacity:.7">'+esc(t.detail||'')+'</span></div>';}).join('');return '<div class="card-sm scene'+(en?' act':'')+'" data-name="'+escA(s.name)+'"><div class="scene-top"><span class="sdot"></span><b>'+esc(s.name)+'</b><span class="chip '+(en?'chip-acc':'chip-dim')+'">'+(en?'active':'paused')+'</span><label class="sw"><input type="checkbox" data-act="toggle" '+(en?'checked':'')+'><i></i></label></div><div class="scene-rule"><span class="kw">IF</span> '+ifs+' <span class="kw">THEN</span> '+thens+'</div>'+(tr?'<div class="traces">'+tr+'</div>':'')+'<div class="scene-btns"><button class="ibtn" data-act="run" title="Run manually"><i class="bi bi-play-fill"></i></button><button class="ibtn" data-act="del" title="Delete"><i class="bi bi-trash3"></i></button></div></div>';}).join('');}
+$('#sceneList').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;const name=b.closest('[data-name]').dataset.name;if(b.dataset.act==='run')runScene(name);if(b.dataset.act==='del')confirmSheet('Delete scene?','"'+name+'" will be permanently deleted.',()=>delScene(name));});
+$('#sceneList').addEventListener('change',e=>{const sw=e.target.closest('input[data-act="toggle"]');if(!sw)return;toggleScene(sw.closest('[data-name]').dataset.name,sw.checked);});
+async function toggleScene(name,en){try{const r=await api('/api/scenes/'+encodeURIComponent(name),{method:'PATCH',body:JSON.stringify({enabled:en})});if(r&&r.success===false)throw new Error(r.message);const s=S.scenes.find(x=>x.name===name);if(s)s.enabled=en;island(en?'Scene Enabled':'Scene Paused',esc(name),en?'ok':'info',2200);}catch(e){island('Error',esc(e.message),'err');}renderScenes();}
+async function delScene(name){try{await api('/api/scenes/'+encodeURIComponent(name),{method:'DELETE'});S.scenes=S.scenes.filter(s=>s.name!==name);island('Deleted',esc(name),'ok');renderScenes();}catch(e){island('Error',esc(e.message),'err');}}
+async function runScene(name){haptic(10);try{const r=await api('/api/scenes/'+encodeURIComponent(name)+'/run',{method:'POST',body:'{}'});if(r&&r.success){const bad=(r.results||[]).filter(x=>!x.ok).length;island(bad?'Executed with errors':'Scene executed','"'+name+'" · actions: '+(r.results||[]).length,bad?'warn':'ok');}else throw new Error((r&&r.message)||'Error');await poll();renderScenes();}catch(e){island('Run Error',esc(e.message),'err');}}
+async function createSurvivalScene(){const sec=S.devices.filter(d=>prioOf(d.group)==='secondary');const actions=sec.map(d=>({type:'tuya',device:d.id,value:false,duration:0,interval:0}));actions.push({type:'notify',title:'Survival Mode',message:'Battery critically low — secondary devices turned off'});try{await api('/api/scenes',{method:'POST',body:JSON.stringify({name:'Survival Mode',if:{logic:'AND',conditions:[{type:'battery',operator:'<',value:20}]},then:{actions}})});island('Scene Created','SOC < 20% → turn off '+sec.length+' secondary','ok');await poll();renderScenes();}catch(e){island('Error',esc(e.message),'err');}}
+function openBuilder(){const opts=S.devices.map(d=>'<option value="'+escA(d.id)+'">'+esc(d.name)+'</option>').join('');openSheet('<h3>New Automation</h3><label class="sh-label">Name</label><input id="abName" class="sh-input" placeholder="e.g. Night Savings" maxlength="40"><label class="sh-label"><span class="kw">IF</span> — condition</label><div class="sh-row"><select id="abCondType" class="sh-input" onchange="abCondFields()" style="max-width:170px"><option value="battery">Battery SOC</option><option value="grid">Grid</option><option value="time">Time of day</option></select><span id="abCondFields" style="display:contents"></span></div><label class="sh-label"><span class="kw">THEN</span> — action</label><div class="sh-row"><select id="abDev" class="sh-input"><option value="">— device —</option>'+opts+'</select><select id="abVal" class="sh-input" style="max-width:130px"><option value="false">Turn Off</option><option value="true">Turn On</option></select></div><label class="sw-row"><span class="sw"><input id="abNotify" type="checkbox" checked><i></i></span> Also send notification</label><button class="btn btn-primary w100" onclick="saveAutomation()"><i class="bi bi-check-lg"></i> Create Scene</button>');abCondFields();}
+function abCondFields(){const t=$('#abCondType').value,f=$('#abCondFields');if(t==='battery')f.innerHTML='<select id="abOp" class="sh-input" style="max-width:120px"><option value="<">below</option><option value=">">above</option></select><input id="abSoc" type="number" class="sh-input" style="max-width:90px" value="20" min="1" max="99">';else if(t==='grid')f.innerHTML='<select id="abGrid" class="sh-input" style="max-width:160px"><option value="false">lost (OFF)</option><option value="true">restored (ON)</option></select>';else f.innerHTML='<input id="abAfter" type="time" class="sh-input" value="23:00" style="max-width:120px"><input id="abBefore" type="time" class="sh-input" value="07:00" style="max-width:120px">';}
+async function saveAutomation(){const name=$('#abName').value.trim();if(!name){island('Name required','Enter an automation name','warn');return;}const t=$('#abCondType').value;let cond;if(t==='battery')cond={type:'battery',operator:$('#abOp').value,value:parseInt($('#abSoc').value)||20};else if(t==='grid')cond={type:'grid',value:$('#abGrid').value==='true'};else cond={type:'time',after:$('#abAfter').value||'00:00',before:$('#abBefore').value||'23:59'};const dev=$('#abDev').value;if(!dev){island('Select a device','Action needs a target device','warn');return;}const actions=[{type:'tuya',device:dev,value:$('#abVal').value==='true',duration:0,interval:0}];if($('#abNotify').checked)actions.push({type:'notify',title:'Automation "'+name+'"',message:'Condition triggered, action executed'});try{await api('/api/scenes',{method:'POST',body:JSON.stringify({name,if:{logic:'AND',conditions:[cond]},then:{actions}})});closeSheet();island('Scene Created',esc(name),'ok');await poll();renderScenes();}catch(e){island('Error',esc(e.message),'err');}}
+function renderNotifs(){const con=$('#notifList');const list=S.notifs.filter(n=>!n.dismissed);$('#notifUnread').textContent=S.unread?S.unread+' unread':'all read';if(!list.length){con.innerHTML='<div class="empty"><i class="bi bi-bell-slash"></i>No notifications.<br>System events and grid outages will appear here.</div>';return;}const groups={},order=[];for(const n of list){const k=n.title+'|'+(n.type||'info');if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(n);}con.innerHTML=order.map(k=>{const items=groups[k],f=items[0];const unread=items.some(x=>!x.read);const ic=f.type==='error'?'<i class="bi bi-exclamation-triangle-fill"></i>':f.type==='warn'?'<i class="bi bi-exclamation-circle-fill"></i>':'<i class="bi bi-checkmark-circle-fill"></i>';if(items.length>1){return '<div class="card-sm notif'+(unread?' unread':'')+'" data-key="'+escA(k)+'"><div class="n-row" data-nact="exp"><span class="n-ic '+(f.type||'info')+'">'+ic+'</span><div class="n-body"><div class="n-title">'+esc(f.title)+'</div><div class="n-time">'+fmtT(f.time)+' · latest of '+items.length+'</div></div><span class="n-count">×'+items.length+'</span><button class="ibtn n-x" data-nact="dis" title="Dismiss group"><i class="bi bi-x-lg"></i></button></div><div class="n-subs">'+items.map(s=>'<div class="n-sub"><span class="t">'+fmtT(s.time)+'</span><span>'+(esc(s.message)||esc(s.title))+'</span></div>').join('')+'</div></div>';}return '<div class="card-sm notif'+(unread?' unread':'')+'" data-key="'+escA(k)+'"><div class="n-row"><span class="n-ic '+(f.type||'info')+'">'+ic+'</span><div class="n-body"><div class="n-title">'+esc(f.title)+'</div>'+(f.message?'<div class="n-msg">'+esc(f.message)+'</div>':'')+'<div class="n-time">'+fmtT(f.time)+'</div></div><button class="ibtn n-x" data-nact="dis" title="Dismiss"><i class="bi bi-x-lg"></i></button></div></div>';}).join('');}
+$('#notifList').addEventListener('click',async e=>{const b=e.target.closest('[data-nact]');const item=e.target.closest('.notif');if(!item)return;const [title,type]=item.dataset.key.split('|');if(b&&b.dataset.nact==='dis'){item.classList.add('fade');setTimeout(async()=>{try{await api('/api/notifications/dismiss',{method:'POST',body:JSON.stringify({title,type})});}catch(err){}await pollNotifs();},280);return;}if(e.target.closest('.n-row')&&item.querySelector('.n-subs')){item.classList.toggle('exp');if(item.classList.contains('unread')){item.classList.remove('unread');try{await api('/api/notifications/mark-read',{method:'POST',body:JSON.stringify({title,type})});}catch(err){}S.unread=Math.max(0,S.unread-1);updBadge();$('#notifUnread').textContent=S.unread?S.unread+' unread':'all read';}}});
+async function markAllRead(){try{await api('/api/notifications/mark-read',{method:'POST',body:'{}'});}catch(e){}}
+async function readAll(){await markAllRead();await pollNotifs();island('Done','All notifications marked read','ok',2000);}
+async function clearAll(){confirmSheet('Clear all?','All notifications will be dismissed.',async()=>{try{await api('/api/notifications/dismiss-all',{method:'POST',body:'{}'});await pollNotifs();island('Cleared','Notification feed cleared','ok');}catch(e){}});}
+function updBadge(){const b=$('#tabNotifBadge');b.hidden=!S.unread;b.textContent=S.unread>99?'99+':S.unread;}
+async function pollNotifs(){if(!S.logged)return;try{const r=await api('/api/notifications');if(!r||!r.success)return;const list=r.notifications||[];const prev=S.lastNotifId;const fresh=prev?list.filter(n=>n.id>prev&&n.type!=='info'):[];if(fresh.length){beep();const n=fresh[0];island(n.title,n.message||'',n.type==='error'?'err':n.type==='warn'?'warn':'info',4600);}if(list.length)S.lastNotifId=Math.max(...list.map(n=>n.id));S.notifs=list;S.unread=r.unread||0;updBadge();if(S.curView==='notifications')renderNotifs();}catch(e){}}
+const ACCENTS=[['blue','#0A84FF'],['indigo','#5E5CE6'],['amber','#FF9F0A'],['green','#30D158'],['pink','#FF375F'],['cyan','#64D2FF']];
+function setAccent(name,save){document.documentElement.dataset.accent=name;$$('.swatch').forEach(s=>s.classList.toggle('on',s.dataset.a===name));localStorage.setItem('ecmAccent',name);if(save!==false){try{api('/api/user-prefs',{method:'POST',body:JSON.stringify({prefs:{accent:name}})}).catch(()=>{});}catch(e){}}}
+function buildAccents(){$('#accentRow').innerHTML=ACCENTS.map(([n,c])=>'<button class="swatch" data-a="'+n+'" style="background:'+c+'" title="'+n+'" onclick="setAccent(\''+n+'\')"></button>').join('');$$('.swatch').forEach(s=>s.classList.toggle('on',s.dataset.a===(localStorage.getItem('ecmAccent')||'blue')));}
+async function enterSettings(){$('#capWh').value=S.capacityWh;if(S.cfgLoaded){loadSysInfo();return;}S.cfgLoaded=true;try{const r=await api('/api/plugin-config');const c=(r&&r.config)||{};const inv=c.inverter||{};$('#invIp').value=inv.ip||'';$('#invSerial').value=inv.serial||'';$('#invPort').value=inv.port||8899;$('#invMac').value=inv.mac||'';const t=c.tuya||{};$('#tAccessId').value=t.accessId||'';$('#tAccessKey').value=t.accessKey||'';$('#tCountry').value=t.countryCode||48;$('#tUser').value=t.username||'';$('#tPass').value=t.password||'';$('#tSchema').value=t.appSchema||'tuyaSmart';const n=c.notifications||{};$('#nNtfy').checked=n.ntfyEnabled!==false;$('#ntfyTopic').value=n.ntfyTopic||'';$('#nTg').checked=!!n.telegramEnabled;$('#tgToken').value=n.telegramToken||'';$('#tgChat').value=n.telegramChatId||'';$('#nCritical').checked=n.criticalEnabled!==false;$('#nOutage').checked=n.gridOutageReport!==false;$('#socLow').value=n.lowSocAlert||20;const tf=c.tariff||{};$('#tfCurrency').value=tf.currency||'UAH';$('#tfType').value=tf.type||'daynight';$('#tfFlat').value=tf.flatRate||0;$('#tfDay').value=tf.dayRate||0;$('#tfNight').value=tf.nightRate||0;$('#tfDayStart').value=tf.dayStart||'07:00';$('#tfNightStart').value=tf.nightStart||'23:00';tfTypeChange();const nb=c.netbird||{};$('#nbEnabled').checked=nb.enabled===true;$('#nbSetupKey').value=nb.setupKey==='••••••••'?'••••••••':nb.setupKey||'';$('#nbMgmtUrl').value=nb.managementUrl||'';}catch(e){}loadSysInfo();loadVersion();}
+function tfTypeChange(){const flat=$('#tfType').value==='flat';$('#rowFlat').hidden=!flat;$('#rowDay').hidden=flat;$('#rowNight').hidden=flat;$('#tfDayStartLbl').textContent='from '+($('#tfDayStart').value||'07:00');$('#tfNightStartLbl').textContent='from '+($('#tfNightStart').value||'23:00');}
+async function postCfg(cfg,statEl,okMsg){const st=$(statEl);if(st)st.innerHTML='<span class="spin"></span> Saving…';try{const r=await api('/api/plugin-config',{method:'POST',body:JSON.stringify({config:cfg})});if(r&&r.success===false)throw new Error(r.message||'Error');if(st)st.innerHTML='<span class="c-green">✓ '+(okMsg||'Saved')+'</span>';island('Saved',okMsg||'Configuration updated','ok');}catch(e){if(st)st.innerHTML='<span class="c-red">✗ '+esc(e.message)+'</span>';island('Save Error',esc(e.message),'err');}}
+function savePowerCfg(){S.capacityWh=parseInt($('#capWh').value)||5000;localStorage.setItem('ecmCapWh',S.capacityWh);postCfg({notifications:{lowSocAlert:parseInt($('#socLow').value)||20}},'#powerStat','Thresholds updated');}
+function saveInverter(){const mac=(($('#invMac').value||'').replace(/[^a-fA-F0-9]/g,'').toUpperCase().match(/../g)||[]).join(':');postCfg({inverter:{ip:$('#invIp').value.trim(),serial:$('#invSerial').value.trim(),port:parseInt($('#invPort').value)||8899,mac}},'#scanStat','Inverter settings saved');}
+async function scanInverter(){const b=$('#btnScan'),st=$('#scanStat');b.disabled=true;b.innerHTML='<span class="spin"></span>';st.textContent='Scanning for inverter via MAC…';try{const r=await api('/api/inverter/scan',{method:'POST',body:'{}'});if(r&&r.success){st.innerHTML='✓ Found: <b class="mono">'+esc(r.ip)+'</b>'+(r.updated?' (IP updated)':'');island('Network Scan','Inverter: '+r.ip,'ok');}else throw new Error((r&&r.message)||'Not found');}catch(e){st.textContent='✗ '+e.message;}b.disabled=false;b.innerHTML='<i class="bi bi-radar"></i> Scan';}
+function saveTuya(){postCfg({tuya:{accessId:$('#tAccessId').value.trim(),accessKey:$('#tAccessKey').value,countryCode:parseInt($('#tCountry').value)||48,username:$('#tUser').value.trim(),password:$('#tPass').value,appSchema:$('#tSchema').value}},'#tuyaStat','Tuya data saved');}
+function saveNotifs(){postCfg({notifications:{ntfyEnabled:$('#nNtfy').checked,ntfyTopic:$('#ntfyTopic').value.trim(),telegramEnabled:$('#nTg').checked,telegramToken:$('#tgToken').value,telegramChatId:$('#tgChat').value.trim(),criticalEnabled:$('#nCritical').checked,gridOutageReport:$('#nOutage').checked,lowSocAlert:parseInt($('#socLow').value)||20}},'#notifStat','Notifications updated');}
+function saveTariff(){postCfg({tariff:{currency:$('#tfCurrency').value.trim()||'UAH',type:$('#tfType').value,flatRate:parseFloat($('#tfFlat').value)||0,dayRate:parseFloat($('#tfDay').value)||0,nightRate:parseFloat($('#tfNight').value)||0,dayStart:$('#tfDayStart').value||'07:00',nightStart:$('#tfNightStart').value||'23:00'}},'#tariffStat','Tariff saved');}
+async function testNotif(){const st=$('#notifStat');st.innerHTML='<span class="spin"></span> Sending to all channels…';try{const r=await api('/api/test-notification',{method:'POST',body:'{}'});st.innerHTML='✓ '+esc(((r&&r.results)||['sent']).join(' · '));island('Test Sent','Check notification channels','ok');}catch(e){st.textContent='✗ '+e.message;}}
+function saveNetbird(){const sk=$('#nbSetupKey').value.trim();postCfg({netbird:{enabled:$('#nbEnabled').checked,setupKey:sk===''?'••••••••':sk,managementUrl:$('#nbMgmtUrl').value.trim()}},'#netbirdStat','Netbird saved');}
+async function toggleNetbird(){
+  const on=$('#nbEnabled').checked,st=$('#netbirdStat');
+  st.innerHTML='<span class="spin"></span>';
+  try{
+    const r=await api('/api/netbird/'+(on?'up':'down'),{method:'POST'});
+    if(r&&r.success===false)throw new Error(r.message||'Error');
+    if(!on)await saveNetbird();
+    st.innerHTML='<span class="c-green">✓ '+(on?'Connected':'Disabled')+'</span>';
+    island('Netbird '+(on?'enabled':'disabled'),on?'Network connection established':'Connection closed','ok');
+  }catch(e){
+    $('#nbEnabled').checked=!on;
+    st.innerHTML='<span class="c-red">✗ '+esc(e.message)+'</span>';
+    island('Netbird',esc(e.message),'err');
+  }
+}
+async function checkNetbird(){const st=$('#netbirdStat');st.innerHTML='<span class="spin"></span>';try{const r=await api('/api/netbird/status');if(r&&r.success){const ip=r.peerIp?' · '+r.peerIp:'';const cl=r.connected?'green':r.status&&r.status.includes('Login')?'amber':'dim';st.innerHTML='<span class="c-'+cl+'">● '+esc(r.status)+(r.connected?ip:'')+'</span>';}else st.innerHTML='<span class="c-red">✗ No response</span>';}catch(e){st.innerHTML='<span class="c-red">✗ '+esc(e.message)+'</span>';}}
+async function resetNetbird(){const st=$('#netbirdStat');st.innerHTML='<span class="spin"></span> Resetting daemon…';try{const r=await api('/api/netbird/reset',{method:'POST'});st.innerHTML='<span class="c-amber">● '+esc(r&&r.message||'Reset done')+'</span>';island('Netbird Reset',r&&r.output||'Daemon restarted','info');}catch(e){st.innerHTML='<span class="c-red">✗ '+esc(e.message)+'</span>';}}
+function fmtBytes(b){if(b>=1073741824)return (b/1073741824).toFixed(2)+' GB';if(b>=1048576)return (b/1048576).toFixed(0)+' MB';return (b/1024).toFixed(0)+' KB';}
+async function loadSysInfo(){const el=$('#sysInfo');try{const d=await api('/api/system-info');if(!d)throw 0;const bar=(pct,col)=>'<div class="bar"><i style="width:'+Math.min(100,pct)+'%;background:'+col+'"></i></div>';const rows=[['Host',esc(d.hostname)],['Platform',esc(d.platform)+' · Node '+esc(d.nodeVersion)],['CPU',esc(d.cpuModel)+' · '+d.cpuCores+' core'],['CPU Load',bar(d.cpuLoad[0]/d.cpuCores*100,d.cpuLoad[0]/d.cpuCores>.7?'var(--red)':'var(--green)')+' <b class="mono" style="margin-left:8px">'+d.cpuLoad[0].toFixed(2)+'</b>'],d.cpuTemp?['CPU Temp','<b class="mono" style="color:'+(parseFloat(d.cpuTemp)>70?'var(--red)':'var(--green)')+'">'+d.cpuTemp+' °C</b>']:null,['Memory',bar(d.usedMem/d.totalMem*100,d.usedMem/d.totalMem>.8?'var(--red)':'var(--accent)')+' <b class="mono" style="margin-left:8px">'+fmtBytes(d.usedMem)+' / '+fmtBytes(d.totalMem)+'</b>'],d.diskInfo&&d.diskInfo.total?['Disk',bar(d.diskInfo.used/d.diskInfo.total*100,d.diskInfo.used/d.diskInfo.total>.8?'var(--red)':'var(--amber)')+' <b class="mono" style="margin-left:8px">'+fmtBytes(d.diskInfo.used)+' / '+fmtBytes(d.diskInfo.total)+'</b>']:null,['Uptime',fmtDur(d.uptime*1000)]].filter(Boolean);el.innerHTML=rows.map(r=>'<div class="sysrow"><span class="k">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>').join('');}catch(e){el.innerHTML='<div class="sysrow"><span class="k">Unavailable</span></div>';}}
+async function loadVersion(){try{const d=await api('/api/app-version');if(d&&d.success)$('#verLine').textContent=d.version+(d.gitHash?' · '+d.gitHash:'')+(d.gitBranch?' · '+d.gitBranch:'');}catch(e){}}
+function openPassSheet(forced){openSheet('<h3>'+(forced?'Force Change Password':'Change Password')+'</h3>'+(forced?'<p class="sh-p">Default password must be changed for security.</p>':'')+'<label class="sh-label">Current Password</label><input id="cpCur" type="password" class="sh-input"><label class="sh-label">New Password</label><input id="cpNew" type="password" class="sh-input" placeholder="min 6 characters"><label class="sh-label">Confirm New</label><input id="cpConf" type="password" class="sh-input"><div class="sh-btns" style="margin-top:16px">'+(forced?'':'<button class="btn" onclick="closeSheet()">Cancel</button>')+'<button class="btn btn-primary" id="cpGo">Save</button></div>');$('#cpGo').onclick=async()=>{const nw=$('#cpNew').value;if(nw.length<6){island('Too Short','Password must be at least 6 characters','warn');return;}if(nw!==$('#cpConf').value){island('Mismatch','Passwords do not match','warn');return;}try{const r=await api('/api/change-password',{method:'POST',body:JSON.stringify({currentPassword:$('#cpCur').value,newPassword:nw})});if(r&&r.success===false)throw new Error(r.message);closeSheet();island('Password Changed','All sessions terminated, please log in again','ok',4600);setTimeout(()=>showLogin(),1600);}catch(e){island('Error',esc(e.message),'err');}};}
+async function doBackup(){island('Creating Backup','Collecting config, scenes and history…','info',2400);try{const r=await api('/api/backup',{method:'POST',body:JSON.stringify({scope:['config','auth','scenes','history','devices']})});if(!r||!r.backup)throw new Error((r&&r.message)||'Error');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(r.backup,null,2)],{type:'application/json'}));a.download='strum-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);island('Backup Downloaded','File saved to device','ok');}catch(e){island('Backup Error',esc(e.message),'err');}}
+async function doRestore(inp){const f=inp.files&&inp.files[0];inp.value='';if(!f)return;try{const bk=JSON.parse(await f.text());if(!bk.data)throw new Error('Invalid backup file');const overwrite=Object.keys(bk.data).filter(k=>['config','auth','scenes','history','devices'].includes(k));const go2=pw=>api('/api/backup/restore',{method:'POST',body:JSON.stringify({data:bk.data,overwrite,confirmPassword:pw})}).then(r=>{if(r&&r.success===false)throw new Error(r.message);island('Restored',(r&&r.message)||'Done','ok');poll();}).catch(e=>island('Restore Error',esc(e.message),'err'));if(overwrite.includes('auth')){openSheet('<h3>Confirmation</h3><p class="sh-p">Backup contains authentication data. Enter current password.</p><input id="rsPass" type="password" class="sh-input" placeholder="Current password"><div class="sh-btns" style="margin-top:14px"><button class="btn" onclick="closeSheet()">Cancel</button><button class="btn btn-primary" id="rsGo">Restore</button></div>');$('#rsGo').onclick=()=>{closeSheet();go2($('#rsPass').value);};}else go2(null);}catch(e){island('Error',esc(e.message),'err');}}
+function askRestart(){confirmSheet('Restart app?','The web server will be unavailable for a few seconds.',async()=>{$('#restartOv').classList.add('show');try{await api('/api/restart',{method:'POST',body:'{}'});}catch(e){}const t0=Date.now();const iv=setInterval(async()=>{if(Date.now()-t0>60000){clearInterval(iv);$('#restartOv').classList.remove('show');island('Timeout','Server did not respond. Check device.','err');return;}try{const r=await fetch('/healthz',{signal:AbortSignal.timeout(2500)});if(r.ok){clearInterval(iv);location.reload();}}catch(e){}},2000);});}
+async function doLogout(){try{await api('/api/logout',{method:'POST',body:'{}'});}catch(e){}showLogin();}
+function pwaIcon(s){const c=document.createElement('canvas');c.width=c.height=s;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,s,s);g.addColorStop(0,'#5E5CE6');g.addColorStop(1,'#0A84FF');const r=s*.22;x.beginPath();x.roundRect(0,0,s,s,r);x.fillStyle=g;x.fill();x.fillStyle='#fff';x.beginPath();x.moveTo(.58*s,.10*s);x.lineTo(.30*s,.56*s);x.lineTo(.47*s,.56*s);x.lineTo(.42*s,.90*s);x.lineTo(.72*s,.42*s);x.lineTo(.54*s,.42*s);x.closePath();x.fill();return c.toDataURL('image/png');}
+async function setupPWA(){try{const link=document.createElement('link');link.rel='apple-touch-icon';link.href=pwaIcon(180);document.head.appendChild(link);}catch(e){}let ok=false;try{const r=await fetch('/manifest.json',{method:'HEAD',signal:AbortSignal.timeout(2500)});ok=r.ok;}catch(e){}if(!ok){try{const m={name:'Strum',short_name:'Strum',description:'Backup Power & Smart Plugs',start_url:'.',display:'standalone',background_color:'#000000',theme_color:'#000000',orientation:'any',icons:[{src:pwaIcon(192),sizes:'192x192',type:'image/png'},{src:pwaIcon(512),sizes:'512x512',type:'image/png'}]};const old=document.querySelector('link[rel="manifest"]');const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));if(old)old.replaceWith(l);else document.head.appendChild(l);}catch(e){}}}
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
+const revealObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');revealObs.unobserve(e.target);}}),{threshold:.08});
+function initApp(){buildFlow();buildAccents();setAccent(localStorage.getItem('ecmAccent')||'blue',false);$$('.rv').forEach(el=>revealObs.observe(el));poll();pollNotifs();setInterval(poll,5000);setInterval(pollNotifs,15000);setInterval(()=>{if(S.curView==='status'&&document.visibilityState==='visible'){loadPowerChart();loadSocketChart();}},60000);setInterval(()=>{const d=new Date();$('#headClock').textContent=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})+' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});if(S.status&&S.outageSince&&S.status.gridPower===false){$('#obTime').textContent='Duration '+fmtDur(Date.now()-S.outageSince)+' · since '+new Date(S.outageSince).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}},1000);setupPWA();}
+(async function(){if(!location.protocol.startsWith('http'))return;try{const d=await getStatus();if(d&&d.batterySOC!==undefined){window._csrf=d.csrfToken||'';S.status=d;S.devices=d.tuyaDevices||[];S.scenes=d.scenes||[];enterApp();}else showLogin();}catch(e){showLogin();}})();
+</script>
+</body>
+</html>
