@@ -17,7 +17,8 @@ const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const AUTH_FILE = path.join(DATA_DIR, 'auth.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 const SCENES_FILE = path.join(DATA_DIR, 'scenes.json');
-const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
+// NOTE: legacy history.json migration path is owned by rrd.js, which defines
+// its own HISTORY_FILE constant — no longer duplicated/used here.
 const SOCKETS_FILE = path.join(DATA_DIR, 'sockets.json');
 const DAILY_FILE = path.join(DATA_DIR, 'daily.json');
 const DEVICES_FILE = path.join(DATA_DIR, 'devices.json');
@@ -30,6 +31,7 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 import { log, logBuffer } from './lib/logger.js';
+import { watchdogStart, watchdogShutdown } from './lib/watchdog.js';
 import { crc16, getCrc, addCrc, verifyCrc } from './lib/crc16.js';
 import { SolarmanV5 } from './lib/solarman.js';
 import { tuyaSign, tuyaRequest } from './lib/tuya-sign.js';
@@ -101,6 +103,7 @@ registerRoutes(ctx);
 // ============================================================
 async function main() {
   log.info('Energy Controller starting...');
+  watchdogStart();
 
   await ensureAuth();
   await ensureMetricsToken();
@@ -205,157 +208,6 @@ async function main() {
 
   setInterval(checkScenes, 10000);
 
-  let _notifiedLowSoc = false;
-  let _gridWasOn=null; let _gridOffSince=null; let _gridOffSoc=null; let _gridOffLoadAccum=0; let _gridOffLastTs=0;
-  setInterval(async () => {
-    try {
-      const cfg = await loadConfig();
-      const n = cfg.notifications || {};
-      const soc = inverterData.batterySOC;
-
-      if (soc > 0 && soc <= (n.lowSocAlert || 20) && !_notifiedLowSoc && (n.ntfyTopic || n.telegramToken)) {
-        _notifiedLowSoc = true;
-        sendNotification('Low Battery', 'SOC: ' + soc + '% \u2014 below ' + (n.lowSocAlert || 20) + '% threshold', true);
-      } else if (soc > (n.lowSocAlert || 20) + 5) {
-        _notifiedLowSoc = false;
-      }
-
-      if (_inverterConsecutiveFails >= 5 && n.connTimeout && (n.ntfyTopic || n.telegramToken)) {
-        sendNotification('Inverter Offline', _inverterConsecutiveFails + ' consecutive poll failures. Check connection.', true);
-      }
-
-      if (n.gridOutageReport !== false) {
-        const now = Date.now();
-        const gridOn = inverterData.gridPower;
-        if (gridOn === false) {
-          if (_gridOffSince === null) {
-            _gridOffSince = new Date();
-            _gridOffSoc = inverterData.batterySOC;
-            _gridOffLoadAccum = 0;
-            _gridOffLastTs = now;
-            log.info('Grid outage started at ' + _gridOffSince.toLocaleTimeString() + ' (SOC: ' + _gridOffSoc + '%)');
-            pushNotification('Grid Outage', 'Grid went down at ' + _gridOffSince.toLocaleTimeString() + ' (SOC: ' + _gridOffSoc + '%)', 'error');
-          } else {
-            const elapsedH = (now - _gridOffLastTs) / 3600000;
-            if (elapsedH > 0) _gridOffLoadAccum += (inverterData.loadPower || 0) * elapsedH / 1000;
-            _gridOffLastTs = now;
-          }
-        } else if (_gridOffSince !== null) {
-          const offMs = now - _gridOffSince.getTime();
-          const offMin = Math.round(offMs / 60000);
-          const hours = Math.floor(offMin / 60);
-          const mins = offMin % 60;
-          const socNow = inverterData.batterySOC;
-          const socUsed = Math.max(0, Math.round((_gridOffSoc - socNow) * 10) / 10);
-          const loadUsed = Math.round(_gridOffLoadAccum * 100) / 100;
-
-          const report = [
-            'Grid went down: ' + _gridOffSince.toLocaleTimeString(),
-            'Restored: ' + new Date().toLocaleTimeString(),
-            'Duration: ' + hours + 'h ' + mins + 'm',
-            'Battery: ' + _gridOffSoc + '% \u2192 ' + socNow + '%' + (socUsed > 0 ? ' (used ' + socUsed + '%)' : ''),
-            'Load energy: ~' + loadUsed + ' kWh',
-          ].join('\n');
-
-          sendNotification('Grid Restored', report, false);
-          log.info('Grid outage ended: ' + hours + 'h' + mins + 'm, SOC ' + _gridOffSoc + '%\u2192' + socNow + '%');
-
-          _gridOffSince = null;
-          _gridOffSoc = null;
-          _gridOffLoadAccum = 0;
-        }
-      }
-    } catch {}
-  }, 120000);
-
-// ====== Server health monitor (disk, CPU temp, CPU load, memory) ======
-let _healthNotified = { disk: false, cpuTemp: false, cpuLoad: false, mem: false };
-let _healthCooldown = { disk: 0, cpuTemp: 0, cpuLoad: 0, mem: 0 };
-
-setInterval(async () => {
-  try {
-    const cfg = await loadConfig();
-    const ha = cfg.healthAlerts || {};
-    if (!ha.enabled) { _healthNotified = { disk: false, cpuTemp: false, cpuLoad: false, mem: false }; return; }
-    const now = Date.now();
-    const thr = {
-      disk: ha.diskThreshold || 20,
-      cpuTemp: ha.cpuTempThreshold || 80,
-      cpuLoad: ha.cpuLoadThreshold || 5,
-      mem: ha.memThreshold || 15,
-    };
-
-    // --- Disk ---
-    try {
-      const df = await new Promise((resolve, reject) => {
-        exec('df -k / | tail -1', (err, stdout) => err ? reject(err) : resolve(stdout.trim()));
-      });
-      const parts = df.split(/\s+/);
-      if (parts.length >= 5) {
-        const total = parseInt(parts[1]) * 1024;
-        const avail = parseInt(parts[3]) * 1024;
-        const pctFree = Math.round(avail / total * 100);
-        if (pctFree < thr.disk && now > _healthCooldown.disk) {
-          if (!_healthNotified.disk) {
-            _healthNotified.disk = true;
-            _healthCooldown.disk = now + 3600000;
-            sendNotification('Low Disk Space', pctFree + '% free (' + thr.disk + '% threshold). Available: ' + (avail / 1073741824).toFixed(1) + ' GB', true);
-          }
-        } else if (pctFree >= thr.disk + 5) {
-          _healthNotified.disk = false;
-        }
-      }
-    } catch {}
-
-    // --- CPU temp ---
-    try {
-      const raw = (await fs.promises.readFile('/sys/class/thermal/thermal_zone0/temp', 'utf8')).trim();
-      const temp = parseInt(raw) / 1000;
-      if (temp > thr.cpuTemp && now > _healthCooldown.cpuTemp) {
-        if (!_healthNotified.cpuTemp) {
-          _healthNotified.cpuTemp = true;
-          _healthCooldown.cpuTemp = now + 3600000;
-          sendNotification('High CPU Temperature', temp.toFixed(1) + '°C (' + thr.cpuTemp + '°C threshold)', true);
-        }
-      } else if (temp < thr.cpuTemp - 5) {
-        _healthNotified.cpuTemp = false;
-      }
-    } catch {}
-
-    // --- CPU load ---
-    try {
-      const la = (await fs.promises.readFile('/proc/loadavg', 'utf8')).trim().split(/\s+/);
-      const load1 = parseFloat(la[0]) || 0;
-      if (load1 > thr.cpuLoad && now > _healthCooldown.cpuLoad) {
-        if (!_healthNotified.cpuLoad) {
-          _healthNotified.cpuLoad = true;
-          _healthCooldown.cpuLoad = now + 1800000;
-          sendNotification('High CPU Load', 'Load average: ' + load1.toFixed(2) + ' (' + thr.cpuLoad + ' threshold)', true);
-        }
-      } else if (load1 < thr.cpuLoad * 0.7) {
-        _healthNotified.cpuLoad = false;
-      }
-    } catch {}
-
-    // --- Memory ---
-    try {
-      const memRaw = await fs.promises.readFile('/proc/meminfo', 'utf8');
-      const mtotal = parseInt(memRaw.match(/MemTotal:\s+(\d+)/)[1]) * 1024;
-      const mavail = parseInt(memRaw.match(/MemAvailable:\s+(\d+)/)[1]) * 1024;
-      const pctFree = Math.round(mavail / mtotal * 100);
-      if (pctFree < thr.mem && now > _healthCooldown.mem) {
-        if (!_healthNotified.mem) {
-          _healthNotified.mem = true;
-          _healthCooldown.mem = now + 3600000;
-          sendNotification('Low Memory', pctFree + '% free (' + thr.mem + '% threshold). Available: ' + (mavail / 1048576).toFixed(0) + ' MB', true);
-        }
-      } else if (pctFree >= thr.mem + 5) {
-        _healthNotified.mem = false;
-      }
-    } catch {}
-  } catch {}
-}, 300000); // every 5 min
-
   setInterval(() => {
     const now = Date.now();
     for (const token of Object.keys(sessions)) {
@@ -380,7 +232,8 @@ setInterval(async () => {
       }
       await fs.promises.writeFile(SESSIONS_FILE, JSON.stringify(active, null, 2), { mode: 0o600 });
     } catch {}
-    try { await rrdFlush(); } catch (err) { log.error('Flush on shutdown: ' + err.message); }
+    try { await rrdFlush(); } catch (err) { log.error("Flush on shutdown: " + err.message); }
+    watchdogShutdown(signal);
     process.exit(0);
   };
   process.on('SIGTERM', () => shutdown('SIGTERM'));
@@ -388,7 +241,8 @@ setInterval(async () => {
 }
 
 main().catch(err => {
-  log.error('Fatal: ' + err.message);
+  log.error("Fatal: " + err.message);
+  watchdogShutdown("fatal:" + err.message);
   process.exit(1);
 });
 
