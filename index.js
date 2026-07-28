@@ -61,7 +61,7 @@ const {
   tuyaDevices, controlDevice, fetchDeviceStatuses, syncDeviceNamesFromCloud,
   initTuya, loadDevicesFromDisk, scenes, loadScenes, saveScenes, checkScenes, loadSceneTimers, saveSceneTimers,
   sceneTraces, deviceName, resolveInverterIP, saveDevices, resetInverterConnection,
-  _pollingInverter, _inverterConsecutiveFails, pushSceneTrace,
+  isPollingInverter, getInverterConsecutiveFails, pushSceneTrace,
 } = app;
 
 const serverState = createServerState({
@@ -86,7 +86,7 @@ const ctx = {
   controlDevice, fetchDeviceStatuses, syncDeviceNamesFromCloud, initTuya,
   loadScenes, saveScenes, checkScenes, loadSceneTimers, saveSceneTimers,
   deviceName, resolveInverterIP, saveDevices, resetInverterConnection,
-  _inverterConsecutiveFails, pushSceneTrace,
+  getInverterConsecutiveFails, pushSceneTrace,
   loadAuthFile, verifyPassword, hashPassword, createSession, getSessionUser,
   getSessionCsrf, isSessionValid, destroySession, parseCookies,
   loginAttempts, sessions, clearSessions,
@@ -180,8 +180,8 @@ async function main() {
   if (!inverterData.lastUpdate) injectDemoData();
   pollInverter();
   setInterval(() => {
-    if (_inverterConsecutiveFails >= 5) {
-      if (_pollingInverter) return;
+    if (getInverterConsecutiveFails() >= 5) {
+      if (isPollingInverter()) return;
       log.info('Inverter: too many failures, reconnecting...');
       pushNotification('Reconnecting', 'Too many inverter failures — reconnecting...', 'warn');
       connectToInverter().then(() => pollInverter());
