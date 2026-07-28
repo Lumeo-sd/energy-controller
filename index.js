@@ -51,7 +51,7 @@ const { loadConfig, saveConfig, netbirdExec } = createConfig(DATA_DIR, { MASTER_
 const rrd = createRrd(DATA_DIR);
 const { RRD_POWER, RRD_SOCKET, RRD_PENDING, RRD_SOCKET_PENDING, RRD_FLUSH_MS, rrdInit, rrdFlush, rrdGetPower, rrdGetSocket, rrdPickLevel } = rrd;
 const auth = createAuth(DATA_DIR, { loadConfig, saveConfig });
-const { loadSessions, hashPassword, verifyPassword, ensureAuth, ensureMetricsToken, loadAuthFile, createSession, getSessionCsrf, getSessionUser, isSessionValid, destroySession, parseCookies, loginAttempts, sessions, clearSessions } = auth;
+const { loadSessions, saveSessions, hashPassword, verifyPassword, ensureAuth, ensureMetricsToken, loadAuthFile, createSession, getSessionCsrf, getSessionUser, isSessionValid, destroySession, parseCookies, loginAttempts, sessions, clearSessions } = auth;
 const notif = createNotifications(DATA_DIR, loadConfig);
 const { pushNotification, sendNotification, _sendExtNotification, _notifHistory, saveNotifHistory } = notif;
 const app = createAppState(DATA_DIR, loadConfig, saveConfig, decryptSecret, pushNotification);
@@ -97,6 +97,21 @@ const ctx = {
   getLoginPage, getWebUI,
 };
 registerRoutes(ctx);
+
+// ============================================================
+// CRASH HANDLERS — log reason before process dies
+// ============================================================
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err.stack || err.message || err);
+  try { watchdogShutdown('uncaughtException:' + (err.message || String(err))); } catch {}
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  const msg = reason instanceof Error ? (reason.stack || reason.message) : String(reason);
+  console.error('UNHANDLED REJECTION:', msg);
+  try { watchdogShutdown('unhandledRejection:' + msg); } catch {}
+  process.exit(1);
+});
 
 // ============================================================
 // MAIN — STARTUP
