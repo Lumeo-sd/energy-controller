@@ -161,6 +161,14 @@ if command -v iwconfig &>/dev/null; then
   fi
 fi
 
+# Install watchdog cron (checks heartbeat every 10 min)
+if [ -f "$INSTALL_DIR/scripts/check-watchdog.sh" ]; then
+  chmod +x "$INSTALL_DIR/scripts/check-watchdog.sh"
+  CRON_LINE="*/10 * * * * hb-service $INSTALL_DIR/scripts/check-watchdog.sh"
+  (crontab -l 2>/dev/null | grep -v 'check-watchdog'; echo "$CRON_LINE") | crontab -
+  echo -e "  ${GREEN}✓${NC} Watchdog cron installed (every 10 min)"
+fi
+
 systemctl daemon-reload
 systemctl enable "$SERVICE_NAME" 2>/dev/null
 

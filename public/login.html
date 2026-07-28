@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strum — Login</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;background:#000;color:#f5f5f7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login{width:min(400px,100%);padding:36px 28px;text-align:center;animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{opacity:0;transform:translateY(26px) scale(.94)}to{opacity:1;transform:none}}
+.icon{width:84px;height:84px;margin:0 auto 18px;border-radius:24px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#5E5CE6,#0A84FF);font-size:40px;color:#fff;box-shadow:0 14px 34px rgba(10,132,255,.45)}
+h1{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.sub{color:#98989f;font-size:14px;margin:6px 0 24px}
+.field{display:flex;align-items:center;gap:10px;background:rgba(118,118,128,.14);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:0 14px;margin-bottom:12px;transition:border-color .2s,box-shadow .2s}
+.field:focus-within{border-color:#0A84FF;box-shadow:0 0 0 3px rgba(10,132,255,.22)}
+.field i{color:#98989f;font-size:16px}
+.field input{flex:1;background:none;border:0;outline:0;color:#f5f5f7;font-size:16px;padding:14px 0;min-width:0}
+.err{color:#FF453A;font-size:13px;min-height:18px;margin:2px 0 10px;font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;border-radius:980px;font-weight:700;font-size:15px;padding:13px 22px;min-height:48px;width:100%;background:#0A84FF;color:#fff;box-shadow:0 8px 22px rgba(10,132,255,.4);transition:transform .12s,filter .15s}
+.btn:active{transform:scale(.95);filter:brightness(.85)}
+.btn:disabled{opacity:.5;pointer-events:none}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hint{margin-top:16px;font-size:12px;color:#636366}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+</style>
+</head>
+<body>
+<div class="login">
+  <div class="icon"><i class="bi bi-lightning-charge-fill"></i></div>
+  <h1>Strum</h1>
+  <p class="sub">Backup Power · Smart Plugs · Autonomy</p>
+  <form id="f" autocomplete="on">
+    <label class="field"><i class="bi bi-person-fill"></i><input id="u" autocomplete="username" placeholder="Username" value="admin"></label>
+    <label class="field"><i class="bi bi-lock-fill"></i><input id="p" type="password" autocomplete="current-password" placeholder="Password"></label>
+    <div id="e" class="err"></div>
+    <button class="btn" type="submit" id="b"><i class="bi bi-arrow-right-circle-fill"></i> Sign In</button>
+  </form>
+  <p class="hint">Raspberry Pi · Solarman V5 · Tuya Local · PWA</p>
+</div>
+<script>
+document.getElementById('f').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const b=document.getElementById('b'),e2=document.getElementById('e');
+  b.disabled=true;b.innerHTML='<span class="spin"></span>';
+  try{
+    const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('u').value.trim(),password:document.getElementById('p').value})});
+    const d=await r.json();
+    if(d&&d.success){window.location.href='/';}
+    else{e2.textContent=(d&&d.message)||'Invalid credentials';const c=document.querySelector('.login');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');}
+  }catch(err){e2.textContent='Server unreachable.';}
+  b.disabled=false;b.innerHTML='<i class="bi bi-arrow-right-circle-fill"></i> Sign In';
+});
+</script>
+</body>
+</html>

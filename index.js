@@ -217,7 +217,10 @@ async function main() {
   }, 60 * 60 * 1000);
 
   log.info('Energy Controller started');
-  pushNotification('System Ready', 'Energy Controller started successfully', 'info');
+  const lastReady = notif._notifHistory.filter(n => n.title === 'System Ready').at(-1);
+  if (!lastReady || Date.now() - lastReady.time > 30 * 60 * 1000) {
+    pushNotification('System Ready', 'Energy Controller started successfully', 'info');
+  }
 
   const shutdown = async (signal) => {
     log.info(signal + ' received, shutting down...');
